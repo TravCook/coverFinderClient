@@ -57,9 +57,9 @@ const UpcomingGames = () => {
             <Container style={{ maxWidth: '100vw', display: 'grid', justifyContent: 'space-around', gridAutoFlow: 'column' }}>
                 {NBAScores ? NBAScores.events.map((event) => { return (<Col style={{ padding: 10 }}><MatchupCard eventData={event} sport="basketball" league="nba" /></Col>) }) : null}
             </Container> */} 
-            <Row style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around'}}>
+            {/* <Row style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around'}}>
              {NFLScores ? NFLScores.events.slice(0,10).map((event) => { return (<MatchupCard eventData={event} sport="football" league="nfl" />) }) : null}   
-            </Row>
+            </Row> */}
             <Row style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around'}}>
             {NHLScores ? NHLScores.events.map((event) => { return (<MatchupCard eventData={event} sport="hockey" league="nhl" />) }) : null}  
             </Row>

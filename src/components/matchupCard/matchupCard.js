@@ -27,7 +27,7 @@ const MatchupCard = (props) => {
     }
 
     const retriveOdds = () => {
-        fetch('/api/odds/quick', {
+        fetch('http://ec2-35-173-188-106.compute-1.amazonaws.com:3001/api/odds/quick', {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
