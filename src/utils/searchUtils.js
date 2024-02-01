@@ -7,7 +7,6 @@ let endDate = moment(today.setDate(today.getDate() + 2)).format('YYYYMMDD')
 export async function genAmericanFootballScores() {
   const data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard`)
   const dataJSON = await data.json()
-  console.log(dataJSON)
   return dataJSON
 }
 

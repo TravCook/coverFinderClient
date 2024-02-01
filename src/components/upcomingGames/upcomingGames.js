@@ -37,11 +37,9 @@ const UpcomingGames = () => {
         getNBAScores()
     }, [])
 
-    console.log(NBAScores)
-
     return (
 
-        <Container fluid style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around'}}>
+        <Container fluid style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>
             {/* <Row style={{ textAlign: "center"}}>
                 <Col><h1>Upcoming Games</h1></Col>
             </Row>
@@ -56,19 +54,19 @@ const UpcomingGames = () => {
             <Row style={{ textAlign: "center" }}> <Col><h2>NBA</h2></Col> </Row>
             <Container style={{ maxWidth: '100vw', display: 'grid', justifyContent: 'space-around', gridAutoFlow: 'column' }}>
                 {NBAScores ? NBAScores.events.map((event) => { return (<Col style={{ padding: 10 }}><MatchupCard eventData={event} sport="basketball" league="nba" /></Col>) }) : null}
-            </Container> */} 
+            </Container> */}
             {/* <Row style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around'}}>
              {NFLScores ? NFLScores.events.slice(0,10).map((event) => { return (<MatchupCard eventData={event} sport="football" league="nfl" />) }) : null}   
             </Row> */}
-            <Row style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around'}}>
-            {NHLScores ? NHLScores.events.map((event) => { return (<MatchupCard eventData={event} sport="hockey" league="nhl" />) }) : null}  
+            <Row style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>
+                {NHLScores ? NHLScores.events.map((event) => { return (<MatchupCard eventData={event} sport="hockey" league="nhl" />) }) : null}
             </Row>
-            <Row style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around'}}>
-            {NBAScores ? NBAScores.events.map((event) => { return (<MatchupCard eventData={event} sport="basketball" league="nba" />) }) : null} 
+            <Row style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>
+                {NBAScores ? NBAScores.events.map((event) => { return (<MatchupCard eventData={event} sport="basketball" league="nba" />) }) : null}
             </Row>
-            
-            
-            
+
+
+
 
         </Container>
     )
