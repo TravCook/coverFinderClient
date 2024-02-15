@@ -17,8 +17,9 @@ const UpcomingGames = (props) => {
     const [pageIndex, setpageIndex] = useState({ NHL: { start: 0, end: 6 }, NBA: { start: 0, end: 6 } })
     let today = new Date(Date.now())
     let startDate = moment(today).format('YYYYMMDD')
-    let endDate = moment(today.setDate(today.getDate() + 1)).format('YYYYMMDD')
+    let endDate = moment(today.setDate(today.getDate() + 2)).format('YYYYMMDD')
     const now = moment()
+    console.log(startDate)
 
     function findUpcomingGames() {
         let sports = [
@@ -82,44 +83,73 @@ const UpcomingGames = (props) => {
 
         let dataJSON
         let data
+        let newData
 
         searchSports.map(async (sport) => {
             switch (sport.sport) {
                 case 'football':
                     data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.sport}/${sport.league}/scoreboard?dates=${startDate}-${endDate}`)
                     dataJSON = await data.json()
-                    setNFLScores(dataJSON)
+                    newData =  dataJSON.events.filter((event) => {
+                        return event.status.type.id < 3
+
+                    })
+                    setNFLScores(newData)
                     break;
                 case 'soccer':
                     if (sport.league === 'eng.1') {
                         data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.sport}/${sport.league}/scoreboard?dates=${startDate}-${endDate}`)
                         dataJSON = await data.json()
-                        setEPLScores(dataJSON)
+                        newData =  dataJSON.events.filter((event) => {
+                            return event.status.type.id < 3
+    
+                        })
+                        setEPLScores(newData)
                     } else {
                         data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.sport}/${sport.league}/scoreboard?dates=${startDate}-${endDate}`)
                         dataJSON = await data.json()
-                        setMLSScores(dataJSON)
+                        newData =  dataJSON.events.filter((event) => {
+                            return event.status.type.id < 3
+    
+                        })
+                        setMLSScores(newData)
                     }
                     break;
                 case 'baseball':
                     data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.sport}/${sport.league}/scoreboard?dates=${startDate}-${endDate}`)
                     dataJSON = await data.json()
-                    setMLBScores(dataJSON)
+                    newData =  dataJSON.events.filter((event) => {
+                        return event.status.type.id < 3
+
+                    })
+                    setMLBScores(newData)
                     break;
                 case 'basketball':
                     data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.sport}/${sport.league}/scoreboard?dates=${startDate}-${endDate}`)
                     dataJSON = await data.json()
-                    setNBAScores(dataJSON)
+                   newData =  dataJSON.events.filter((event) => {
+                        return event.status.type.id < 3
+
+                    })
+                    setNBAScores(newData)
                     break;
                 case 'hockey':
                     data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.sport}/${sport.league}/scoreboard?dates=${startDate}-${endDate}`)
                     dataJSON = await data.json()
-                    setNHLScores(dataJSON)
+                    newData =  dataJSON.events.filter((event) => {
+                        return event.status.type.id < 3
+
+                    })
+                    setNHLScores(newData)
                     break;
                 case 'mma':
                     data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard`)
                     dataJSON = await data.json()
-                    setMMAScores(dataJSON)
+                    newData =  dataJSON.events.filter((event) => {
+                        return event.status.type.id < 3
+
+                    })
+                    setMMAScores(newData)
                     break;
             }
         })
@@ -152,9 +182,7 @@ const UpcomingGames = (props) => {
 
     useEffect(() => {
         findUpcomingGames()
-        console.log(pageIndex)
         console.log(NBAScores)
-        console.log(NHLScores)
     }, [pageIndex])
 
 
@@ -167,17 +195,17 @@ const UpcomingGames = (props) => {
             {NHLScores ? <Row>
                 <Row><Col>NHL</Col><Col>See More</Col></Row>
                 {pageIndex.NHL.start <= 0 ? <Col><Button id="NHL" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Prev</Button></Col> : <Col><Button id="NHL" onClick={handlepageDownClick}>Next</Button></Col>}
-                {NHLScores.events.slice(pageIndex.NHL.start, pageIndex.NHL.end).map((event) => { return (<Col><MatchupCard pageIndex={pageIndex} sportsBook={props.sportsBook} eventData={event} sport="hockey" league="nhl" /></Col>) })}
-                {pageIndex.NHL.end >= NHLScores.events.length ? <Col><Button id="NHL" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Next</Button></Col> : <Col><Button id="NHL" onClick={handlepageUpClick}>Next</Button></Col>}
+                {NHLScores.slice(pageIndex.NHL.start, pageIndex.NHL.end).map((event) => { return (<Col><MatchupCard pageIndex={pageIndex} sportsBook={props.sportsBook} eventData={event} sport="hockey" league="nhl" /></Col>) })}
+                {pageIndex.NHL.end >= NHLScores.length ? <Col><Button id="NHL" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Next</Button></Col> : <Col><Button id="NHL" onClick={handlepageUpClick}>Next</Button></Col>}
             </Row> : null}
             { NBAScores ?  <Row>
                 <Row><Col>NBA</Col><Col>See More</Col></Row>
                 {pageIndex.NBA.start <= 0 ? <Col><Button id="NBA" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Prev</Button></Col> : <Col><Button id="NBA" onClick={handlepageDownClick}>Next</Button></Col>}
-                {NBAScores.events.slice(pageIndex.NBA.start, pageIndex.NBA.end).map((event) => { return (event.competitions[0].type.id == 4 ? null : <Col><MatchupCard pageIndex={pageIndex} sportsBook={props.sportsBook} eventData={event} sport="basketball" league="nba" /></Col>) })}
-                {pageIndex.NBA.end >= NBAScores.events.length ? <Col><Button id="NBA" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Next</Button></Col> : <Col><Button id="NBA" onClick={handlepageUpClick}>Next</Button></Col>}
+                {NBAScores.slice(pageIndex.NBA.start, pageIndex.NBA.end).map((event) => { return (event.competitions[0].type.id == 4 ? null : <Col><MatchupCard pageIndex={pageIndex} sportsBook={props.sportsBook} eventData={event} sport="basketball" league="nba" /></Col>) })}
+                {pageIndex.NBA.end >= NBAScores.length ? <Col><Button id="NBA" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Next</Button></Col> : <Col><Button id="NBA" onClick={handlepageUpClick}>Next</Button></Col>}
             </Row> : null}
             <Row>
-                {EPLScores ? EPLScores.events.slice(0, 12).map((event) => { return (<Col><MatchupCard sportsBook={props.sportsBook} eventData={event} sport="soccer" league="eng.1" /></Col>) }) : null}
+                {EPLScores ? EPLScores.slice(0, 12).map((event) => { return (<Col><MatchupCard sportsBook={props.sportsBook} eventData={event} sport="soccer" league="eng.1" /></Col>) }) : null}
             </Row>
 
 

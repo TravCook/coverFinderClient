@@ -187,7 +187,6 @@ const MatchupCard = (props) => {
                 {/* bottom row is for showing odds */}
                 <Row style={{ display: 'flex', flexDirection: 'column' }}>
                     { eventOdds.bookmakers.map((odds) => {
-                        console.log(odds)
                         if (odds.key === props.sportsBook) {
                             return (
                                 <Card style={{ width: '80%', backgroundColor: '#1d1e20', alignSelf: 'center', margin: 5, borderRadius: 5, boxShadow: "1px 2px 5px #00000F", }}>
