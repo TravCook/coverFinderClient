@@ -1,70 +1,184 @@
 import { useState, useEffect } from 'react'
-import {
-    genFootballScores,
-    genAmericanFootballScores,
-    genBaseballScores,
-    genBasketballScores,
-    genHockeyScores
-} from '../../utils/searchUtils.js'
-import { Container, Row, Col } from 'react-bootstrap'
+import { Container, Row, Col, Button } from 'react-bootstrap'
 import MatchupCard from '../matchupCard/matchupCard.js'
-import Button from 'react-bootstrap/Button'
+import moment from 'moment'
 
-const UpcomingGames = () => {
+
+
+const UpcomingGames = (props) => {
     const [displaySport, setDisplaySport] = useState()
     const [NFLScores, setNFLScores] = useState()
     const [NHLScores, setNHLScores] = useState()
     const [NBAScores, setNBAScores] = useState()
-    // genFootballScores()
-    // genBaseballScores()
+    const [EPLScores, setEPLScores] = useState()
+    const [MMAScores, setMMAScores] = useState()
+    const [MLSScores, setMLSScores] = useState()
+    const [MLBScores, setMLBScores] = useState()
+    const [pageIndex, setpageIndex] = useState({ NHL: { start: 0, end: 6 }, NBA: { start: 0, end: 6 } })
+    let today = new Date(Date.now())
+    let startDate = moment(today).format('YYYYMMDD')
+    let endDate = moment(today.setDate(today.getDate() + 1)).format('YYYYMMDD')
+    const now = moment()
 
-    const getNFLScores = async () => {
-        const res = await genAmericanFootballScores()
-        setNFLScores(res)
+    function findUpcomingGames() {
+        let sports = [
+            {
+                sport: 'football',
+                league: 'nfl',
+                startMonth: 9,
+                endMonth: 1,
+            },
+            {
+                sport: 'soccer',
+                league: 'eng.1',
+                startMonth: 8,
+                endMonth: 5,
+            },
+            {
+                sport: 'soccer',
+                league: 'mls',
+                startMonth: 2,
+                endMonth: 10,
+            },
+            {
+                sport: 'baseball',
+                league: 'mlb',
+                startMonth: 3,
+                endMonth: 10,
+            },
+            {
+                sport: 'basketball',
+                league: 'nba',
+                startMonth: 10,
+                endMonth: 4,
+            },
+            {
+                sport: 'hockey',
+                league: 'nhl',
+                startMonth: 10,
+                endMonth: 4,
+            },
+            {
+                sport: 'mma',
+                league: 'ufc',
+                startMonth: 12,
+                endMonth: 12,
+            }
+        ]
+        let searchSports = []
+        sports.map((sport) => {
+            if (sport.endMonth < sport.startMonth) { //if true, sport has multi year season
+                if (now.month() + 1 >= sport.startMonth || now.month() + 1 <= sport.endMonth) {
+                    searchSports.push(sport)
+                }
+            } else if (sport.startMonth === sport.endMonth) { // if true, sport is year round
+                searchSports.push(sport)
+            } else { // else case covers single year seasons
+                if (now.month() + 1 <= sport.startMonth && now.month() + 1 >= sport.endMonth) {
+                    searchSports.push(sport)
+                }
+            }
+        })
+
+        let dataJSON
+        let data
+
+        searchSports.map(async (sport) => {
+            switch (sport.sport) {
+                case 'football':
+                    data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.sport}/${sport.league}/scoreboard?dates=${startDate}-${endDate}`)
+                    dataJSON = await data.json()
+                    setNFLScores(dataJSON)
+                    break;
+                case 'soccer':
+                    if (sport.league === 'eng.1') {
+                        data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.sport}/${sport.league}/scoreboard?dates=${startDate}-${endDate}`)
+                        dataJSON = await data.json()
+                        setEPLScores(dataJSON)
+                    } else {
+                        data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.sport}/${sport.league}/scoreboard?dates=${startDate}-${endDate}`)
+                        dataJSON = await data.json()
+                        setMLSScores(dataJSON)
+                    }
+                    break;
+                case 'baseball':
+                    data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.sport}/${sport.league}/scoreboard?dates=${startDate}-${endDate}`)
+                    dataJSON = await data.json()
+                    setMLBScores(dataJSON)
+                    break;
+                case 'basketball':
+                    data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.sport}/${sport.league}/scoreboard?dates=${startDate}-${endDate}`)
+                    dataJSON = await data.json()
+                    setNBAScores(dataJSON)
+                    break;
+                case 'hockey':
+                    data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.sport}/${sport.league}/scoreboard?dates=${startDate}-${endDate}`)
+                    dataJSON = await data.json()
+                    setNHLScores(dataJSON)
+                    break;
+                case 'mma':
+                    data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard`)
+                    dataJSON = await data.json()
+                    setMMAScores(dataJSON)
+                    break;
+            }
+        })
     }
-    const getNHLScores = async () => {
-        const res = await genHockeyScores()
-        setNHLScores(res)
+
+    const handlepageUpClick = (e) => {
+        let newStartIndex = pageIndex[e.target.id].start + 6
+        let newEndIndex = pageIndex[e.target.id].end + 6
+        setpageIndex({
+            ...pageIndex,
+            [e.target.id]: {
+                start: newStartIndex,
+                end: newEndIndex
+            },
+        })
     }
-    const getNBAScores = async () => {
-        const res = await genBasketballScores()
-        setNBAScores(res)
+
+    const handlepageDownClick = (e) => {
+        let newStartIndex = pageIndex[e.target.id].start - 6
+        let newEndIndex = pageIndex[e.target.id].end - 6
+        setpageIndex({
+            ...pageIndex,
+            [e.target.id]: {
+                start: newStartIndex,
+                end: newEndIndex
+            },
+        })
+
     }
 
     useEffect(() => {
-        getNFLScores()
-        getNHLScores()
-        getNBAScores()
-    }, [])
+        findUpcomingGames()
+        console.log(pageIndex)
+        console.log(NBAScores)
+        console.log(NHLScores)
+    }, [pageIndex])
+
 
     return (
 
-        <Container fluid style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-            {/* <Row style={{ textAlign: "center"}}>
-                <Col><h1>Upcoming Games</h1></Col>
-            </Row>
+        <Container style={{ paddingTop: 70 }} fluid >
 
-            <Row style={{ textAlign: "center" }}> <Col><h2>NFL</h2></Col> </Row>
-            <Container style={{ maxWidth: '100vw', display: 'grid', justifyContent: 'space-around', gridAutoFlow: 'column' }}>
-                {NFLScores ? NFLScores.events.map((event) => { return (<Col style={{ padding: 10 }}><MatchupCard eventData={event} sport="football" league="nfl" /></Col>) }) : null}
-            </Container>
-            <Row style={{ textAlign: "center" }}> <Col><h2>NHL</h2></Col> </Row>
-            <Container style={{ maxWidth: '100vw', display: 'flex', justifyContent: 'space-around', }}>
-            </Container>
-            <Row style={{ textAlign: "center" }}> <Col><h2>NBA</h2></Col> </Row>
-            <Container style={{ maxWidth: '100vw', display: 'grid', justifyContent: 'space-around', gridAutoFlow: 'column' }}>
-                {NBAScores ? NBAScores.events.map((event) => { return (<Col style={{ padding: 10 }}><MatchupCard eventData={event} sport="basketball" league="nba" /></Col>) }) : null}
-            </Container> */}
-            {/* <Row style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around'}}>
-             {NFLScores ? NFLScores.events.slice(0,10).map((event) => { return (<MatchupCard eventData={event} sport="football" league="nfl" />) }) : null}   
-            </Row> */}
-            <Row style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-                {NHLScores ? NHLScores.events.map((event) => { return (<MatchupCard eventData={event} sport="hockey" league="nhl" />) }) : null}
-            </Row>
-            <Row style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-                {NBAScores ? NBAScores.events.map((event) => { return (<MatchupCard eventData={event} sport="basketball" league="nba" />) }) : null}
-            </Row>
 
+
+            {NHLScores ? <Row>
+                <Row><Col>NHL</Col><Col>See More</Col></Row>
+                {pageIndex.NHL.start <= 0 ? <Col><Button id="NHL" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Prev</Button></Col> : <Col><Button id="NHL" onClick={handlepageDownClick}>Next</Button></Col>}
+                {NHLScores.events.slice(pageIndex.NHL.start, pageIndex.NHL.end).map((event) => { return (<Col><MatchupCard pageIndex={pageIndex} sportsBook={props.sportsBook} eventData={event} sport="hockey" league="nhl" /></Col>) })}
+                {pageIndex.NHL.end >= NHLScores.events.length ? <Col><Button id="NHL" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Next</Button></Col> : <Col><Button id="NHL" onClick={handlepageUpClick}>Next</Button></Col>}
+            </Row> : null}
+            { NBAScores ?  <Row>
+                <Row><Col>NBA</Col><Col>See More</Col></Row>
+                {pageIndex.NBA.start <= 0 ? <Col><Button id="NBA" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Prev</Button></Col> : <Col><Button id="NBA" onClick={handlepageDownClick}>Next</Button></Col>}
+                {NBAScores.events.slice(pageIndex.NBA.start, pageIndex.NBA.end).map((event) => { return (event.competitions[0].type.id == 4 ? null : <Col><MatchupCard pageIndex={pageIndex} sportsBook={props.sportsBook} eventData={event} sport="basketball" league="nba" /></Col>) })}
+                {pageIndex.NBA.end >= NBAScores.events.length ? <Col><Button id="NBA" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Next</Button></Col> : <Col><Button id="NBA" onClick={handlepageUpClick}>Next</Button></Col>}
+            </Row> : null}
+            <Row>
+                {EPLScores ? EPLScores.events.slice(0, 12).map((event) => { return (<Col><MatchupCard sportsBook={props.sportsBook} eventData={event} sport="soccer" league="eng.1" /></Col>) }) : null}
+            </Row>
 
 
 

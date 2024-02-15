@@ -4,7 +4,6 @@ import moment from 'moment'
 // import { teamStatsSearch, teamRecordSearch } from '../../utils/searchUtils'
 
 const MatchupCard = (props) => {
-    // console.log(props)
     let homeTeam = props.eventData.competitions[0].competitors[0]
     let awayTeam = props.eventData.competitions[0].competitors[1]
     let homeOddsBGColor
@@ -16,18 +15,32 @@ const MatchupCard = (props) => {
     const [awayTeamStats, setAwayTeamStats] = useState()
 
     const teamStatsSearch = (sport, league, team, home) => {
-        home ? fetch(`http://sports.core.api.espn.com/v2/sports/${sport}/leagues/${league}/seasons/2024/types/2/teams/${team}/statistics?lang=en&region=us`).then(res => res.json()).then(data => setHomeTeamStats(data)) :
-            fetch(`http://sports.core.api.espn.com/v2/sports/${sport}/leagues/${league}/seasons/2024/types/2/teams/${team}/statistics?lang=en&region=us`).then(res => res.json()).then(data => setAwayTeamStats(data))
+        if(sport === 'soccer'){
+            home ? fetch(`https://sports.core.api.espn.com/v2/sports/${sport}/leagues/${league}/seasons/2023/types/1/teams/${team}/statistics?lang=en&region=us`).then(res => res.json()).then(async data => await setHomeTeamStats(data)) :
+            fetch(`https://sports.core.api.espn.com/v2/sports/${sport}/leagues/${league}/seasons/2023/types/1/teams/${team}/statistics?lang=en&region=us`).then(res => res.json()).then(async data => await  setAwayTeamStats(data))
 
+        }else{
+             home ? fetch(`https://sports.core.api.espn.com/v2/sports/${sport}/leagues/${league}/seasons/2024/types/2/teams/${team}/statistics?lang=en&region=us`).then(res => res.json()).then(async data => await  setHomeTeamStats(data)) :
+            fetch(`https://sports.core.api.espn.com/v2/sports/${sport}/leagues/${league}/seasons/2024/types/2/teams/${team}/statistics?lang=en&region=us`).then(res => res.json()).then(async data => await  setAwayTeamStats(data))
+
+        }
+       
     }
 
     const teamRecordSearch = (sport, league, team, home) => {
-        home ? fetch(`http://sports.core.api.espn.com/v2/sports/${sport}/leagues/${league}/seasons/2024/types/2/teams/${team}/record?lang=en&region=us`).then(res => res.json()).then(data => setHomeTeamRecord(data)) :
-            fetch(`http://sports.core.api.espn.com/v2/sports/${sport}/leagues/${league}/seasons/2024/types/2/teams/${team}/record?lang=en&region=us`).then(res => res.json()).then(data => setAwayTeamRecord(data))
-    }
+        if(sport === 'soccer') {
+            home ? fetch(`https://sports.core.api.espn.com/v2/sports/${sport}/leagues/${league}/seasons/2023/types/1/teams/${team}/record?lang=en&region=us`).then(res => res.json()).then(async data => await setHomeTeamRecord(data)) :
+            fetch(`https://sports.core.api.espn.com/v2/sports/${sport}/leagues/${league}/seasons/2023/types/1/teams/${team}/record?lang=en&region=us`).then(res => res.json()).then(async data => await setAwayTeamRecord(data))
+    
+        }else{
+              home ? fetch(`https://sports.core.api.espn.com/v2/sports/${sport}/leagues/${league}/seasons/2024/types/2/teams/${team}/record?lang=en&region=us`).then(res => res.json()).then(async data => await setHomeTeamRecord(data)) :
+            fetch(`https://sports.core.api.espn.com/v2/sports/${sport}/leagues/${league}/seasons/2024/types/2/teams/${team}/record?lang=en&region=us`).then(res => res.json()).then(async data => await setAwayTeamRecord(data))
+       
+        }
+   }
 
-    const retriveOdds = () => {
-        fetch('http://ec2-35-173-188-106.compute-1.amazonaws.com:3001/api/odds/quick', {
+    const retrieveOdds = () => {
+        fetch('http://hegdebetterapi.com:3001/api/odds/quick', {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
@@ -43,16 +56,15 @@ const MatchupCard = (props) => {
     }
 
     useEffect(() => {
-        retriveOdds()
+        retrieveOdds()
         teamStatsSearch(props.sport, props.league, homeTeam.team.id, true)
         teamRecordSearch(props.sport, props.league, homeTeam.team.id, true)
         teamStatsSearch(props.sport, props.league, awayTeam.team.id, false)
         teamRecordSearch(props.sport, props.league, awayTeam.team.id, false)
-    }, [props.displaySport])
+    }, [props.pageIndex])
     const homeBackgroundColorPicker = (homeRecord, homeStats, awayRecord, awayStats, sport) => {
         let index = 0
-        console.log(homeRecord)
-        console.log(homeStats)
+
         if (sport === 'football') {
 
         } else if (sport === 'hockey') {
@@ -71,7 +83,6 @@ const MatchupCard = (props) => {
             homeStats.splits.categories[1].stats[24].value > awayStats.splits.categories[1].stats[24].value ? index++ : index-- //Assist/Turnover Ratio
             homeStats.splits.categories[2].stats[31].value > awayStats.splits.categories[2].stats[31].value ? index++ : index-- //FT Attempts
         }
-        console.log(homeTeam.team.name + " index: " + index)
         if (index >= -10 && index <= -6) {
             homeOddsBGColor = '#bb1c1cc9'
         } else if (index <= -1) {
@@ -121,71 +132,110 @@ const MatchupCard = (props) => {
     awayTeamRecord && awayTeamStats && homeTeamRecord && homeTeamStats ? awayBackgroundColorPicker(homeTeamRecord, homeTeamStats, awayTeamRecord, awayTeamStats, props.sport) : <></>
     return (
         eventOdds ?
-            <Card style={{ backgroundColor: '#434343', minWidth: 275, textAlign: 'center', borderRadius: 25, margin: 5 }}>
+
+            <Card style={{ backgroundColor: '#7a7582', width: 240, textAlign: 'center', color: 'white', borderRadius: 25, margin: 5 }}>
                 {/* top row is for showing matchup */}
-                {eventOdds ? <Row>{moment(eventOdds.commence_time).format('DD/MM/YYYY')}</Row> : null}
-                <Row style={{ display: 'flex', justifyContent: 'space-around' }}>
+                {eventOdds ? moment(eventOdds.commence_time).format('DD/MMM/YYYY') : null}
+                <Row>
                     {/* this card is the home team */}
                     <Col>
-                        <Card>
+                        <Card style={{ backgroundColor: '#7a7582', border: 'none', color: 'white', alignItems: 'center'}}>
                             <Card.Img
                                 src={homeTeam.team.logo}
                                 variant="top"
                                 style={{
                                     height: 'auto',
-                                    maxHeight: '70px',
+                                    maxHeight: '30px',
                                     width: 'auto',
-                                    maxWidth: '70px'
+                                    maxWidth: '30px',
+                                    backgroundColor: '#7a7582'
                                 }}
                             />
-                            <Card.Text style={{ fontSize: 13 }}>
-                                {homeTeam.team.abbreviation} {homeTeam.team.name}
-                            </Card.Text>
-                            <Card.Text style={{ fontSize: 13 }}>({homeTeam.records[0].summary})</Card.Text>
+                                <Row style={{ fontSize: 13, marginBottom: 0  }}>
+                                {props.sport === 'soccer' ? null : `${homeTeam.team.abbreviation}`}
+                                </Row>
+                                <Row style={{ fontSize: 13, marginBottom: 0  }}>
+                                {props.sport === 'soccer' ? homeTeam.team.shortDisplayName : `${homeTeam.team.name}`}
+                                </Row>
+                            <Card.Text style={{ fontSize: 13 }}>({homeTeam ? homeTeam.records[0].summary : null})</Card.Text>
                         </Card>
                     </Col>
-                    <Col style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', fontSize: 26 }}>VS</Col>
+                    <Col xs={2} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center',justifyContent: 'center', fontSize: 16, padding: 0}}>VS</Col>
                     <Col>
                         {/* this column is the away team */}
-                        <Card>
+                        <Card style={{ backgroundColor: '#7a7582', border: 'none', color: 'white', textAlign: 'center', alignItems: 'center'}}>
                             <Card.Img
                                 src={awayTeam.team.logo}
                                 variant="top"
                                 style={{
                                     height: 'auto',
-                                    maxHeight: '70px',
+                                    maxHeight: '30px',
                                     width: 'auto',
-                                    maxWidth: '70px'
+                                    maxWidth: '30px'
                                 }}
                             />
-                            <Card.Text style={{ fontSize: 13 }}>
-                                {awayTeam.team.abbreviation} {awayTeam.team.name}
-                            </Card.Text>
+                            <Row style={{ fontSize: 13, marginBottom: 0  }}>
+                                {props.sport === 'soccer' ? null : `${awayTeam.team.abbreviation}`}
+                                </Row>
+                                <Row style={{ fontSize: 13, marginBottom: 0  }}>
+                                {props.sport === 'soccer' ? awayTeam.team.shortDisplayName : `${awayTeam.team.name}`}
+                                </Row>
                             <Card.Text style={{ fontSize: 13 }}>({awayTeam.records[0].summary})</Card.Text>
                         </Card>
                     </Col>
                 </Row>
                 {/* bottom row is for showing odds */}
                 <Row style={{ display: 'flex', flexDirection: 'column' }}>
-                    {eventOdds ? eventOdds.bookmakers.map((odds) => {
-                        let oddsBG
-                        if (odds.key === "draftkings") {
-                            oddsBG = '#61b510'
-                        } else if (odds.key === "fanduel") {
-                            oddsBG = '#0070eb'
-                        } else if (odds.key === "betmgm") {
-                            oddsBG = '#dbc172'
-                        }
-                        if (odds.key === "draftkings" || odds.key === "fanduel" || odds.key === "betmgm") {
+                    { eventOdds.bookmakers.map((odds) => {
+                        console.log(odds)
+                        if (odds.key === props.sportsBook) {
                             return (
                                 <Card style={{ width: '80%', backgroundColor: '#1d1e20', alignSelf: 'center', margin: 5, borderRadius: 5, boxShadow: "1px 2px 5px #00000F", }}>
-                                    <Card.Text style={{ margin: 0, backgroundColor: oddsBG, borderRadius: 5, fontWeight: 700, textShadow: "1px 2px 10px #00000F" }}>{odds.key === "draftkings" ? "Draft Kings" : odds.key === "fanduel" ? "Fan Duel" : odds.key === "betmgm" ? "Bet MGM" : null}</Card.Text>
+                                    <Card.Text style={{ margin: 0, backgroundColor: '#527595', borderRadius: 5, fontWeight: 600, color: '#eef3f3'  }}>Money Line</Card.Text>
                                     {odds.markets[0].outcomes.map((outcome) => {
-                                        if (outcome.name === (homeTeam.team.location === 'LA' ? 'Los Angeles' + homeTeam.team.name : homeTeam.team.location + " " + homeTeam.team.name)) {
+                                        if(props.sport === 'soccer'){
+                                            if (outcome.name === homeTeam.team.name) {
+                                                return (
+                                                    <Row style={{ display: 'flex', justifyContent: 'space-evenly', fontSize: 14, padding: 5, margin: 10, color: 'white', backgroundColor: homeOddsBGColor, borderRadius: 25 }}>
+                                                        <Col>
+                                                            {homeTeam.team.shortDisplayName} : 
+                                                        </Col>
+                                                        <Col>
+                                                            {outcome.price}
+                                                        </Col>
+                                                    </Row>
+                                                )
+                                            }
+                                            if (outcome.name === awayTeam.team.name) {
+                                                return (
+                                                    <Row style={{ display: 'flex', justifyContent: 'space-evenly', fontSize: 14, padding: 5, margin: 10, color: 'white', backgroundColor: awayOddsBGColor, borderRadius: 20 }}>
+                                                        <Col sm={10}>
+                                                            {awayTeam.team.shortDisplayName} :
+                                                        </Col>
+                                                        <Col>
+                                                            {outcome.price}
+                                                        </Col>
+                                                    </Row>
+                                                )
+                                            }else{
+                                                return (
+                                                    <Row style={{ display: 'flex', justifyContent: 'space-evenly', fontSize: 14, padding: 5, margin: 10, color: 'white', backgroundColor: awayOddsBGColor, borderRadius: 20 }}>
+                                                        <Col sm={10}>
+                                                            {outcome.name} :
+                                                        </Col>
+                                                        <Col>
+                                                            {outcome.price}
+                                                        </Col>
+                                                    </Row>
+                                                )
+                                            }
+
+                                        }
+                                        if (outcome.name.includes(homeTeam.team.name)) {
                                             return (
                                                 <Row style={{ display: 'flex', justifyContent: 'space-evenly', fontSize: 14, padding: 5, margin: 10, color: 'white', backgroundColor: homeOddsBGColor, borderRadius: 25 }}>
                                                     <Col>
-                                                        {homeTeam.team.abbreviation} :
+                                                        {homeTeam.team.abbreviation} : 
                                                     </Col>
                                                     <Col>
                                                         {outcome.price}
@@ -193,10 +243,10 @@ const MatchupCard = (props) => {
                                                 </Row>
                                             )
                                         }
-                                        if (outcome.name === (awayTeam.team.location === 'LA' ? 'Los Angeles ' + awayTeam.team.name : awayTeam.team.location + " " + awayTeam.team.name)) {
+                                        if (outcome.name.includes(awayTeam.team.name)) {
                                             return (
                                                 <Row style={{ display: 'flex', justifyContent: 'space-evenly', fontSize: 14, padding: 5, margin: 10, color: 'white', backgroundColor: awayOddsBGColor, borderRadius: 20 }}>
-                                                    <Col sm={10}>
+                                                    <Col>
                                                         {awayTeam.team.abbreviation} :
                                                     </Col>
                                                     <Col>
@@ -210,9 +260,11 @@ const MatchupCard = (props) => {
 
                                 </Card>
                             )
+                        }else{
+                            
                         }
 
-                    }) : null}
+                    }) }
                 </Row>
             </Card>
             : null
