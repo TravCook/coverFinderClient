@@ -19,7 +19,6 @@ const UpcomingGames = (props) => {
     let startDate = moment(today).format('YYYYMMDD')
     let endDate = moment(today.setDate(today.getDate() + 2)).format('YYYYMMDD')
     const now = moment()
-    console.log(startDate)
 
     function findUpcomingGames() {
         let sports = [
@@ -146,7 +145,7 @@ const UpcomingGames = (props) => {
                     data = await fetch(`https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard`)
                     dataJSON = await data.json()
                     newData =  dataJSON.events.filter((event) => {
-                        return event.status.type.id < 3
+                        return event.status.type.id <= 3
 
                     })
                     setMMAScores(newData)
@@ -184,31 +183,35 @@ const UpcomingGames = (props) => {
         findUpcomingGames()
         console.log(NBAScores)
     }, [pageIndex])
-
-
     return (
 
-        <Container style={{ paddingTop: 70 }} fluid >
+        <Container fluid >
 
 
 
-            {NHLScores ? <Row>
+            {/* {NHLScores ? <Row style={{height: 280}}>
                 <Row><Col>NHL</Col><Col>See More</Col></Row>
                 {pageIndex.NHL.start <= 0 ? <Col><Button id="NHL" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Prev</Button></Col> : <Col><Button id="NHL" onClick={handlepageDownClick}>Next</Button></Col>}
-                {NHLScores.slice(pageIndex.NHL.start, pageIndex.NHL.end).map((event) => { return (<Col><MatchupCard pageIndex={pageIndex} sportsBook={props.sportsBook} eventData={event} sport="hockey" league="nhl" /></Col>) })}
-                {pageIndex.NHL.end >= NHLScores.length ? <Col><Button id="NHL" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Next</Button></Col> : <Col><Button id="NHL" onClick={handlepageUpClick}>Next</Button></Col>}
+                {NHLScores.slice(pageIndex.NHL.start, pageIndex.NHL.end).map((event) => { return (<Col><MatchupCard key={event.id} pageIndex={pageIndex} sportsBook={props.sportsBook} eventData={event} sport="hockey" league="nhl" /></Col>) })}
+                {pageIndex.NHL.end > NHLScores.length ? <Col><Button id="NHL" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Next</Button></Col> : <Col><Button id="NHL" onClick={handlepageUpClick}>Next</Button></Col>}
             </Row> : null}
-            { NBAScores ?  <Row>
+            { NBAScores ?  <Row style={{height: 280}}>
                 <Row><Col>NBA</Col><Col>See More</Col></Row>
                 {pageIndex.NBA.start <= 0 ? <Col><Button id="NBA" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Prev</Button></Col> : <Col><Button id="NBA" onClick={handlepageDownClick}>Next</Button></Col>}
-                {NBAScores.slice(pageIndex.NBA.start, pageIndex.NBA.end).map((event) => { return (event.competitions[0].type.id == 4 ? null : <Col><MatchupCard pageIndex={pageIndex} sportsBook={props.sportsBook} eventData={event} sport="basketball" league="nba" /></Col>) })}
-                {pageIndex.NBA.end >= NBAScores.length ? <Col><Button id="NBA" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Next</Button></Col> : <Col><Button id="NBA" onClick={handlepageUpClick}>Next</Button></Col>}
+                {NBAScores.slice(pageIndex.NBA.start, pageIndex.NBA.end).map((event) => { return (event.competitions[0].type.id == 4 ? null : <Col><MatchupCard key={event.id} pageIndex={pageIndex} sportsBook={props.sportsBook} eventData={event} sport="basketball" league="nba" /></Col>) })}
+                {pageIndex.NBA.end > NBAScores.length ? <Col><Button id="NBA" style={{ backgroundColor: 'gray', borderColor: 'gray' }}>Next</Button></Col> : <Col><Button id="NBA" onClick={handlepageUpClick}>Next</Button></Col>}
             </Row> : null}
-            <Row>
+            <Row style={{height: 280}}>
                 {EPLScores ? EPLScores.slice(0, 12).map((event) => { return (<Col><MatchupCard sportsBook={props.sportsBook} eventData={event} sport="soccer" league="eng.1" /></Col>) }) : null}
-            </Row>
+            </Row> */}
+    <Row style={{display: 'flex', justifyContent: 'space-evenly'}}>
+        {NBAScores ? NBAScores.map((event) => { return (<MatchupCard eventData={event} sport="basketball" league="nba" sportsBook={props.sportsBook} />) }) : null} 
+    </Row>
+    <Row style={{display: 'flex', justifyContent: 'space-evenly'}}>
+        {NHLScores ? NHLScores.map((event) => { return (<MatchupCard eventData={event} sport="hockey" league="nhl" sportsBook={props.sportsBook} />) }) : null} 
+    </Row>
 
-
+        
 
         </Container>
     )

@@ -87,7 +87,7 @@ const NavBar = (props) => {
     }, [props.sportsBook])
 
     return(
-    <Navbar fixed="top">
+    <Navbar>
         <Container fluid>
                 <Col style={{display: "flex", justifyContent: "flex-start" }} >
                     <Row style={{alignItems: "center"}} >
@@ -122,8 +122,8 @@ const NavBar = (props) => {
                 </Col>
                 <Col style={{display: "flex", justifyContent: "flex-end" }} >
                     <Row style={{alignItems: "center"}} >
-                        <Col>sign up</Col>
-                        <Col>login</Col>
+                        {/* <Col>sign up</Col>
+                        <Col>login</Col> */}
                     </Row>
                 </Col>
         </Container>
