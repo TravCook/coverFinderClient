@@ -1,15 +1,20 @@
-import { Navbar, Container, Row, Col, Dropdown, DropdownToggle, DropdownMenu, DropdownItem} from "react-bootstrap"
+import { Navbar, Container, Row, Col, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Button} from "react-bootstrap"
 import {useState, useEffect} from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faHome, faFootballBall, faBasketballBall, faBaseballBall, faHockeyPuck} from '@fortawesome/free-solid-svg-icons'
 
 const NavBar = (props) => {
 
     const [dropdownTitle, setddTitle] = useState("Select Sportsbook")
     const [dropdownBG, setddBG] = useState('#527595')
     const [dropdownFont, setddFont] = useState('#eef3f3')
-    const handleClick = (event) => {
+    const handleDropDownClick = (event) => {
         props.setSportsBook(event.target.id)
         setddTitle(event.target.textContent)
    }
+   const handleNavClick =  (event) => {
+    props.setPageSelect(event.target.textContent)
+}
 
     useEffect(() => {
          switch(props.sportsBook){
@@ -89,7 +94,10 @@ const NavBar = (props) => {
     return(
     <Navbar>
         <Container fluid>
-                <Col style={{display: "flex", justifyContent: "flex-start" }} >
+                <Col xs={1} style={{display: "flex", justifyContent: "center" }} >
+                    BETTOR
+                </Col>
+                <Col xs={1} style={{display: "flex", justifyContent: "flex-start" }} >
                     <Row style={{alignItems: "center"}} >
                         <Col>
                             <Dropdown>
@@ -97,34 +105,94 @@ const NavBar = (props) => {
                                     {dropdownTitle}
                                 </DropdownToggle>
                                 <DropdownMenu>
-                                    <DropdownItem id="draftkings" onClick={handleClick}>DraftKings</DropdownItem>
-                                    <DropdownItem id="betmgm" onClick={handleClick}>Bet MGM</DropdownItem>
-                                    <DropdownItem id="fanduel" onClick={handleClick}>Fan Duel</DropdownItem>
-                                    <DropdownItem id="williamhill_us" onClick={handleClick}>Caesars</DropdownItem>
-                                    <DropdownItem id="betrivers" onClick={handleClick}>BetRivers</DropdownItem>
-                                    <DropdownItem id="unibet_us" onClick={handleClick}>Unibet</DropdownItem>
-                                    <DropdownItem id="betonlineag" onClick={handleClick}>BetOnline.ag</DropdownItem>
-                                    <DropdownItem id="lowvig" onClick={handleClick}>LowVig.ag</DropdownItem>
-                                    <DropdownItem id="mybookieag" onClick={handleClick}>MyBookie.ag</DropdownItem>
-                                    <DropdownItem id="wynnbet" onClick={handleClick}>WynnBet</DropdownItem>
-                                    <DropdownItem id="bovada" onClick={handleClick}>Bovada</DropdownItem>
-                                    <DropdownItem id="betus" onClick={handleClick}>BetUS</DropdownItem>
-                                    <DropdownItem id="superbook" onClick={handleClick}>SuperBook</DropdownItem>
-                                    <DropdownItem id="pointsbetus" onClick={handleClick}>PointsBet (US)</DropdownItem>
+                                    <DropdownItem id="draftkings" onClick={handleDropDownClick}>DraftKings</DropdownItem>
+                                    <DropdownItem id="betmgm" onClick={handleDropDownClick}>Bet MGM</DropdownItem>
+                                    <DropdownItem id="fanduel" onClick={handleDropDownClick}>Fan Duel</DropdownItem>
+                                    <DropdownItem id="williamhill_us" onClick={handleDropDownClick}>Caesars</DropdownItem>
+                                    <DropdownItem id="betrivers" onClick={handleDropDownClick}>BetRivers</DropdownItem>
+                                    <DropdownItem id="unibet_us" onClick={handleDropDownClick}>Unibet</DropdownItem>
+                                    <DropdownItem id="betonlineag" onClick={handleDropDownClick}>BetOnline.ag</DropdownItem>
+                                    <DropdownItem id="lowvig" onClick={handleDropDownClick}>LowVig.ag</DropdownItem>
+                                    <DropdownItem id="mybookieag" onClick={handleDropDownClick}>MyBookie.ag</DropdownItem>
+                                    <DropdownItem id="wynnbet" onClick={handleDropDownClick}>WynnBet</DropdownItem>
+                                    <DropdownItem id="bovada" onClick={handleDropDownClick}>Bovada</DropdownItem>
+                                    <DropdownItem id="betus" onClick={handleDropDownClick}>BetUS</DropdownItem>
+                                    <DropdownItem id="superbook" onClick={handleDropDownClick}>SuperBook</DropdownItem>
+                                    <DropdownItem id="pointsbetus" onClick={handleDropDownClick}>PointsBet (US)</DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
                         </Col>
-                        <Col>info</Col>
                     </Row>
                 </Col>
-                <Col style={{display: "flex", justifyContent: "center" }} >
-                    Site Title
-                </Col>
-                <Col style={{display: "flex", justifyContent: "flex-end" }} >
+                
+                <Col xs={9} style={{display: "flex", justifyContent: "space-around"}} >
                     <Row style={{alignItems: "center"}} >
-                        {/* <Col>sign up</Col>
-                        <Col>login</Col> */}
+                        <Col>
+                            <Button onClick={handleNavClick} style={{fontSize: 'x-small'}}>
+                                <Row>
+                                    <Col xs={1} style={{padding: 4}}>
+                                        <FontAwesomeIcon icon={faHome} />
+                                    </Col>
+                                    <Col xs={10} style={{alignContent: 'center'}}>
+                                        Home
+                                    </Col>
+                                </Row>
+                            </Button>
+                        </Col>
+                        <Col>
+                            <Button onClick={handleNavClick} style={{fontSize: 'x-small'}}>
+                            <Row>
+                                    <Col xs={1} style={{padding: 5}}>
+                                        <FontAwesomeIcon icon={faFootballBall} />
+                                    </Col>
+                                    <Col xs={10} style={{alignContent: 'center'}}>
+                                        Football
+                                    </Col>
+                                </Row>
+                            </Button>
+                        </Col>
+                        <Col>
+                            <Button onClick={handleNavClick} style={{fontSize: 'x-small'}}>
+                            <Row>
+                                    <Col xs={1} style={{padding: 5}}>
+                                        <FontAwesomeIcon icon={faBaseballBall} />
+                                    </Col>
+                                    <Col xs={10} style={{alignContent: 'center'}}>
+                                        Baseball
+                                    </Col>
+                                </Row>
+                            </Button>
+                        </Col>
+                        <Col>
+                            <Button onClick={handleNavClick} style={{fontSize: 'x-small'}} >
+                            <Row>
+                                    <Col xs={1} style={{padding: 5}}>
+                                        <FontAwesomeIcon icon={faHockeyPuck} />
+                                    </Col>
+                                    <Col xs={10} style={{alignContent: 'center'}}>
+                                        Hockey
+                                    </Col>
+                                </Row>
+                            </Button>
+                        </Col>
+                        <Col>
+                            <Button onClick={handleNavClick} style={{fontSize: 'x-small'}}>
+                            <Row>
+                                    <Col xs={1} style={{padding: 5}}>
+                                        <FontAwesomeIcon icon={faBasketballBall} />
+                                    </Col>
+                                    <Col xs={10} style={{alignContent: 'center'}}>
+                                        Basketball
+                                    </Col>
+                                </Row>
+                            </Button>
+                        </Col>
                     </Row>
+                </Col>
+                <Col xs={1} style={{display: "flex", justifyContent: "flex-end"}}>
+                    <Button>
+                        Login
+                    </Button>
                 </Col>
         </Container>
     </Navbar>
