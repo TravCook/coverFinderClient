@@ -124,7 +124,7 @@ const NavBar = (props) => {
                         </Col>
                     </Row>
                 </Col>
-                
+                {/* TODO: TURN THESE BUTTONS INTO A FILTER MENU */}
                 <Col xs={9} style={{display: "flex", justifyContent: "space-around"}} >
                     <Row style={{alignItems: "center"}} >
                         <Col>

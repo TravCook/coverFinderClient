@@ -34,7 +34,6 @@ const MatchupCard = (props) => {
         })
     }
 
-
     useEffect(() => {
         if (props.gameData.home_team && props.gameData.away_team) {
             awayTeamGet()
@@ -42,10 +41,10 @@ const MatchupCard = (props) => {
         }
     }, [])
     return (
-        <Container style={{ width: '28rem', height: '8rem', fontSize: 'medium', marginBottom: '2rem', backgroundColor: '#303036', color: '#D4D2D5', paddingRight: '15px', borderRadius: '.5em' }}>
+        <Container style={{ width: '25rem', height: '8rem', fontSize: 'medium', marginBottom: '2rem', backgroundColor: '#303036', color: '#D4D2D5', paddingRight: '15px', borderRadius: '.5em' }}>
             <Row>
-                <Col xs={4} style={{ textAlign: 'center', borderStyle: 'solid', borderTopStyle: 'none', marginLeft: 'auto', marginRight: 'auto', borderRadius: '.25em' }}>
-                    {moment(props.gameData.commence_time).utc().format('MMM/DD/YYYY')}
+                <Col xs={8} style={{ textAlign: 'center', borderStyle: 'solid', borderTopStyle: 'none', marginLeft: 'auto', marginRight: 'auto', borderRadius: '.25em' }}>
+                    {moment(props.gameData.commence_time).format('MM/DD/YYYY') === moment().format('MM/DD/YYYY') ? `Today @ ${moment(props.gameData.commence_time).utc().local().format('h:MMa')}` : moment(props.gameData.commence_time).utc().local().format('MMM/DD/YYYY @ h:MMa')}
                 </Col>
             </Row>
             {/* <Row style={{ fontSize: 'x-small', justifyContent: 'right', textAlign: 'center' }}>
@@ -59,8 +58,8 @@ const MatchupCard = (props) => {
                     Totals
                 </Col>
             </Row> */}
-            {awayTeam ? <TeamOddsRow team={awayTeam} oppTeam={homeTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Over'} /> : null}
-            {homeTeam ? <TeamOddsRow team={homeTeam} oppTeam={awayTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Under'} /> : null}
+            {awayTeam ? <TeamOddsRow  teamIndex={props.gameData.awayTeamIndex} team={awayTeam} oppTeam={homeTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Over'} /> : <></>}
+            {homeTeam ? <TeamOddsRow  teamIndex={props.gameData.homeTeamIndex} team={homeTeam} oppTeam={awayTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Under'} /> : <></>}
         </Container>
     )
 }
