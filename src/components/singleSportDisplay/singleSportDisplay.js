@@ -37,7 +37,7 @@ const SingleSportDisplay = (props) => {
             <Row>
                 {games ? games.map((game) => {
                     return (
-                        <Col>
+                        <Col xs={12} md={4}>
                             <MatchupCard key={game.id} gameData={game} sportsbook={props.sportsBook} ></MatchupCard>
                         </Col>
                     )

@@ -86,7 +86,7 @@ const OddsDisplayBox = (props) => {
     }, [props.gameData])
     
     return (
-        <Col xs={2} style={{ textAlign: 'center', alignContent: 'center', padding: '5px', borderStyle: 'solid', boxShadow:`inset 0 0 10px ${indexColor}` }}>
+        <Col xs={3} style={{ fontSize: 'small',textAlign: 'center', alignContent: 'center', padding: '5px', borderStyle: 'solid', boxShadow:`inset 0 0 10px ${indexColor}` }}>
             {props.gameData.bookmakers.map((bookmaker) => {
                 if(bookmaker.key === props.sportsbook){
                     return(

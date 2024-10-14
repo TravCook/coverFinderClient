@@ -8,6 +8,7 @@ const NavBar = (props) => {
     const [dropdownTitle, setddTitle] = useState("Select Sportsbook")
     const [dropdownBG, setddBG] = useState('#527595')
     const [dropdownFont, setddFont] = useState('#eef3f3')
+    const [overallWinRate, setOvrWR] = useState()
     const handleDropDownClick = (event) => {
         props.setSportsBook(event.target.id)
         setddTitle(event.target.textContent)
@@ -15,6 +16,15 @@ const NavBar = (props) => {
    const handleNavClick =  (event) => {
     props.setPageSelect(event.target.textContent)
 }
+    const getWinRates = () => {
+        fetch('http://localhost:3001/api/odds/winRates').then((res) => {
+            res.json().then((data) => {
+                console.log(data)
+                setOvrWR(data.overallWinRate)
+            })
+        })
+    }
+    
 
     useEffect(() => {
          switch(props.sportsBook){
@@ -90,6 +100,10 @@ const NavBar = (props) => {
         break;
     }
     }, [props.sportsBook])
+
+    useEffect(()=> {
+        getWinRates()
+    }, [])
 
     return(
     <Navbar>
@@ -190,9 +204,7 @@ const NavBar = (props) => {
                     </Row>
                 </Col>
                 <Col xs={1} style={{display: "flex", justifyContent: "flex-end"}}>
-                    <Button>
-                        Login
-                    </Button>
+                    {overallWinRate ? `Win Rate: ${overallWinRate.toFixed(4)*100}%` : <></>}
                 </Col>
         </Container>
     </Navbar>

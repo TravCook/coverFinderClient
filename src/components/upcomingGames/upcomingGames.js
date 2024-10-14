@@ -50,7 +50,7 @@ const UpcomingGames = (props) => {
 
         <Container fluid >
             <Row >
-                <Col sm={3}>
+                <Col lg={3}>
                 <Row>
                     <Col>
                         <h2>Stat Favorites</h2>
@@ -61,7 +61,7 @@ const UpcomingGames = (props) => {
 
                             return moment(game.commence_time).isBefore(moment().add(6, 'days')) ?
 
-                                <Col>
+                                <Col xs={12}>
                                     <MatchupCard key={game._id} gameData={game} sportsbook={props.sportsBook} ></MatchupCard>
                                 </Col>
                                 : <></>
@@ -69,7 +69,7 @@ const UpcomingGames = (props) => {
                         }) : <> </>}
                     </Row>
                 </Col>
-                <Col sm={6}>
+                <Col lg={6}>
                 <Row>
                     <Col>
                         <h2>Upcoming Games</h2>
@@ -78,7 +78,7 @@ const UpcomingGames = (props) => {
                     <Row>
                         {games ? games.map((game) => {
                             return moment(game.commence_time).isBefore(moment().add(7, 'days')) ?
-                                <Col >
+                                <Col xs={12} md={6}>
                                     <MatchupCard key={game._id} gameData={game} sportsbook={props.sportsBook} ></MatchupCard>
                                 </Col>
                                 : <></>
@@ -86,7 +86,7 @@ const UpcomingGames = (props) => {
                     </Row>
 
                 </Col>
-                <Col sm={3}>
+                <Col lg={3}>
                 <Row>
                     <Col>
                         <h2>Bad Teams</h2>
@@ -96,7 +96,7 @@ const UpcomingGames = (props) => {
                         {lowIndex ? lowIndex.map((game) => {
                             return moment(game.commence_time).isBefore(moment().add(6, 'days')) ?
 
-                                <Col>
+                                <Col xs={12}>
                                     <MatchupCard key={game._id} gameData={game} sportsbook={props.sportsBook} ></MatchupCard>
                                 </Col>
 

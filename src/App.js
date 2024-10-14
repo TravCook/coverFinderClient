@@ -1,6 +1,5 @@
-import logo from './logo.svg';
 import './App.css';
-import {useState, useEffect} from 'react';
+import {useState} from 'react';
 import NavBar from './components/navbar/navbar';
 import UpcomingGames from './components/upcomingGames/upcomingGames';
 import SingleSportDisplay from './components/singleSportDisplay/singleSportDisplay';
