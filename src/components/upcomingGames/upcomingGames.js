@@ -44,8 +44,6 @@ const UpcomingGames = (props) => {
         lowIndexGet()
     }, [])
 
-
-
     return (
 
         <Container fluid >
