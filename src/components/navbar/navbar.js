@@ -204,7 +204,7 @@ const NavBar = (props) => {
                     </Row>
                 </Col>
                 <Col xs={1} style={{display: "flex", justifyContent: "flex-end"}}>
-                    {overallWinRate ? `Win Rate: ${overallWinRate.toFixed(4)*100}%` : <></>}
+                    {overallWinRate ? `Win Rate: ${overallWinRate.toFixed(3)*100}%` : <></>}
                 </Col>
         </Container>
     </Navbar>
