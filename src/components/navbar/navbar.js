@@ -12,9 +12,7 @@ const NavBar = (props) => {
         props.setSportsBook(event.target.id)
         setddTitle(event.target.textContent)
    }
-   const handleNavClick =  (event) => {
-    props.setPageSelect(event.target.textContent)
-}
+
 
     
 
@@ -94,41 +92,14 @@ const NavBar = (props) => {
     }, [props.sportsBook])
 
 
-
     return(
     <Navbar>
         <Container fluid>
-                <Col xs={1} style={{display: "flex", justifyContent: "center" }} >
+                <Col style={{textAlign: 'left'}} >
                     BETTOR
                 </Col>
-                <Col xs={1} style={{display: "flex", justifyContent: "flex-start" }} >
-                    <Row style={{alignItems: "center"}} >
-                        <Col>
-                            <Dropdown>
-                                <DropdownToggle id="sportbookDropdown" style={{backgroundColor: dropdownBG, borderColor: dropdownBG, color: dropdownFont}}>
-                                    {dropdownTitle}
-                                </DropdownToggle>
-                                <DropdownMenu>
-                                    <DropdownItem id="draftkings" onClick={handleDropDownClick}>DraftKings</DropdownItem>
-                                    <DropdownItem id="betmgm" onClick={handleDropDownClick}>Bet MGM</DropdownItem>
-                                    <DropdownItem id="fanduel" onClick={handleDropDownClick}>Fan Duel</DropdownItem>
-                                    <DropdownItem id="williamhill_us" onClick={handleDropDownClick}>Caesars</DropdownItem>
-                                    <DropdownItem id="betrivers" onClick={handleDropDownClick}>BetRivers</DropdownItem>
-                                    <DropdownItem id="unibet_us" onClick={handleDropDownClick}>Unibet</DropdownItem>
-                                    <DropdownItem id="betonlineag" onClick={handleDropDownClick}>BetOnline.ag</DropdownItem>
-                                    <DropdownItem id="lowvig" onClick={handleDropDownClick}>LowVig.ag</DropdownItem>
-                                    <DropdownItem id="mybookieag" onClick={handleDropDownClick}>MyBookie.ag</DropdownItem>
-                                    <DropdownItem id="wynnbet" onClick={handleDropDownClick}>WynnBet</DropdownItem>
-                                    <DropdownItem id="bovada" onClick={handleDropDownClick}>Bovada</DropdownItem>
-                                    <DropdownItem id="betus" onClick={handleDropDownClick}>BetUS</DropdownItem>
-                                    <DropdownItem id="superbook" onClick={handleDropDownClick}>SuperBook</DropdownItem>
-                                    <DropdownItem id="pointsbetus" onClick={handleDropDownClick}>PointsBet (US)</DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </Col>
-                    </Row>
-                </Col>
-                {/* TODO: TURN THESE BUTTONS INTO A FILTER MENU */}
+
+                {/* TODO: TURN THESE BUTTONS INTO A FILTER MENU
                 <Col xs={9} style={{display: "flex", justifyContent: "space-around"}} >
                     <Row style={{alignItems: "center"}} >
                         <Col>
@@ -190,6 +161,34 @@ const NavBar = (props) => {
                                     </Col>
                                 </Row>
                             </Button>
+                        </Col>
+                    </Row>
+                </Col> */}
+
+                <Col style={{textAlign: 'right'}} >
+                    <Row >
+                        <Col >
+                            <Dropdown align='end' >
+                                <DropdownToggle id="sportbookDropdown" style={{backgroundColor: dropdownBG, borderColor: dropdownBG, color: dropdownFont}} >
+                                    {dropdownTitle}
+                                </DropdownToggle>
+                                <DropdownMenu >
+                                    <DropdownItem id="draftkings" onClick={handleDropDownClick}>DraftKings</DropdownItem>
+                                    <DropdownItem id="betmgm" onClick={handleDropDownClick}>Bet MGM</DropdownItem>
+                                    <DropdownItem id="fanduel" onClick={handleDropDownClick}>Fan Duel</DropdownItem>
+                                    <DropdownItem id="williamhill_us" onClick={handleDropDownClick}>Caesars</DropdownItem>
+                                    <DropdownItem id="betrivers" onClick={handleDropDownClick}>BetRivers</DropdownItem>
+                                    <DropdownItem id="unibet_us" onClick={handleDropDownClick}>Unibet</DropdownItem>
+                                    <DropdownItem id="betonlineag" onClick={handleDropDownClick}>BetOnline.ag</DropdownItem>
+                                    <DropdownItem id="lowvig" onClick={handleDropDownClick}>LowVig.ag</DropdownItem>
+                                    <DropdownItem id="mybookieag" onClick={handleDropDownClick}>MyBookie.ag</DropdownItem>
+                                    <DropdownItem id="wynnbet" onClick={handleDropDownClick}>WynnBet</DropdownItem>
+                                    <DropdownItem id="bovada" onClick={handleDropDownClick}>Bovada</DropdownItem>
+                                    <DropdownItem id="betus" onClick={handleDropDownClick}>BetUS</DropdownItem>
+                                    <DropdownItem id="superbook" onClick={handleDropDownClick}>SuperBook</DropdownItem>
+                                    <DropdownItem id="pointsbetus" onClick={handleDropDownClick}>PointsBet (US)</DropdownItem>
+                                </DropdownMenu>
+                            </Dropdown>
                         </Col>
                     </Row>
                 </Col>

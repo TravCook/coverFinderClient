@@ -3,6 +3,8 @@ import {useState, useEffect} from 'react';
 import NavBar from './components/navbar/navbar';
 import UpcomingGames from './components/upcomingGames/upcomingGames';
 import SingleSportDisplay from './components/singleSportDisplay/singleSportDisplay';
+import {BrowserRouter, Routes, Route} from 'react-router'
+import PastGames from './components/pastGames/pastGames'
 
 
 function App() {
@@ -17,7 +19,13 @@ useEffect(()=> {
   return (
     <div className="App">
       <NavBar sportsBook={sportsBook} setSportsBook={setSportsBook} pageSelect={pageSelect} setPageSelect={setPageSelect} />
-      {pageSelect === 'Home' ? <UpcomingGames  sportsBook={sportsBook} />  : <SingleSportDisplay sportsBook={sportsBook} pageSelect={pageSelect}/> }
+      <BrowserRouter>
+        <Routes>
+          <Route path='/' element={pageSelect === 'Home' ? <UpcomingGames  sportsBook={sportsBook} setPageSelect={setPageSelect}/>  : <SingleSportDisplay sportsBook={sportsBook} pageSelect={pageSelect}/>} />
+          <Route path='/pastgames' element={<PastGames />}/>
+        </Routes>
+      </BrowserRouter>
+      
     </div>
   );
 }

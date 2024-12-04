@@ -34,12 +34,10 @@ const SingleSportDisplay = (props) => {
     return (
 
         <Container fluid >
-            <Row>
+            <Row style={{display: 'flex', justifyContent: 'space-evenly'}}>
                 {games ? games.map((game) => {
                     return (
-                        <Col xs={12} md={4}>
-                            <MatchupCard key={game.id} gameData={game} sportsbook={props.sportsBook} winRates={props.winRates} ></MatchupCard>
-                        </Col>
+                        <MatchupCard  gameData={game} sportsbook={props.sportsBook} winRates={props.winRates} ></MatchupCard>
                     )
                 }) : null}
             </Row>

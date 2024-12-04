@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Col, } from 'react-bootstrap'
+import { Col, Row } from 'react-bootstrap'
 
 const OddsDisplayBox = (props) => {
     // const [spreadIndex, setspreadIndex] = useState(0)
@@ -86,7 +86,9 @@ const OddsDisplayBox = (props) => {
     }, [props.gameData])
     
     return (
-        <Col xs={3} style={{ fontSize: 'small',textAlign: 'center', alignContent: 'center', padding: '5px', borderStyle: 'solid', boxShadow:`inset 0 0 10px ${indexColor}` }}>
+        <Col xs={3} style={{ fontSize: 'medium', borderStyle: 'solid', boxShadow:`inset 0 0 10px ${indexColor}` }}>
+            <Row>
+            <Col style={{padding: 0, textAlign: 'center'}}>
             {props.gameData.bookmakers.map((bookmaker) => {
                 if(bookmaker.key === props.sportsbook){
                     return(
@@ -110,6 +112,8 @@ const OddsDisplayBox = (props) => {
                     )
                 }
             })}
+            </Col>
+            </Row>
         </Col>
 
 

@@ -4,7 +4,7 @@ import TeamOddsRow from '../teamOddsRow/teamOddsRow'
 import moment from 'moment'
 
 
-const MatchupCard = (props) => {
+const PastGameCard = (props) => {
     const [homeTeam, setHomeTeam] = useState()
     const [awayTeam, setAwayTeam] = useState()
     const homeTeamGet = () => {
@@ -42,20 +42,24 @@ const MatchupCard = (props) => {
         }
     }, [])
 
+    let backgroundColor
+
+    props.gameData.predictionCorrect ? backgroundColor = '#06402B' : backgroundColor = '#4d0000'
+
     return (
-        <div style={{backgroundColor: '#303036', color: '#D4D2D5',  fontSize: '14px', width: '18rem', borderRight: 'solid', borderLeft: 'solid'}}>
+        <div style={{backgroundColor: backgroundColor, color: '#D4D2D5', borderRadius: '.5em', fontSize: '14px', marginTop: '10px', width: '19rem'}}>
             <Row>
-                <Col style={{ textAlign: 'center', borderStyle: 'solid', borderTopStyle: 'none', borderLeftStyle: 'none', borderRadius: '.25em'}}>
+                <Col style={{ textAlign: 'center', borderStyle: 'solid', borderTopStyle: 'none', borderRadius: '.25em'}}>
                     {moment(props.gameData.commence_time).format('MM/DD/YYYY') === moment().format('MM/DD/YYYY') ? `Today @ ${moment(props.gameData.commence_time).utc().local().format('h:MMa')}` : moment(props.gameData.commence_time).utc().local().format('MMM/DD @ h:MMa')}
                 </Col>
                 <Col style={{textAlign: 'center', padding: '0px'}}>
                     {props.gameData.winPercent ? `${(props.gameData.winPercent * 100).toFixed(2)}%` : `loading`}
                 </Col>
             </Row>
-            {awayTeam ? <TeamOddsRow  teamIndex={props.gameData.awayTeamIndex} team={awayTeam} oppTeam={homeTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Over'} /> : <></>}
-            {homeTeam ? <TeamOddsRow  teamIndex={props.gameData.homeTeamIndex} team={homeTeam} oppTeam={awayTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Under'} /> : <></>}
+            {awayTeam ? <TeamOddsRow  teamIndex={props.gameData.awayTeamIndex} team={awayTeam} oppTeam={homeTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Over'} past='true' score={props.gameData.awayScore}/> : <></>}
+            {homeTeam ? <TeamOddsRow  teamIndex={props.gameData.homeTeamIndex} team={homeTeam} oppTeam={awayTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Under'} past='true' score={props.gameData.homeScore} /> : <></>}
         </div>
     )
 }
 
-export default MatchupCard
+export default PastGameCard
