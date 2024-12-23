@@ -13,7 +13,7 @@ const calculateKellyCriterion = (decimalOdds, impliedProb) => {
 
 // Function to calculate the amount to bet
 const calculateBetAmount = (kellyCriterion, bankroll) => {
-  return `$${((kellyCriterion * bankroll) * 0.25).toFixed(2)}`; // 0.25 multiplier for bet sizing
+  return `$${((kellyCriterion * bankroll)).toFixed(2)}`; // 0.25 multiplier for bet sizing
 };
 
 const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, gameData, sportsbook, total, market, bankroll }) => {
