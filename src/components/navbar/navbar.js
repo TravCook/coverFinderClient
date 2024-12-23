@@ -1,4 +1,4 @@
-import { Navbar, Container, Row, Col, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Button} from "react-bootstrap"
+import { Navbar, Container, Row, Col, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Button, Form, InputGroup} from "react-bootstrap"
 import {useState, useEffect} from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHome, faFootballBall, faBasketballBall, faBaseballBall, faHockeyPuck} from '@fortawesome/free-solid-svg-icons'
@@ -14,7 +14,10 @@ const NavBar = (props) => {
    }
 
 
-    
+    const handleSubmit = (event) => {
+        event.preventDefault()
+        props.setBankroll(event.target.value)
+    }
 
     useEffect(() => {
          switch(props.sportsBook){
@@ -167,6 +170,9 @@ const NavBar = (props) => {
 
                 <Col style={{textAlign: 'right'}} >
                     <Row >
+                        <Col>
+                            <textarea onChange={handleSubmit}>10</textarea>
+                        </Col>
                         <Col >
                             <Dropdown align='end' >
                                 <DropdownToggle id="sportbookDropdown" style={{backgroundColor: dropdownBG, borderColor: dropdownBG, color: dropdownFont}} >

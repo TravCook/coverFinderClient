@@ -48,12 +48,12 @@ const MatchupCard = (props) => {
                 <Col style={{ textAlign: 'center', borderStyle: 'solid', borderTopStyle: 'none', borderLeftStyle: 'none', borderRadius: '.25em'}}>
                     {moment(props.gameData.commence_time).format('MM/DD/YYYY') === moment().format('MM/DD/YYYY') ? `Today @ ${moment(props.gameData.commence_time).utc().local().format('h:MMa')}` : moment(props.gameData.commence_time).utc().local().format('MMM/DD @ h:MMa')}
                 </Col>
-                <Col style={{textAlign: 'center', padding: '0px'}}>
+                <Col style={{textAlign: 'center', padding: '0px', fontSize: 'small'}}>
                     {props.gameData.winPercent ? `${(props.gameData.winPercent * 100).toFixed(2)}%` : `loading`}
                 </Col>
             </Row>
-            {awayTeam ? <TeamOddsRow  teamIndex={props.gameData.awayTeamIndex} team={awayTeam} oppTeam={homeTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Over'} /> : <></>}
-            {homeTeam ? <TeamOddsRow  teamIndex={props.gameData.homeTeamIndex} team={homeTeam} oppTeam={awayTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Under'} /> : <></>}
+            {awayTeam ? <TeamOddsRow market='h2h' bestBets={props.bestBets} setBestBets={props.setBestBets} bankroll={props.bankroll} winPercent={props.gameData.winPercent} teamIndex={props.gameData.awayTeamIndex} oppteamIndex={props.gameData.homeTeamIndex} team={awayTeam} oppTeam={homeTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Over'} /> : <></>}
+            {homeTeam ? <TeamOddsRow market='h2h' bestBets={props.bestBets} setBestBets={props.setBestBets} bankroll={props.bankroll} winPercent={props.gameData.winPercent} teamIndex={props.gameData.homeTeamIndex} oppteamIndex={props.gameData.awayTeamIndex} team={homeTeam} oppTeam={awayTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Under'} /> : <></>}
         </div>
     )
 }

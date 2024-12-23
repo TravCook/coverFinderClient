@@ -73,11 +73,31 @@ const OddsDisplayBox = (props) => {
     },]
 
     const colorPicker = () => {
-        indexColors.map((color) => {
-            if(color.key === props.teamIndex){
-                setIndexColor(color.hexCode)
-            }
-        })
+        if(props.teamIndex <= 0){
+            setIndexColor('#f20707')
+        }else if (props.teamIndex > 0 && props.teamIndex <= 1){
+            setIndexColor('#f33b09')
+        }else if (props.teamIndex > 1 && props.teamIndex <= 2){
+            setIndexColor('#f3600a')
+        }else if (props.teamIndex > 2 && props.teamIndex <= 3){
+            setIndexColor('#f48a0b')
+        }else if (props.teamIndex > 3 && props.teamIndex <= 4){
+            setIndexColor('#f5be0d')
+        }else if (props.teamIndex > 4 && props.teamIndex <= 5){
+            setIndexColor('#f5f20e')
+        }else if (props.teamIndex > 5 && props.teamIndex <= 6){
+            setIndexColor('#f5cc0d')
+        }else if (props.teamIndex > 6 && props.teamIndex <= 7){
+            setIndexColor('#aede09')
+        }else if (props.teamIndex > 7 && props.teamIndex <= 8){
+            setIndexColor('#77ec05')
+        }else if (props.teamIndex > 8 && props.teamIndex <= 9){
+            setIndexColor('#59f403')
+        }else if (props.teamIndex > 9 && props.teamIndex <= 10){
+            setIndexColor('#47f802')
+        }else if (props.teamIndex > 10){
+            setIndexColor('#2cff00')
+        }
     }
 
 
@@ -86,7 +106,7 @@ const OddsDisplayBox = (props) => {
     }, [props.gameData])
     
     return (
-        <Col xs={3} style={{ fontSize: 'medium', borderStyle: 'solid', boxShadow:`inset 0 0 10px ${indexColor}` }}>
+        <Col xs={2} style={{ fontSize: 'small', borderStyle: 'solid', boxShadow:`inset 0 0 10px ${indexColor}` }}>
             <Row>
             <Col style={{padding: 0, textAlign: 'center'}}>
             {props.gameData.bookmakers.map((bookmaker) => {

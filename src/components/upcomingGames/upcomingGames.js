@@ -79,23 +79,26 @@ const UpcomingGames = (props) => {
                 <Col xs={12} md={9}>
                     <Row>
                         <Row>
-                            <Row>High Win Chance</Row>
+                            <Row>
+                                <Col>High Win Chance
+                                </Col>
+                            </Row>
                             <Row style={{overflowX: 'scroll', flexWrap: 'nowrap', scrollbarWidth: 'thin' }}>
                                {games ? games.filter((game)=> game.winPercent >= .60).filter((game) => moment(game.commence_time).local().isBefore(moment().add(1, 'days'))).sort((a, b) => a.winPercent === b.winPercent ? b.commence_time - a.commence_time : b.winPercent - a.winPercent).map((game) => {
-                                console.log(game)
                                     return (
-                                            <MatchupCard gameData={game} sportsbook={props.sportsBook} ></MatchupCard>
+                                            <MatchupCard bankroll={props.bankroll} gameData={game} sportsbook={props.sportsBook} ></MatchupCard>
                                     ) 
                                 }) : null}
                             </Row>
                         </Row>
                         <Row>
-                            <Row>High Stat Disparity</Row>
+                            <Row>
+                                <Col>High Stat Disparity</Col>
+                                </Row>
                             <Row style={{ overflowX: 'scroll', flexWrap: 'nowrap', scrollbarWidth: 'thin' }}>
                             {games ? games.filter((game)=> (game.homeTeamIndex - game.awayTeamIndex) > 5 || (game.awayTeamIndex - game.homeTeamIndex) > 5).filter((game) => moment(game.commence_time).local().isBefore(moment().add(1, 'days'))).sort((a, b) => a.winPercent === b.winPercent ? b.commence_time - a.commence_time : b.winPercent - a.winPercent).map((game) => {
-                                console.log(game)
                                     return (
-                                            <MatchupCard gameData={game} sportsbook={props.sportsBook} ></MatchupCard>
+                                            <MatchupCard bankroll={props.bankroll} gameData={game} sportsbook={props.sportsBook} ></MatchupCard>
                                     )
                                 }) : null}
                             </Row>
@@ -109,14 +112,14 @@ const UpcomingGames = (props) => {
                                                 <Row>
                                                     <Row>
                                                         <Col>{`Upcoming ${sport.league} Games`}</Col>
-                                                        <Col style={{textAlign: 'right'}}>
+                                                        <Col  xs={4} style={{textAlign: 'right'}}>
                                                             <Button id={sport.espnSport} style={{backgroundColor: '#0A0A0B', borderColor: '#0A0A0B'}} onClick={handleClick}>see more</Button>
                                                         </Col>
                                                     </Row>
                                                     <Row style={{ overflowX: 'scroll', flexWrap: 'nowrap', scrollbarWidth: 'thin' }}>
                                                         {games ? games.filter((game) => game.sport_title === sport.league).filter((game) => moment(game.commence_time).local().isBefore(moment().add(6, 'days'))).map((game, idx) => {
                                                             return (
-                                                                    <MatchupCard gameData={game} sportsbook={props.sportsBook} ></MatchupCard>
+                                                                    <MatchupCard bankroll={props.bankroll} gameData={game} sportsbook={props.sportsBook} ></MatchupCard>
                                                             )
                                                         }) : null}
                                                     </Row>
@@ -133,13 +136,13 @@ const UpcomingGames = (props) => {
                                                 <Row>
                                                     <Row>
                                                     <Col>{`Upcoming ${sport.league} Games`}</Col>
-                                                        <Col>
+                                                        <Col sm={2}>
                                                             <Button>see more</Button>
                                                         </Col>
                                                     </Row>
                                                     <Row>{games ? games.filter((game) => game.sport_title === sport.league).filter((game) => moment(game.commence_time).local().isBefore(moment().add(1, 'days'))).map((game, idx) => {
                                                         return (
-                                                                <MatchupCard gameData={game} sportsbook={props.sportsBook} ></MatchupCard>
+                                                                <MatchupCard bankroll={props.bankroll} gameData={game} sportsbook={props.sportsBook} ></MatchupCard>
                                                         )
                                                     }) : null}</Row>
                                                 </Row>

@@ -10,6 +10,7 @@ import PastGames from './components/pastGames/pastGames'
 function App() {
   const [pageSelect, setPageSelect] = useState('Home')
   const [sportsBook, setSportsBook] = useState('fanduel')
+  const [bankroll, setBankroll] = useState(10)
 
 
 useEffect(()=> {
@@ -18,10 +19,10 @@ useEffect(()=> {
 
   return (
     <div className="App">
-      <NavBar sportsBook={sportsBook} setSportsBook={setSportsBook} pageSelect={pageSelect} setPageSelect={setPageSelect} />
+      <NavBar setBankroll={setBankroll} sportsBook={sportsBook} setSportsBook={setSportsBook} pageSelect={pageSelect} setPageSelect={setPageSelect} />
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={pageSelect === 'Home' ? <UpcomingGames  sportsBook={sportsBook} setPageSelect={setPageSelect}/>  : <SingleSportDisplay sportsBook={sportsBook} pageSelect={pageSelect}/>} />
+          <Route path='/' element={pageSelect === 'Home' ? <UpcomingGames bankroll={bankroll} sportsBook={sportsBook} setPageSelect={setPageSelect}/>  : <SingleSportDisplay sportsBook={sportsBook} pageSelect={pageSelect}/>} />
           <Route path='/pastgames' element={<PastGames />}/>
         </Routes>
       </BrowserRouter>
