@@ -1,61 +1,87 @@
-import { useEffect, useState } from 'react'
-import { Col, Row, Container } from 'react-bootstrap'
-import TeamOddsRow from '../teamOddsRow/teamOddsRow'
-import moment from 'moment'
+import { useEffect, useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import TeamOddsRow from '../teamOddsRow/teamOddsRow';
+import moment from 'moment';
 
+const MatchupCard = ({ gameData, bestBets, setBestBets, bankroll, sportsbook }) => {
+  const [homeTeam, setHomeTeam] = useState(null);
+  const [awayTeam, setAwayTeam] = useState(null);
 
-const MatchupCard = (props) => {
-    const [homeTeam, setHomeTeam] = useState()
-    const [awayTeam, setAwayTeam] = useState()
-    const homeTeamGet = () => {
-        fetch('http://localhost:3001/api/teams/search', {
-            method: 'POST',
-            body: JSON.stringify({
-                searchTeam: props.gameData.home_team
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        }).then((res) => res.json()).then((data) => {
-            data ? setHomeTeam(data) : setHomeTeam(null)
-        })
+  // Helper function to fetch team data
+  const fetchTeamData = (teamName, setTeam) => {
+    fetch('http://localhost:3001/api/teams/search', {
+      method: 'POST',
+      body: JSON.stringify({ searchTeam: teamName }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8"
+      }
+    })
+      .then((res) => res.json())
+      .then((data) => setTeam(data || null));
+  };
+
+  useEffect(() => {
+    if (gameData?.home_team && gameData?.away_team) {
+      fetchTeamData(gameData.home_team, setHomeTeam);
+      fetchTeamData(gameData.away_team, setAwayTeam);
     }
-    const awayTeamGet = () => {
-        fetch('http://localhost:3001/api/teams/search', {
-            method: 'POST',
-            body: JSON.stringify({
-                searchTeam: props.gameData.away_team
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        }).then((res) => res.json()).then((data) => {
-            data ? setAwayTeam(data) : setAwayTeam(null)
-        })
-    }
+  }, [gameData]); // Dependency on gameData, re-run if it changes
 
+  const formatGameTime = () => {
+    const gameTime = moment(gameData.commence_time).utc().local();
+    return moment(gameData.commence_time).isSame(moment(), 'day') 
+      ? `Today @ ${gameTime.format('h:MMa')}` 
+      : gameTime.format('MMM/DD @ h:MMa');
+  };
 
-    useEffect(() => {
-        if (props.gameData.home_team && props.gameData.away_team) {
-            awayTeamGet()
-            homeTeamGet()
-        }
-    }, [])
+  const winPercent = gameData.winPercent ? `${(gameData.winPercent * 100).toFixed(2)}%` : 'Loading...';
 
-    return (
-        <div style={{backgroundColor: '#303036', color: '#D4D2D5',  fontSize: '14px', width: '18rem', borderRight: 'solid', borderLeft: 'solid'}}>
-            <Row>
-                <Col style={{ textAlign: 'center', borderStyle: 'solid', borderTopStyle: 'none', borderLeftStyle: 'none', borderRadius: '.25em'}}>
-                    {moment(props.gameData.commence_time).format('MM/DD/YYYY') === moment().format('MM/DD/YYYY') ? `Today @ ${moment(props.gameData.commence_time).utc().local().format('h:MMa')}` : moment(props.gameData.commence_time).utc().local().format('MMM/DD @ h:MMa')}
-                </Col>
-                <Col style={{textAlign: 'center', padding: '0px', fontSize: 'small'}}>
-                    {props.gameData.winPercent ? `${(props.gameData.winPercent * 100).toFixed(2)}%` : `loading`}
-                </Col>
-            </Row>
-            {awayTeam ? <TeamOddsRow market='h2h' bestBets={props.bestBets} setBestBets={props.setBestBets} bankroll={props.bankroll} winPercent={props.gameData.winPercent} teamIndex={props.gameData.awayTeamIndex} oppteamIndex={props.gameData.homeTeamIndex} team={awayTeam} oppTeam={homeTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Over'} /> : <></>}
-            {homeTeam ? <TeamOddsRow market='h2h' bestBets={props.bestBets} setBestBets={props.setBestBets} bankroll={props.bankroll} winPercent={props.gameData.winPercent} teamIndex={props.gameData.homeTeamIndex} oppteamIndex={props.gameData.awayTeamIndex} team={homeTeam} oppTeam={awayTeam} gameData={props.gameData} sportsbook={props.sportsbook} total={'Under'} /> : <></>}
-        </div>
-    )
-}
+  return (
+    <div style={{ backgroundColor: '#303036', color: '#D4D2D5', fontSize: '14px', width: '18rem', borderRight: 'solid', borderLeft: 'solid' }}>
+      <Row>
+        <Col style={{ textAlign: 'center', borderStyle: 'solid', borderTopStyle: 'none', borderLeftStyle: 'none', borderRadius: '.25em' }}>
+          {formatGameTime()}
+        </Col>
+        <Col style={{ textAlign: 'center', padding: '0px'}}>
+          {winPercent}
+        </Col>
+      </Row>
+      {awayTeam && (
+        <TeamOddsRow
+          score={gameData.awayScore}
+          market="h2h"
+          bestBets={bestBets}
+          setBestBets={setBestBets}
+          bankroll={bankroll}
+          winPercent={gameData.winPercent}
+          teamIndex={gameData.awayTeamIndex}
+          oppteamIndex={gameData.homeTeamIndex}
+          team={awayTeam}
+          oppTeam={homeTeam}
+          gameData={gameData}
+          sportsbook={sportsbook}
+          total="Over"
+        />
+      )}
+      {homeTeam && (
+        <TeamOddsRow
+          score={gameData.homeScore}
+          market="h2h"
+          bestBets={bestBets}
+          setBestBets={setBestBets}
+          bankroll={bankroll}
+          winPercent={gameData.winPercent}
+          teamIndex={gameData.homeTeamIndex}
+          oppteamIndex={gameData.awayTeamIndex}
+          team={homeTeam}
+          oppTeam={awayTeam}
+          gameData={gameData}
+          sportsbook={sportsbook}
+          total="Under"
+        />
+      )}
+    </div>
+  );
+};
 
-export default MatchupCard
+export default MatchupCard;

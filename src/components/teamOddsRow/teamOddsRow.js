@@ -1,60 +1,67 @@
-import { useEffect, useState } from 'react'
-import { Col, Row } from 'react-bootstrap'
-import OddsDisplayBox from '../oddsDisplayBox/oddsDisplayBox'
+import { Row, Col } from 'react-bootstrap';
+import OddsDisplayBox from '../oddsDisplayBox/oddsDisplayBox';
 
-const TeamOddsRow = (props) => {
+// Function to calculate decimal odds from moneyline odds
+const calculateDecimalOdds = (moneylineOdds) => {
+  return moneylineOdds > 0 ? (moneylineOdds / 100) + 1 : (100 / -moneylineOdds) + 1;
+};
+
+// Function to calculate the Kelley Criterion for bet sizing
+const calculateKellyCriterion = (decimalOdds, impliedProb) => {
+  return (decimalOdds * impliedProb - (1 - impliedProb)) / (decimalOdds - 1);
+};
+
+// Function to calculate the amount to bet
+const calculateBetAmount = (kellyCriterion, bankroll) => {
+  return `$${((kellyCriterion * bankroll) * 0.25).toFixed(2)}`; // 0.25 multiplier for bet sizing
+};
+
+const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, gameData, sportsbook, total, market, bankroll }) => {
+  // Extracting bookmakers data for clarity
+  const bookmakerData = gameData.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
+
+  // Conditionally render row based on whether it's a past or upcoming game
+  const renderOddsDisplay = () => {
+    return bookmakerData?.markets.find(marketItem => marketItem.key === market)?.outcomes.map(outcome => {
+      const outcomeSplit = outcome.name.split(" ");
+      const espnNameSplit = team.espnDisplayName.split(" ");
+      const decimalOdds = calculateDecimalOdds(outcome.price);
+      const kellyCriterion = calculateKellyCriterion(decimalOdds, outcome.impliedProb);
+      const betAmount = calculateBetAmount(kellyCriterion, bankroll);
+
+      // Determine if betAmount should be shown based on the team/total comparison
+      if (outcome.name === team.espnDisplayName || outcome.name === total || outcomeSplit[outcomeSplit.length - 1] === espnNameSplit[espnNameSplit.length - 1]) {
+        return teamIndex > oppteamIndex ? betAmount : null;
+      }
+      return null;
+    });
+  };
+
+  const renderTeamInfo = () => {
     return (
-        props.past ?
-            <Row style={{ marginTop: 5, alignItems: 'center' }}>
-                <Col xs={1}>
-                    <img src={props.team.logo} style={{ width: '20px' }} alt='Team Logo' />
-                </Col>
-                <Col xs={7} style={{ alignContent: 'center' }}>
-                    {props.team ? `${props.team.abbreviation} ${props.team.teamName}` : null}
-                    <sup style={{ marginLeft: 5 }}>{props.teamIndex.toFixed(1)}</sup>
-                </Col>
-                <Col xs={3} style={{ fontSize: 'medium', borderStyle: 'solid', textAlign: 'center' }}>
-                    {props.score}
-                </Col>
-            </Row>
-            :
-            <Row style={{ marginTop: 5, alignItems: 'center', fontSize: '12px' }}>
-                <Col xs={1}>
-                    <img src={props.team.logo} style={{ width: '20px' }} alt='Team Logo' />
-                </Col>
-                <Col xs={7} style={{ alignContent: 'center', fontSize: '10px' }}>
-                    {props.team ? `${props.team.abbreviation} ${props.team.teamName}` : null}
-                    <sup style={{ marginLeft: 5 }}>{props.teamIndex.toFixed(1)}</sup>
-                </Col>
-                <OddsDisplayBox teamIndex={props.teamIndex} key={`${props.team.espnDisplayName} h2h`} team={props.team} oppTeam={props.oppTeam} gameData={props.gameData} sportsbook={props.sportsbook} market='h2h' total={props.total} />
-                <Col xs={1} style={{ alignContent: 'center' }}>
-                    {props.gameData.bookmakers.map((bookmaker) => {
-                        if (bookmaker.key === props.sportsbook) {
-                            return (
-                                bookmaker.markets.map((market) => {
-                                    if (market.key === props.market) {
-                                        return (
-                                            market.outcomes.map((outcome) => {
-                                                let outcomeSplit = outcome.name.split(" ")
-                                                let espnNameSplit = props.team.espnDisplayName.split(" ")
-                                                let kelleyCriterion = ((((outcome.price / 100) + 1) - 1) * props.winPercent - (1 - props.winPercent)) / (((outcome.price / 100) + 1) - 1)
-                                                if (outcome && outcome.name === props.team.espnDisplayName) {
-                                                    return props.teamIndex > props.oppteamIndex ? `$${((kelleyCriterion * props.bankroll) * .25).toFixed(2)}` : null
-                                                } else if (outcome.name === props.total) {
-                                                    return props.teamIndex > props.oppteamIndex ? `$${((kelleyCriterion * props.bankroll) * .25).toFixed(2)}` : null
-                                                } else if (outcomeSplit[outcomeSplit.length - 1] === espnNameSplit[espnNameSplit.length - 1]) {
-                                                    return props.teamIndex > props.oppteamIndex ? `$${((kelleyCriterion * props.bankroll) * .25).toFixed(2)}` : null
-                                                }
-                                            })
-                                        )
-                                    }
-                                })
-                            )
-                        }
-                    })}
-                </Col>
-            </Row>
-    )
-}
+      <Col xs={7} style={{ alignContent: 'center' }}>
+        {team ? `${team.abbreviation} ${team.teamName}` : null}
+        <sup style={{ marginLeft: 5 }}>{teamIndex.toFixed(1)}</sup>
+      </Col>
+    );
+  };
 
-export default TeamOddsRow
+  return (
+    <Row style={{ marginTop: 5, alignItems: 'center', fontSize: '12px' }}>
+      <Col xs={1}>
+        <img src={team.logo} style={{ width: '20px' }} alt='Team Logo' />
+      </Col>
+      {renderTeamInfo()}
+      <Col xs={2} style={{ textAlign: 'center', padding: 5 }}>
+        {past ? `${score}` : <OddsDisplayBox teamIndex={teamIndex} key={`${team.espnDisplayName} h2h`} team={team} oppTeam={oppTeam} gameData={gameData} sportsbook={sportsbook} market='h2h' total={total} />}
+      </Col>
+      {!past && (
+        <Col xs={1} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+          {renderOddsDisplay()}
+        </Col>
+      )}
+    </Row>
+  );
+};
+
+export default TeamOddsRow;

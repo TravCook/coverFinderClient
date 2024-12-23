@@ -1,207 +1,108 @@
-import { Navbar, Container, Row, Col, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Button, Form, InputGroup} from "react-bootstrap"
-import {useState, useEffect} from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHome, faFootballBall, faBasketballBall, faBaseballBall, faHockeyPuck} from '@fortawesome/free-solid-svg-icons'
+import { Navbar, Container, Row, Col, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, InputGroup, FormControl } from "react-bootstrap"
+import { useState, useEffect } from 'react'
 
 const NavBar = (props) => {
+    const [dropdownTitle, setDropdownTitle] = useState("Select Sportsbook")
+    const [dropdownBG, setDropdownBG] = useState('#527595')
+    const [dropdownFont, setDropdownFont] = useState('#eef3f3')
+    const [bankroll, setBankroll] = useState('10') // Default bankroll set to 10
 
-    const [dropdownTitle, setddTitle] = useState("Select Sportsbook")
-    const [dropdownBG, setddBG] = useState('#527595')
-    const [dropdownFont, setddFont] = useState('#eef3f3')
     const handleDropDownClick = (event) => {
         props.setSportsBook(event.target.id)
-        setddTitle(event.target.textContent)
-   }
-
+        setDropdownTitle(event.target.textContent)
+    }
 
     const handleSubmit = (event) => {
-        event.preventDefault()
+        setBankroll(event.target.value)
         props.setBankroll(event.target.value)
     }
 
-    useEffect(() => {
-         switch(props.sportsBook){
-        case 'draftkings':
-            setddBG('#61b510')
-            setddFont('#eef3f3')
-            setddTitle('DraftKings')
-        break;
-        case 'betmgm':
-            setddBG('#dbc172')
-            setddFont('#2b3143')
-            setddTitle('Bet MGM')
-        break;
-        case 'fanduel':
-            setddBG('#0070eb')
-            setddFont('#eef3f3')
-            setddTitle('Fan Duel')
-        break;
-        case 'williamhill_us':
-            setddBG('#223c2e')
-            setddFont('#eef3f3')
-            setddTitle('Caesars')
-        break;
-        case 'betrivers':
-            setddBG('#1a365d')
-            setddFont('#eef3f3')
-            setddTitle('BetRivers')
-        break;
-        case 'unibet_us':
-            setddBG('#147b45')
-            setddFont('#eef3f3')
-            setddTitle('Unibet')
-        break;
-        case 'betonlineag':
-            setddBG('#2d2e2c')
-            setddFont('#eef3f3')
-            setddTitle('BetOnline.ag')
-        break;
-        case 'lowvig':
-            setddBG('#01153d')
-            setddFont('#eef3f3')
-            setddTitle('LowVig.ag')
-        break;
-        case 'mybookieag':
-            setddBG('#ff8300')
-            setddFont('#eef3f3')
-            setddTitle('MyBookie.ag')
-        break;
-        case 'wynnbet':
-            setddBG('#ff8300')
-            setddFont('#eef3f3')
-            setddTitle('WynnBet')
-        break;
-        case 'bovada':
-            setddBG('#cc0000')
-            setddFont('#eef3f3')
-            setddTitle('Bovada')
-        break;
-        case 'betus':
-            setddBG('#223e71')
-            setddFont('#eef3f3')
-            setddTitle('BetUS')
-        break;
-        case 'superbook':
-            setddBG('#e5b724')
-            setddFont('#eef3f3')
-            setddTitle('SuperBook')
-        break;
-        case 'pointsbetus':
-            setddBG('#ed1b42')
-            setddFont('#eef3f3')
-            setddTitle('PointsBet (US)')
-        break;
+    const setDropdownStyles = (sportsbook) => {
+        const colors = {
+            draftkings: { bg: '#61b510', font: '#eef3f3' },
+            betmgm: { bg: '#dbc172', font: '#2b3143' },
+            fanduel: { bg: '#0070eb', font: '#eef3f3' },
+            williamhill_us: { bg: '#223c2e', font: '#eef3f3' },
+            betrivers: { bg: '#1a365d', font: '#eef3f3' },
+            unibet_us: { bg: '#147b45', font: '#eef3f3' },
+            betonlineag: { bg: '#2d2e2c', font: '#eef3f3' },
+            lowvig: { bg: '#01153d', font: '#eef3f3' },
+            mybookieag: { bg: '#ff8300', font: '#eef3f3' },
+            wynnbet: { bg: '#ff8300', font: '#eef3f3' },
+            bovada: { bg: '#cc0000', font: '#eef3f3' },
+            betus: { bg: '#223e71', font: '#eef3f3' },
+            superbook: { bg: '#e5b724', font: '#eef3f3' },
+            pointsbetus: { bg: '#ed1b42', font: '#eef3f3' }
+        }
+        return colors[sportsbook] || { bg: '#527595', font: '#eef3f3' }
     }
+
+    useEffect(() => {
+        const { bg, font } = setDropdownStyles(props.sportsBook)
+        setDropdownBG(bg)
+        setDropdownFont(font)
+        setDropdownTitle(props.sportsBook)
     }, [props.sportsBook])
 
-
-    return(
-    <Navbar>
-        <Container fluid>
-                <Col style={{textAlign: 'left'}} >
+    return (
+        <Navbar>
+            <Container fluid>
+                <Col style={{ textAlign: 'left' }}>
                     BETTOR
                 </Col>
 
-                {/* TODO: TURN THESE BUTTONS INTO A FILTER MENU
-                <Col xs={9} style={{display: "flex", justifyContent: "space-around"}} >
-                    <Row style={{alignItems: "center"}} >
-                        <Col>
-                            <Button onClick={handleNavClick} style={{fontSize: 'x-small'}}>
-                                <Row>
-                                    <Col xs={1} style={{padding: 4}}>
-                                        <FontAwesomeIcon icon={faHome} />
-                                    </Col>
-                                    <Col xs={10} style={{alignContent: 'center'}}>
-                                        Home
-                                    </Col>
-                                </Row>
-                            </Button>
-                        </Col>
-                        <Col>
-                            <Button onClick={handleNavClick} style={{fontSize: 'x-small'}}>
-                            <Row>
-                                    <Col xs={1} style={{padding: 5}}>
-                                        <FontAwesomeIcon icon={faFootballBall} />
-                                    </Col>
-                                    <Col xs={10} style={{alignContent: 'center'}}>
-                                        Football
-                                    </Col>
-                                </Row>
-                            </Button>
-                        </Col>
-                        <Col>
-                            <Button onClick={handleNavClick} style={{fontSize: 'x-small'}}>
-                            <Row>
-                                    <Col xs={1} style={{padding: 5}}>
-                                        <FontAwesomeIcon icon={faBaseballBall} />
-                                    </Col>
-                                    <Col xs={10} style={{alignContent: 'center'}}>
-                                        Baseball
-                                    </Col>
-                                </Row>
-                            </Button>
-                        </Col>
-                        <Col>
-                            <Button onClick={handleNavClick} style={{fontSize: 'x-small'}} >
-                            <Row>
-                                    <Col xs={1} style={{padding: 5}}>
-                                        <FontAwesomeIcon icon={faHockeyPuck} />
-                                    </Col>
-                                    <Col xs={10} style={{alignContent: 'center'}}>
-                                        Hockey
-                                    </Col>
-                                </Row>
-                            </Button>
-                        </Col>
-                        <Col>
-                            <Button onClick={handleNavClick} style={{fontSize: 'x-small'}}>
-                            <Row>
-                                    <Col xs={1} style={{padding: 5}}>
-                                        <FontAwesomeIcon icon={faBasketballBall} />
-                                    </Col>
-                                    <Col xs={10} style={{alignContent: 'center'}}>
-                                        Basketball
-                                    </Col>
-                                </Row>
-                            </Button>
-                        </Col>
+                {/* Filter Menu Placeholder - Remove if unnecessary */}
+                {/* <Col xs={9} style={{ display: "flex", justifyContent: "space-around" }}>
+                    <Row style={{ alignItems: "center" }}>
+                        <Col>...</Col>
                     </Row>
                 </Col> */}
 
-                <Col style={{textAlign: 'right'}} >
-                    <Row >
+                <Col style={{ textAlign: 'right' }}>
+                    <Row>
                         <Col>
-                            <textarea onChange={handleSubmit}>10</textarea>
+                            <InputGroup>
+                                <FormControl
+                                    type="number"
+                                    value={bankroll}
+                                    onChange={handleSubmit}
+                                    min="1"
+                                    max="10000"
+                                    step="1"
+                                    placeholder="Enter Bankroll"
+                                />
+                            </InputGroup>
                         </Col>
-                        <Col >
-                            <Dropdown align='end' >
-                                <DropdownToggle id="sportbookDropdown" style={{backgroundColor: dropdownBG, borderColor: dropdownBG, color: dropdownFont}} >
+                        <Col>
+                            <Dropdown align='end'>
+                                <DropdownToggle
+                                    id="sportbookDropdown"
+                                    style={{
+                                        backgroundColor: dropdownBG,
+                                        borderColor: dropdownBG,
+                                        color: dropdownFont
+                                    }}
+                                >
                                     {dropdownTitle}
                                 </DropdownToggle>
-                                <DropdownMenu >
-                                    <DropdownItem id="draftkings" onClick={handleDropDownClick}>DraftKings</DropdownItem>
-                                    <DropdownItem id="betmgm" onClick={handleDropDownClick}>Bet MGM</DropdownItem>
-                                    <DropdownItem id="fanduel" onClick={handleDropDownClick}>Fan Duel</DropdownItem>
-                                    <DropdownItem id="williamhill_us" onClick={handleDropDownClick}>Caesars</DropdownItem>
-                                    <DropdownItem id="betrivers" onClick={handleDropDownClick}>BetRivers</DropdownItem>
-                                    <DropdownItem id="unibet_us" onClick={handleDropDownClick}>Unibet</DropdownItem>
-                                    <DropdownItem id="betonlineag" onClick={handleDropDownClick}>BetOnline.ag</DropdownItem>
-                                    <DropdownItem id="lowvig" onClick={handleDropDownClick}>LowVig.ag</DropdownItem>
-                                    <DropdownItem id="mybookieag" onClick={handleDropDownClick}>MyBookie.ag</DropdownItem>
-                                    <DropdownItem id="wynnbet" onClick={handleDropDownClick}>WynnBet</DropdownItem>
-                                    <DropdownItem id="bovada" onClick={handleDropDownClick}>Bovada</DropdownItem>
-                                    <DropdownItem id="betus" onClick={handleDropDownClick}>BetUS</DropdownItem>
-                                    <DropdownItem id="superbook" onClick={handleDropDownClick}>SuperBook</DropdownItem>
-                                    <DropdownItem id="pointsbetus" onClick={handleDropDownClick}>PointsBet (US)</DropdownItem>
+                                <DropdownMenu>
+                                    {['draftkings', 'betmgm', 'fanduel', 'williamhill_us', 'betrivers', 'unibet_us', 'betonlineag', 'lowvig', 'mybookieag', 'wynnbet', 'bovada', 'betus', 'superbook', 'pointsbetus'].map((sportsbook) => (
+                                        <DropdownItem
+                                            key={sportsbook}
+                                            id={sportsbook}
+                                            onClick={handleDropDownClick}
+                                        >
+                                            {sportsbook.charAt(0).toUpperCase() + sportsbook.slice(1).replace(/_/g, ' ')}
+                                        </DropdownItem>
+                                    ))}
                                 </DropdownMenu>
                             </Dropdown>
                         </Col>
                     </Row>
                 </Col>
-        </Container>
-    </Navbar>
+            </Container>
+        </Navbar>
     )
-
 }
 
 export default NavBar
