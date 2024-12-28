@@ -4,7 +4,6 @@ import PastGameCard from '../pastGameCard/pastGameCard.js'
 import moment from 'moment'
 
 const PastGamesDisplay = (props) => {
-    const [games, setGames] = useState([])
     const [filteredGames, setFilteredGames] = useState([])
     const [searchFilter, setSearchFilter] = useState({
         startDate: '',
@@ -18,28 +17,11 @@ const PastGamesDisplay = (props) => {
     const [currentPage, setCurrentPage] = useState(1)
     const gamesPerPage = 10
 
-    const pastGamesGet = () => {
-        fetch('http://localhost:3001/api/odds/pastGameOdds', {
-            method: 'POST',
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        })
-        .then((res) => res.json())
-        .then((data) => {
-            let sortedData = data.sort((a, b) => moment.utc(b.commence_time) - moment.utc(a.commence_time))
-            setGames(sortedData)
-            setFilteredGames(sortedData)
-        })
-    }
 
-    useEffect(() => {
-        pastGamesGet()
-    }, [])
 
     useEffect(() => {
         // Filter games based on the searchFilter
-        const filtered = games.filter((game) => {
+        const filtered = props.games.filter((game) => {
             const gameDate = moment.utc(game.commence_time)
             const isWithinDateRange = (!searchFilter.startDate || gameDate.isAfter(moment(searchFilter.startDate))) &&
                                       (!searchFilter.endDate || gameDate.isBefore(moment(searchFilter.endDate)))
@@ -49,7 +31,7 @@ const PastGamesDisplay = (props) => {
             return isWithinDateRange && isWithinHomeIndex && isWithinAwayIndex && isWithinWinPercentRange
         })
         setFilteredGames(filtered)
-    }, [searchFilter, games])
+    }, [searchFilter, props.games])
 
     // Pagination Logic
     // const lastIndex = currentPage * gamesPerPage
@@ -92,14 +74,14 @@ const PastGamesDisplay = (props) => {
                 </Col>
                 <Col>
                     <Row>
-                        {games ? `${((games.filter((game) => game.predictionCorrect).length / games.length) * 100).toFixed(2)}%` : null}
+                        {props.games ? `${((props.games.filter((game) => game.predictionCorrect).length / props.games.length) * 100).toFixed(2)}%` : null}
                     </Row>
                 </Col>
             </Row>
 
             {/* Games List */}
             <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
-                {games.map((game) => (
+                {props.games.map((game) => (
                     <PastGameCard key={game.id} gameData={game} sportsbook={props.sportsBook} winRates={props.winRates} />
                 ))}
             </Row>

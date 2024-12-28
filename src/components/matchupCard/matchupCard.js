@@ -3,7 +3,7 @@ import { Col, Row } from 'react-bootstrap';
 import TeamOddsRow from '../teamOddsRow/teamOddsRow';
 import moment from 'moment';
 
-const MatchupCard = ({ gameData, bestBets, setBestBets, bankroll, sportsbook }) => {
+const MatchupCard = ({ gameData, bestBets, setBestBets, bankroll, sportsbook}) => {
   const [homeTeam, setHomeTeam] = useState(null);
   const [awayTeam, setAwayTeam] = useState(null);
 

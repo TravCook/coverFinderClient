@@ -11,12 +11,13 @@ const calculateKellyCriterion = (decimalOdds, impliedProb) => {
   return (decimalOdds * impliedProb - (1 - impliedProb)) / (decimalOdds - 1);
 };
 
+
 // Function to calculate the amount to bet
 const calculateBetAmount = (kellyCriterion, bankroll) => {
   return `$${((kellyCriterion * bankroll)).toFixed(2)}`; // 0.25 multiplier for bet sizing
 };
 
-const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, gameData, sportsbook, total, market, bankroll }) => {
+const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, gameData, sportsbook, total, market, bankroll}) => {
   // Extracting bookmakers data for clarity
   const bookmakerData = gameData.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
 
@@ -41,7 +42,7 @@ const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, game
     return (
       <Col xs={7} style={{ alignContent: 'center' }}>
         {team ? `${team.abbreviation} ${team.teamName}` : null}
-        <sup style={{ marginLeft: 5 }}>{teamIndex.toFixed(1)}</sup>
+        <sup style={{ marginLeft: 5 }}>{(teamIndex * 10).toFixed(2).padEnd(4, '0')}</sup>
       </Col>
     );
   };

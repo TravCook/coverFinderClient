@@ -3,8 +3,7 @@ import { Container, Row, Col, Button } from 'react-bootstrap';
 import MatchupCard from '../matchupCard/matchupCard.js';
 import moment from 'moment';
 
-const UpcomingGames = ({ bankroll, sportsBook, setPageSelect }) => {
-  const [games, setGames] = useState([]);
+const UpcomingGames = ({ bankroll, sportsBook, setPageSelect, games, betAmount }) => {
   const sports = [
     { name: "americanfootball_nfl", espnSport: 'Football', league: 'NFL', startMonth: 9, endMonth: 2, multiYear: true, statYear: 2024 },
     { name: "americanfootball_ncaaf", espnSport: 'Football', league: 'NCAAF', startMonth: 9, endMonth: 1, multiYear: true, statYear: 2024 },
@@ -13,24 +12,11 @@ const UpcomingGames = ({ bankroll, sportsBook, setPageSelect }) => {
     { name: "baseball_mlb", espnSport: 'Baseball', league: 'MLB', startMonth: 3, endMonth: 10, multiYear: false, statYear: 2024 },
   ];
 
-  const upcomingGamesGet = () => {
-    fetch('http://localhost:3001/api/odds')
-      .then((res) => res.json())
-      .then((data) => {
-        const sortedData = data.sort((a, b) => moment.utc(a.commence_time) === moment.utc(b.commence_time)
-          ? a.winPercent - b.winPercent
-          : moment.utc(a.commence_time) - moment.utc(b.commence_time));
-        setGames(sortedData);
-      });
-  };
-
   const handleClick = (event) => {
     setPageSelect(event.target.id);
   };
 
-  useEffect(() => {
-    upcomingGamesGet();
-  }, []);
+
 
   const filterAndMapGames = (condition) => {
     return games?.filter(condition).map((game) => (
@@ -61,7 +47,7 @@ const UpcomingGames = ({ bankroll, sportsBook, setPageSelect }) => {
   return (
     <Container fluid>
       <Row>
-        <Col xs={12} md={9}>
+        <Col>
           {/* High Win Chance Section */}
           <Row>
             <Col>High Win Chance</Col>
@@ -75,8 +61,15 @@ const UpcomingGames = ({ bankroll, sportsBook, setPageSelect }) => {
             <Col>High Stat Disparity</Col>
           </Row>
           <Row style={{ overflowX: 'scroll', flexWrap: 'nowrap', scrollbarWidth: 'thin' }}>
-            {filterAndMapGames((game) => Math.abs(game.homeTeamIndex - game.awayTeamIndex) > 5 &&
-              moment(game.commence_time).local().isBefore(moment().add(1, 'days')))}
+            {filterAndMapGames((game) => Math.abs(game.homeTeamIndex - game.awayTeamIndex) > .5 && moment(game.commence_time).local().isBefore(moment().add(1, 'days')))}
+          </Row>
+
+          {/* Close Games Section */}
+          <Row>
+            <Col>Close Games</Col>
+          </Row>
+          <Row style={{ overflowX: 'scroll', flexWrap: 'nowrap', scrollbarWidth: 'thin' }}>
+            {filterAndMapGames((game) => Math.abs(game.homeTeamIndex - game.awayTeamIndex) < .2 && moment(game.commence_time).local().isBefore(moment().add(1, 'days')))}
           </Row>
 
           {/* Upcoming Sports */}
@@ -92,7 +85,7 @@ const UpcomingGames = ({ bankroll, sportsBook, setPageSelect }) => {
           })}
         </Col>
 
-        <Col xs={12} md={3}>
+        {/* <Col xs={12} md={3}>
           <Row>
             <Col style={{ textAlign: 'center' }}>
               Parlay Picker
@@ -101,7 +94,7 @@ const UpcomingGames = ({ bankroll, sportsBook, setPageSelect }) => {
               PARLAY PICKER MODULE WHEN MADE
             </Row>
           </Row>
-        </Col>
+        </Col> */}
       </Row>
     </Container>
   );

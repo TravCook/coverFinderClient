@@ -4,32 +4,94 @@ import { Col, Row } from 'react-bootstrap';
 const OddsDisplayBox = ({ gameData, team, teamIndex, sportsbook, market, total }) => {
   // Predefined color range mapping for teamIndex
   const indexColors = [
-    { key: -10, hexCode: '#f20707' },
-    { key: -9, hexCode: '#f32b08' },
-    { key: -8, hexCode: '#f33b09' },
-    { key: -7, hexCode: '#f34e0a' },
-    { key: -6, hexCode: '#f3600a' },
-    { key: -5, hexCode: '#f4750b' },
-    { key: -4, hexCode: '#f48a0b' },
-    { key: -3, hexCode: '#f5a40c' },
-    { key: -2, hexCode: '#f5be0d' },
-    { key: -1, hexCode: '#f5d80e' },
-    { key: 0, hexCode: '#f5f20e' },
-    { key: 1, hexCode: '#f5df0e' },
-    { key: 2, hexCode: '#f5cc0d' },
-    { key: 3, hexCode: '#d2d50b' },
-    { key: 4, hexCode: '#aede09' },
-    { key: 5, hexCode: '#9ae308' },
-    { key: 6, hexCode: '#77ec05' },
-    { key: 7, hexCode: '#6bef04' },
-    { key: 8, hexCode: '#59f403' },
-    { key: 9, hexCode: '#47f802' },
-    { key: 10, hexCode: '#2cff00' },
+    {
+      key: 0,
+      hexCode: "#f20707"
+    },
+    {
+      key: 2,
+      hexCode: "#f32b08"
+    },
+    {
+      key: 3,
+      hexCode: "#f33b09"
+    },
+    {
+      key: 5,
+      hexCode: "#f34e0a"
+    },
+    {
+      key: 6,
+      hexCode: "#f3600a"
+    },
+    {
+      key: 8,
+      "hexCode": "#f4750b"
+    }, {
+      key: 9,
+      hexCode: "#f48a0b"
+    },
+    {
+      key: 11,
+      hexCode: "#f5a40c"
+    },
+    {
+      key: 12,
+      hexCode: "#f5be0d"
+    },
+    {
+      key: 14,
+      hexCode: "#f5d80e"
+    },
+    {
+      key: 15,
+      hexCode: "#f5f20e"
+    },
+    {
+      key: 17,
+      hexCode: "#f5df0e"
+    },
+    {
+      key: 18,
+      hexCode: "#f5cc0d"
+    },
+    {
+      key: 20,
+      hexCode: "#d2d50b"
+    },
+    {
+      key: 21,
+      hexCode: "#aede09"
+    },
+    {
+      key: 23,
+      hexCode: "#9ae308"
+    },
+    {
+      key: 24,
+      hexCode: "#77ec05"
+    },
+    {
+      key: 26,
+      hexCode: "#6bef04"
+    },
+    {
+      key: 27,
+      hexCode: "#59f403"
+    },
+    {
+      key: 29,
+      hexCode: "#47f802"
+    },
+    {
+      key: 30,
+      hexCode: "#2cff00"
+    }
   ];
 
   // Function to get color based on the team index
   const getColor = (index) => {
-    return indexColors.find(color => index <= color.key)?.hexCode || '#f20707';
+    return indexColors.find(color => index * 10 <= color.key)?.hexCode || '#f20707';
   };
 
   const [indexColor, setIndexColor] = useState(getColor(teamIndex));
@@ -56,7 +118,7 @@ const OddsDisplayBox = ({ gameData, team, teamIndex, sportsbook, market, total }
 
   return (
     <Col xs={12} style={{ borderStyle: 'solid', boxShadow: `inset 0 0 10px ${indexColor}` }}>
-      <Row style={{margin: 0}}>
+      <Row style={{ margin: 0 }}>
         <Col style={{ padding: 0, textAlign: 'center' }}>
           {getOdds()}
         </Col>
