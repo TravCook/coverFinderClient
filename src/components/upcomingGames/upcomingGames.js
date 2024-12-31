@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Container, Row, Col, Button } from 'react-bootstrap';
+import { Container, Row, Col, Button, Card, Collapse } from 'react-bootstrap';
 import MatchupCard from '../matchupCard/matchupCard.js';
+import { useEffect, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faBasketball, faBaseball, faFootball, faHockeyPuck } from '@fortawesome/free-solid-svg-icons'
 import moment from 'moment';
+import { Link } from 'react-router';
 
-const UpcomingGames = ({ bankroll, sportsBook, setPageSelect, games, betAmount }) => {
+const UpcomingGames = ({ bankroll, sportsBook, setPageSelect, games, betType, valueBets, todaysGames }) => {
   const sports = [
     { name: "americanfootball_nfl", espnSport: 'Football', league: 'NFL', startMonth: 9, endMonth: 2, multiYear: true, statYear: 2024 },
     { name: "americanfootball_ncaaf", espnSport: 'Football', league: 'NCAAF', startMonth: 9, endMonth: 1, multiYear: true, statYear: 2024 },
@@ -12,89 +15,285 @@ const UpcomingGames = ({ bankroll, sportsBook, setPageSelect, games, betAmount }
     { name: "baseball_mlb", espnSport: 'Baseball', league: 'MLB', startMonth: 3, endMonth: 10, multiYear: false, statYear: 2024 },
   ];
 
+  const [upcomingGames, setUpcomingGames] = useState()
+
+  // Helper function to fetch team data
+  const fetchTeamData = () => {
+    fetch('http://localhost:3001/api/odds/upcomingGames', {
+      method: 'GET',
+      headers: {
+        "Content-type": "application/json; charset=UTF-8"
+      }
+    })
+      .then((res) => res.json())
+      .then((data) => setUpcomingGames(data));
+  };
+
+  const [open, setOpen] = useState(false);
+
   const handleClick = (event) => {
     setPageSelect(event.target.id);
   };
 
-
-
   const filterAndMapGames = (condition) => {
     return games?.filter(condition).map((game) => (
-      <MatchupCard key={game.id} bankroll={bankroll} gameData={game} sportsbook={sportsBook} />
+      <MatchupCard valueBets={valueBets} todaysGames={todaysGames} betType={betType} key={game.id} bankroll={bankroll} gameData={game} sportsbook={sportsBook} />
     ));
   };
 
-  const renderSportRow = (sport, filterCondition, title, buttonText = 'see more') => {
+  const handleSportSelect = (e) => {
+    console.log(e.target.id)
+  }
+
+  const renderSportCard = (sport, filterCondition, title, buttonText = 'more') => {
     const filteredGames = games.filter((game) => game.sport_title === sport.league)
       .filter(filterCondition);
+
+      console.log(filteredGames)
     if (filteredGames.length === 0) return null;
 
+    const renderNextGames = () => {
+      if (sport.league === 'NFL' && upcomingGames) {
+        return (
+          upcomingGames.nextNFLGames.map((game, idx) => {
+            if (idx < 3) {
+              return (
+                <Col>
+                  <Row style={{ textAlign: 'center' }}>
+                    <Col style={{ padding: 0 }}><img src={game.awayTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
+                    <Col xs={2} style={{ padding: 0 }}>vs</Col>
+                    <Col style={{ padding: 0 }}><img src={game.homeTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
+                  </Row>
+                </Col>
+              )
+            }
+          })
+        )
+
+      } else if (sport.league === 'NCAAF' && upcomingGames) {
+        return (
+          upcomingGames.nextNCAAFGames.map((game, idx) => {
+            if (idx < 3) {
+              return (
+                <Col>
+                  <Row style={{ textAlign: 'center' }}>
+                    <Col style={{ padding: 0 }}><img src={game.awayTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
+                    <Col xs={2} style={{ padding: 0 }}>vs</Col>
+                    <Col style={{ padding: 0 }}><img src={game.homeTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
+                  </Row>
+                </Col>
+              )
+            }
+          })
+        )
+
+      } else if (sport.league === 'NBA' && upcomingGames) {
+        return (
+          upcomingGames.nextNBAGames.map((game, idx) => {
+            if (idx < 3) {
+              return (
+                <Col>
+                  <Row style={{ textAlign: 'center' }}>
+                    <Col style={{ padding: 0 }}><img src={game.awayTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
+                    <Col xs={2} style={{ padding: 0 }}>vs</Col>
+                    <Col style={{ padding: 0 }}><img src={game.homeTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
+                  </Row>
+                </Col>
+              )
+            }
+          })
+        )
+
+      } else if (sport.league === 'NHL' && upcomingGames) {
+        return (
+          upcomingGames.nextNHLGames.map((game, idx) => {
+            if (idx < 3) {
+              return (
+                <Col>
+                  <Row style={{ textAlign: 'center' }}>
+                    <Col style={{ padding: 0 }}><img src={game.awayTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
+                    <Col xs={2} style={{ padding: 0 }}>vs</Col>
+                    <Col style={{ padding: 0 }}><img src={game.homeTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
+                  </Row>
+                </Col>
+              )
+            }
+          })
+        )
+
+      } else if (sport.league === 'MLB' && upcomingGames) {
+        return (
+          upcomingGames.nextMLBGames.map((game, idx) => {
+            if (idx < 3) {
+              return (
+                <Col>
+                  <Row style={{ textAlign: 'center' }}>
+                    <Col style={{ padding: 0 }}><img src={game.awayTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
+                    <Col xs={2} style={{ padding: 0 }}>vs</Col>
+                    <Col style={{ padding: 0 }}><img src={game.homeTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
+                  </Row>
+                </Col>
+              )
+            }
+          })
+        )
+
+      }
+    }
+
+    const renderTitleRow = () => {
+      if (sport.league === 'NFL' && upcomingGames) {
+        return (
+          <Row>
+            <Col xs={2} ><FontAwesomeIcon style={{ marginLeft: 5 }} icon={faFootball} /> </Col>
+            <Col style={{textAlign: 'left'}}>{sport.league}</Col>
+            
+          </Row>
+        )
+
+      } else if (sport.league === 'NCAAF' && upcomingGames) {
+        return (
+          <Row>
+            <Col xs={2}><FontAwesomeIcon style={{ marginLeft: 5 }} icon={faFootball} /></Col>
+            <Col style={{textAlign: 'left'}}>{sport.league}</Col>
+          </Row>
+        )
+
+      } else if (sport.league === 'NBA' && upcomingGames) {
+        return (
+          <Row>
+            <Col xs={2}><FontAwesomeIcon style={{ marginLeft: 5 }} icon={faBasketball} /></Col>
+            <Col style={{textAlign: 'left'}}>{sport.league}</Col>
+          </Row>
+        )
+
+      } else if (sport.league === 'NHL' && upcomingGames) {
+        return (
+          <Row>
+            <Col xs={2}><FontAwesomeIcon style={{ marginLeft: 5 }} icon={faHockeyPuck} /></Col>
+            <Col style={{textAlign: 'left'}}>{sport.league}</Col>
+          </Row>
+        )
+
+      } else if (sport.league === 'MLB' && upcomingGames) {
+        return (
+          <Row>
+            <Col xs={2}><FontAwesomeIcon style={{ marginLeft: 5 }} icon={faBaseball} /></Col>
+            <Col style={{textAlign: 'left'}}>{sport.league} </Col>
+          </Row>
+        )
+
+      }
+    }
+
+
     return (
-      <Row>
-        <Col>{`Upcoming ${sport.league} Games`}</Col>
-        <Col xs={4} style={{ textAlign: 'right' }}>
-          <Button id={sport.espnSport} style={{ backgroundColor: '#0A0A0B', borderColor: '#0A0A0B' }} onClick={handleClick}>
-            {buttonText}
-          </Button>
-        </Col>
-        <Row style={{ overflowX: 'scroll', flexWrap: 'nowrap', scrollbarWidth: 'thin' }}>
-          {filterAndMapGames((game) => filteredGames.includes(game))}
-        </Row>
-      </Row>
+      <Col className="mb-4">
+        <Card style={{ cursor: 'pointer', backgroundColor: '#2c2c2c', color: '#D4D2D5' }} onClick={handleClick}>
+          <Card.Body>
+            <Card.Title style={{ textAlign: 'center' }}>{renderTitleRow()} </Card.Title>
+            <Row>
+              {renderNextGames(filteredGames)}
+            </Row>
+            <Col style={{ padding: '.5em' }}>
+              <Row >
+                <Col style={{ alignContent: 'center' }} >
+                  <Card.Text>
+                    {filteredGames.length} upcoming games
+                  </Card.Text>
+                </Col>
+                <Col xs={4}>
+                <Link to={`/sport/${sport.league}`}>
+                <Button id={sport.name} variant="outline-light" style={{ backgroundColor: '#0A0A0B', borderColor: '#0A0A0B' }} onClick={handleSportSelect}>
+                    {buttonText}
+                  </Button>
+                </Link>
+
+                </Col>
+
+              </Row>
+            </Col>
+
+          </Card.Body>
+        </Card>
+      </Col>
     );
   };
+
+
+  useEffect(() => {
+    fetchTeamData(games)
+  }, [games])
+
 
   return (
     <Container fluid>
       <Row>
-        <Col>
+        <Col xs={10}>
           {/* High Win Chance Section */}
-          <Row>
-            <Col>High Win Chance</Col>
-          </Row>
-          <Row style={{ overflowX: 'scroll', flexWrap: 'nowrap', scrollbarWidth: 'thin' }}>
-            {filterAndMapGames((game) => game.winPercent >= 0.60 && moment(game.commence_time).local().isBefore(moment().add(1, 'days')))}
-          </Row>
+          <Card style={{ backgroundColor: '#44444a', borderColor: '#575757' }}>
+            <Card.Header className="d-flex justify-content-between align-items-center">
+              <span style={{ color: 'whitesmoke' }}>{games.filter((game) => moment(game.commence_time).local().isSame(moment().local(), 'day')).length > 0 ? `Today's Games` : `Tomorrow's Games`}</span>
+            </Card.Header>
+            <Card.Body>
+              <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+                {games.filter((game) => moment(game.commence_time).local().isSame(moment().local(), 'day')).length > 0 ? filterAndMapGames((game) => moment(game.commence_time).local().isSame(moment().local(), 'day')) : filterAndMapGames((game) => moment(game.commence_time).local().isSame(moment().add('1', 'days').local(), 'day'))}
+              </Row>
+            </Card.Body>
+          </Card>
 
           {/* High Stat Disparity Section */}
-          <Row>
-            <Col>High Stat Disparity</Col>
-          </Row>
-          <Row style={{ overflowX: 'scroll', flexWrap: 'nowrap', scrollbarWidth: 'thin' }}>
-            {filterAndMapGames((game) => Math.abs(game.homeTeamIndex - game.awayTeamIndex) > .5 && moment(game.commence_time).local().isBefore(moment().add(1, 'days')))}
-          </Row>
+          <Card style={{ backgroundColor: '#44444a', borderColor: '#575757' }} className="mt-4">
+            <Card.Header className="d-flex justify-content-between align-items-center">
+              <span style={{ color: 'whitesmoke' }}>High Stat Disparity</span>
+            </Card.Header>
+            <Card.Body>
+              <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+                {filterAndMapGames((game) => Math.abs(game.homeTeamIndex - game.awayTeamIndex) > 0.5 && moment(game.commence_time).local().isSame(moment().local(), 'day'))}
+              </Row>
+            </Card.Body>
+          </Card>
 
-          {/* Close Games Section */}
-          <Row>
-            <Col>Close Games</Col>
-          </Row>
-          <Row style={{ overflowX: 'scroll', flexWrap: 'nowrap', scrollbarWidth: 'thin' }}>
-            {filterAndMapGames((game) => Math.abs(game.homeTeamIndex - game.awayTeamIndex) < .2 && moment(game.commence_time).local().isBefore(moment().add(1, 'days')))}
-          </Row>
+          {/* Close Calls Section */}
+          <Card style={{ backgroundColor: '#44444a', borderColor: '#575757' }} className="mt-4">
+            <Card.Header className="d-flex justify-content-between align-items-center">
+              <span style={{ color: 'whitesmoke' }}>Close Calls</span>
+            </Card.Header>
+            <Card.Body>
+              <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+                {filterAndMapGames((game) => Math.abs(game.homeTeamIndex - game.awayTeamIndex) < 0.2 && moment(game.commence_time).local().isSame(moment().local(), 'day'))}
+              </Row>
+            </Card.Body>
+          </Card>
 
+
+        </Col>
+        <Col>
           {/* Upcoming Sports */}
           {sports.map((sport) => {
             const currentMonth = moment().format('M');
-            const isInSeason = sport.multiYear
-              ? currentMonth > sport.startMonth || currentMonth < sport.endMonth
-              : currentMonth > sport.startMonth && currentMonth < sport.endMonth;
+            const isInSeason =
+              sport.multiYear
+                ? currentMonth > sport.startMonth || currentMonth < sport.endMonth
+                : currentMonth > sport.startMonth && currentMonth < sport.endMonth;
 
+            // Only render sports that are in season
             if (!isInSeason) return null;
 
-            return renderSportRow(sport, (game) => moment(game.commence_time).local().isBefore(moment().add(6, 'days')), sport.league);
+            return (
+              <Row key={sport.name}>
+                {/* Render each sport in a column */}
+                <Col xs={12}>
+                  <div className="sport-section">
+                    {/* <h3>{sport.league} Upcoming Games</h3> */}
+                    {renderSportCard(sport, (game) => moment(game.commence_time).local().isBefore(moment().add(6, 'days')), sport.league)}
+                  </div>
+                </Col>
+              </Row>
+            );
           })}
         </Col>
 
-        {/* <Col xs={12} md={3}>
-          <Row>
-            <Col style={{ textAlign: 'center' }}>
-              Parlay Picker
-            </Col>
-            <Row>
-              PARLAY PICKER MODULE WHEN MADE
-            </Row>
-          </Row>
-        </Col> */}
       </Row>
     </Container>
   );

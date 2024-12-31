@@ -5,6 +5,7 @@ import NavBar from './components/navbar/navbar';
 import UpcomingGames from './components/upcomingGames/upcomingGames';
 import SingleSportDisplay from './components/singleSportDisplay/singleSportDisplay';
 import PastGames from './components/pastGames/pastGames';
+import MatchupDetails from './components/matchupDetails/matchupDetails';
 import moment from 'moment'
 
 function App() {
@@ -13,6 +14,9 @@ function App() {
   const [bankroll, setBankroll] = useState(10);
   const [games, setGames] = useState([]);
   const [pastGames, setpastGames] = useState([])
+  const [betType, setbetType] = useState('Proportional')
+  const [valueBets, setValueBets] = useState()
+  const [todaysGames, setTodaysGames] = useState()
   const upcomingGamesGet = () => {
     fetch('http://localhost:3001/api/odds')
       .then((res) => res.json())
@@ -48,16 +52,16 @@ function App() {
         setPageSelect={setPageSelect} 
         games={games}
         pastGames={pastGames}
+        setTodaysGames={setTodaysGames}
+        setbetType={setbetType}
+        setValueBets={setValueBets}
       />
       <BrowserRouter>
         <Routes>
-          <Route 
-            path="/" 
-            element={pageSelect === 'Home' ? 
-              <UpcomingGames games={games} bankroll={bankroll} sportsBook={sportsBook} setPageSelect={setPageSelect} /> : 
-              <SingleSportDisplay sportsBook={sportsBook} pageSelect={pageSelect} />} 
-          />
+          <Route path="/" element={<UpcomingGames valueBets={valueBets} todaysGames={todaysGames} betType={betType} games={games} bankroll={bankroll} sportsBook={sportsBook} setPageSelect={setPageSelect} />} />
+          <Route path="/sport/:league" element={<SingleSportDisplay setPageSelect={setPageSelect} sportsBook={sportsBook} pageSelect={pageSelect} valueBets={valueBets} todaysGames={todaysGames} betType={betType} games={games} bankroll={bankroll} />} />
           <Route path="/pastgames" element={<PastGames games={pastGames} />} />
+          <Route path="/matchup/:id" element={<MatchupDetails setPageSelect={setPageSelect} />} /> {/* Route for MatchupDetails */}
         </Routes>
       </BrowserRouter>
     </div>

@@ -91,7 +91,7 @@ const OddsDisplayBox = ({ gameData, team, teamIndex, sportsbook, market, total }
 
   // Function to get color based on the team index
   const getColor = (index) => {
-    return indexColors.find(color => index * 10 <= color.key)?.hexCode || '#f20707';
+    return indexColors.find(color => index <= color.key)?.hexCode || '#f20707';
   };
 
   const [indexColor, setIndexColor] = useState(getColor(teamIndex));
