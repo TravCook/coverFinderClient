@@ -16,7 +16,6 @@ const UpcomingGames = ({ bankroll, sportsBook, setPageSelect, games, betType, va
   ];
 
   const [upcomingGames, setUpcomingGames] = useState()
-
   // Helper function to fetch team data
   const fetchTeamData = () => {
     fetch('http://localhost:3001/api/odds/upcomingGames', {
@@ -48,8 +47,6 @@ const UpcomingGames = ({ bankroll, sportsBook, setPageSelect, games, betType, va
   const renderSportCard = (sport, filterCondition, title, buttonText = 'more') => {
     const filteredGames = games.filter((game) => game.sport_title === sport.league)
       .filter(filterCondition);
-
-      console.log(filteredGames)
     if (filteredGames.length === 0) return null;
 
     const renderNextGames = () => {
@@ -225,57 +222,87 @@ const UpcomingGames = ({ bankroll, sportsBook, setPageSelect, games, betType, va
     fetchTeamData(games)
   }, [games])
 
+    const [selectedSection, setSelectedSection] = useState('todaysGames'); // Default section
+  
+    const handleSectionClick = (section) => {
+      setSelectedSection(section);
+    };
+
+    
+  const renderContent = () => {
+    switch (selectedSection) {
+      case 'todaysGames':
+        return (
+          <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+            {games.filter((game) =>
+              moment(game.commence_time).local().isSame(moment().local(), 'day')
+            ).length > 0
+              ? filterAndMapGames((game) => moment(game.commence_time).local().isSame(moment().local(), 'day'))
+              : filterAndMapGames((game) => moment(game.commence_time).local().isSame(moment().add('1', 'days').local(), 'day'))
+            }
+          </Row>
+        );
+      case 'highStatDisparity':
+        return (
+          <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+            {filterAndMapGames((game) =>
+              Math.abs(game.homeTeamIndex - game.awayTeamIndex) > 0.5 && moment(game.commence_time).local().isSame(moment().local(), 'day')
+            )}
+          </Row>
+        );
+      case 'closeCalls':
+        return (
+          <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+            {filterAndMapGames((game) =>
+              Math.abs(game.homeTeamIndex - game.awayTeamIndex) < 0.2 && moment(game.commence_time).local().isSame(moment().local(), 'day')
+            )}
+          </Row>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <Container fluid>
       <Row>
-        <Col xs={10}>
-          {/* High Win Chance Section */}
-          <Card style={{ backgroundColor: '#44444a', borderColor: '#575757' }}>
-            <Card.Header className="d-flex justify-content-between align-items-center">
-              <span style={{ color: 'whitesmoke' }}>{games.filter((game) => moment(game.commence_time).local().isSame(moment().local(), 'day')).length > 0 ? `Today's Games` : `Tomorrow's Games`}</span>
-            </Card.Header>
-            <Card.Body>
-              <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
-                {games.filter((game) => moment(game.commence_time).local().isSame(moment().local(), 'day')).length > 0 ? filterAndMapGames((game) => moment(game.commence_time).local().isSame(moment().local(), 'day')) : filterAndMapGames((game) => moment(game.commence_time).local().isSame(moment().add('1', 'days').local(), 'day'))}
-              </Row>
-            </Card.Body>
-          </Card>
-
-          {/* High Stat Disparity Section */}
-          <Card style={{ backgroundColor: '#44444a', borderColor: '#575757' }} className="mt-4">
-            <Card.Header className="d-flex justify-content-between align-items-center">
-              <span style={{ color: 'whitesmoke' }}>High Stat Disparity</span>
-            </Card.Header>
-            <Card.Body>
-              <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
-                {filterAndMapGames((game) => Math.abs(game.homeTeamIndex - game.awayTeamIndex) > 0.5 && moment(game.commence_time).local().isSame(moment().local(), 'day'))}
-              </Row>
-            </Card.Body>
-          </Card>
-
-          {/* Close Calls Section */}
-          <Card style={{ backgroundColor: '#44444a', borderColor: '#575757' }} className="mt-4">
-            <Card.Header className="d-flex justify-content-between align-items-center">
-              <span style={{ color: 'whitesmoke' }}>Close Calls</span>
-            </Card.Header>
-            <Card.Body>
-              <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
-                {filterAndMapGames((game) => Math.abs(game.homeTeamIndex - game.awayTeamIndex) < 0.2 && moment(game.commence_time).local().isSame(moment().local(), 'day'))}
-              </Row>
-            </Card.Body>
-          </Card>
-
-
-        </Col>
+      <Col xs={10}>
+      <Card style={{ background: 'linear-gradient(90deg, rgba(44,44,44,1) 0%, rgba(94,94,94,1) 50%, rgba(44,44,44,1) 100%)', borderColor: '#575757' }}>
+        <Card.Header className="d-flex justify-content-between align-items-center">
+          <span
+            style={{ color: 'whitesmoke', cursor: 'pointer' }}
+            onClick={() => handleSectionClick('todaysGames')}
+          >
+            {games.filter((game) =>
+              moment(game.commence_time).local().isSame(moment().local(), 'day')
+            ).length > 0 ? `Today's Games` : `Tomorrow's Games`}
+          </span>
+          <span
+            style={{ color: 'whitesmoke', cursor: 'pointer' }}
+            onClick={() => handleSectionClick('highStatDisparity')}
+          >
+            High Stat Disparity
+          </span>
+          <span
+            style={{ color: 'whitesmoke', cursor: 'pointer' }}
+            onClick={() => handleSectionClick('closeCalls')}
+          >
+            Close Calls
+          </span>
+        </Card.Header>
+        <Card.Body>
+          {renderContent()}
+        </Card.Body>
+      </Card>
+    </Col>
         <Col>
           {/* Upcoming Sports */}
           {sports.map((sport) => {
             const currentMonth = moment().format('M');
             const isInSeason =
               sport.multiYear
-                ? currentMonth > sport.startMonth || currentMonth < sport.endMonth
-                : currentMonth > sport.startMonth && currentMonth < sport.endMonth;
+                ? currentMonth >= sport.startMonth || currentMonth <= sport.endMonth
+                : currentMonth >= sport.startMonth && currentMonth <= sport.endMonth;
 
             // Only render sports that are in season
             if (!isInSeason) return null;

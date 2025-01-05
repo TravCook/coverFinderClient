@@ -12,7 +12,7 @@ const MatchupCard = ({ gameData, bestBets, setBestBets, bankroll, sportsbook, be
   const fetchTeamData = (teamName, setTeam) => {
     fetch('http://localhost:3001/api/teams/search', {
       method: 'POST',
-      body: JSON.stringify({ searchTeam: teamName }),
+      body: JSON.stringify({ searchTeam: teamName, sport: gameData.sport }),
       headers: {
         "Content-type": "application/json; charset=UTF-8"
       }
@@ -104,13 +104,14 @@ const MatchupCard = ({ gameData, bestBets, setBestBets, bankroll, sportsbook, be
 
 const styles = {
   card: {
-    backgroundColor: '#303036',
-    color: '#D4D2D5',
+    backgroundColor: '#222222',
+    color: '#E0E0E0',
     fontSize: '14px',
     width: '22rem',
     borderRadius: '.5em',
-    marginBottom: '1.5rem',
+    marginBottom: '1rem',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+    transition: 'all 0.3s ease'
   },
   timeColumn: {
     textAlign: 'center',

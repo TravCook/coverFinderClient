@@ -108,7 +108,9 @@ const MatchupDetails = (props) => {
                     </tr>
                 );
             }
-        } else {
+        } else if(key === 'fieldGoalMakesperAttempts' || key === 'freeThrowsMadeperAttemps'){
+
+        }else {
             // Make sure the key exists in both homeStats and awayStats
             if (homeTeamStats.hasOwnProperty(key) && awayTeamStats.hasOwnProperty(key)) {
                 const label = statLabels[key] || key;

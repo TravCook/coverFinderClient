@@ -12,7 +12,7 @@ const PastGameCard = (props) => {
   const fetchTeamData = (teamName, setTeam) => {
     fetch('http://localhost:3001/api/teams/search', {
       method: 'POST',
-      body: JSON.stringify({ searchTeam: teamName }),
+      body: JSON.stringify({ searchTeam: teamName, sport: props.gameData.sport }),
       headers: {
         "Content-type": "application/json; charset=UTF-8"
       }
@@ -46,8 +46,8 @@ const PastGameCard = (props) => {
     <div style={{ ...styles.card, backgroundColor }}>
       <Row>
         <Col style={styles.timeColumn}>
-          {moment(props.gameData.commence_time).format('MM/DD/YYYY') === moment().format('MM/DD/YYYY') 
-            ? `Today @ ${moment(props.gameData.commence_time).utc().local().format('h:MMa')}` 
+          {moment(props.gameData.commence_time).format('MM/DD/YYYY') === moment().format('MM/DD/YYYY')
+            ? `Today @ ${moment(props.gameData.commence_time).utc().local().format('h:MMa')}`
             : moment(props.gameData.commence_time).utc().local().format('MMM/DD @ h:MMa')}
         </Col>
         <Col style={styles.winPercentColumn}>
@@ -65,27 +65,39 @@ const PastGameCard = (props) => {
       ) : (
         <>
           {awayTeam && (
-            <TeamOddsRow 
-              teamIndex={props.gameData.awayTeamIndex} 
-              team={awayTeam} 
-              oppTeam={homeTeam} 
-              gameData={props.gameData} 
-              sportsbook={props.sportsbook} 
-              total="Over" 
-              past="true" 
+            <TeamOddsRow
+              teamIndex={props.gameData.awayTeamIndex}
+              team={awayTeam}
+              oppTeam={homeTeam}
+              gameData={props.gameData}
+              sportsbook={props.sportsbook}
+              total="Over"
+              past="true"
+              market="h2h"
               score={props.gameData.awayScore}
+              oppteamIndex={props.gameData.homeTeamIndex}
+              betType={props.betType}
+              bankroll={props.bankroll}
+              valueBets={props.valueBets}
+              todaysGames={props.todaysGames}
             />
           )}
           {homeTeam && (
-            <TeamOddsRow 
-              teamIndex={props.gameData.homeTeamIndex} 
-              team={homeTeam} 
-              oppTeam={awayTeam} 
-              gameData={props.gameData} 
-              sportsbook={props.sportsbook} 
-              total="Under" 
-              past="true" 
+            <TeamOddsRow
+              teamIndex={props.gameData.homeTeamIndex}
+              team={homeTeam}
+              oppTeam={awayTeam}
+              gameData={props.gameData}
+              sportsbook={props.sportsbook}
+              total="Under"
+              past="true"
+              market="h2h"
               score={props.gameData.homeScore}
+              oppteamIndex={props.gameData.awayTeamIndex}
+              betType={props.betType}
+              bankroll={props.bankroll}
+              valueBets={props.valueBets}
+              todaysGames={props.todaysGames}
             />
           )}
         </>
@@ -105,6 +117,7 @@ const styles = {
     borderRadius: '.5em',
     marginTop: '10px',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+    maxHeight: '8rem'
   },
   timeColumn: {
     textAlign: 'center',

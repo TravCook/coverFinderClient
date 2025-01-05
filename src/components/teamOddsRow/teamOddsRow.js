@@ -31,23 +31,22 @@ const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, game
       const espnNameSplit = team.espnDisplayName.split(" ");
       if (outcome.name === team.espnDisplayName || outcome.name === total || outcomeSplit[outcomeSplit.length - 1] === espnNameSplit[espnNameSplit.length - 1]) {
         decimalOdds = (calculateDecimalOdds(outcome.price))
-        if (betType === 'Value') {
+        if (betType === 'Value' && outcome.impliedProb < gameData.winPercent) {
           betAmount = (bankroll / valueBets.length);
         } else if (betType === 'Proportional') {
           betAmount = (bankroll / todaysGames.length)
         } else if (betType === 'Kelley') {
           betAmount = (calculateKellyCriterion(decimalOdds, outcome.impliedProb) * bankroll)
         }
-        setProfit((betAmount * decimalOdds)-betAmount)
+        setProfit((betAmount * decimalOdds) - betAmount)
       }
     })
 
 
   }
-
   useEffect(() => {
     calculateProfit()
-  }, [betType, bankroll,  valueBets, todaysGames ])
+  }, [betType, bankroll, valueBets, valueBets])
 
   const renderKelleyBetDisplay = () => {
     return bookmakerData?.markets.find(marketItem => marketItem.key === market)?.outcomes.map(outcome => {
@@ -73,8 +72,8 @@ const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, game
 
       // Determine if betAmount should be shown based on the team/total comparison
       if (outcome.name === team.espnDisplayName || outcome.name === total || outcomeSplit[outcomeSplit.length - 1] === espnNameSplit[espnNameSplit.length - 1]) {
-        if(outcome.impliedProb < gameData.winPercent){
-        return teamIndex > oppteamIndex ? `$${((betAmount)).toFixed(2)}` : <></>;
+        if (outcome.impliedProb < gameData.winPercent) {
+          return teamIndex > oppteamIndex ? `$${((betAmount)).toFixed(2)}` : <></>;
         }
       }
       return <></>;
@@ -84,7 +83,7 @@ const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, game
   const renderProportionalBetDisplay = () => {
     return bookmakerData?.markets.find(marketItem => marketItem.key === market)?.outcomes.map(outcome => {
       const outcomeSplit = outcome.name.split(" ");
-      const espnNameSplit = team.espnDisplayName.split(" ");
+      const espnNameSplit = team.espnDisplayName.split(" ")
       const betAmount = bankroll / todaysGames.length;
 
       // Determine if betAmount should be shown based on the team/total comparison
@@ -95,13 +94,23 @@ const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, game
     });
   };
 
-  const renderTeamInfo = () => {
-    return (
-      <Col xs={6} style={{ alignContent: 'center' }}>
-        {team ? `${team.abbreviation} ${team.teamName}` : null}
-        <sup style={{ marginLeft: 5 }}>{(teamIndex).toFixed(2).padEnd(4, '0')}</sup>
-      </Col>
-    );
+  const renderTeamInfo = (past) => {
+    if(past){
+      return (
+        <Col xs={4} style={{ alignContent: 'center' }}>
+          {team ? `${team.abbreviation} ${team.teamName}` : null}
+          <sup style={{ marginLeft: 5 }}>{(teamIndex).toFixed(2).padEnd(4, '0')}</sup>
+        </Col>
+      );
+    }else{
+      return (
+        <Col xs={6} style={{ alignContent: 'center' }}>
+          {team ? `${team.abbreviation} ${team.teamName}` : null}
+          <sup style={{ marginLeft: 5 }}>{(teamIndex).toFixed(2).padEnd(4, '0')}</sup>
+        </Col>
+      );
+    }
+
   };
 
   const renderProfit = () => {
@@ -114,7 +123,7 @@ const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, game
           if (outcome.impliedProb < gameData.winPercent) {
             return teamIndex > oppteamIndex ? `$${((profit)).toFixed(2)}` : <></>;
           }
-        } else if(betType === 'Proportional'  || betType === 'Kelley') {
+        } else if (betType === 'Proportional' || betType === 'Kelley') {
           return teamIndex > oppteamIndex ? `$${((profit)).toFixed(2)}` : <></>;
         }
 
@@ -123,37 +132,73 @@ const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, game
       return <></>;
     });
   };
-
   return (
-    <Row style={{ marginTop: 5, alignItems: 'center', fontSize: '12px' }}>
-      <Col xs={1}>
-        <img src={team.logo} style={{ width: '20px' }} alt='Team Logo' />
-      </Col>
-      {renderTeamInfo()}
-      <Col xs={2} style={{ textAlign: 'center', padding: 5 }}>
-        {past ? `${score}` : <OddsDisplayBox teamIndex={teamIndex} key={`${team.espnDisplayName} h2h`} team={team} oppTeam={oppTeam} gameData={gameData} sportsbook={sportsbook} market='h2h' total={total} />}
-      </Col>
-        <Col>
-        <Row>
-        <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
-        <span> {betType && profit && teamIndex > oppteamIndex ? `Bet` : <></>} </span>
+    <div>
+      {past ?
+        <Row style={{ marginTop: 5, alignItems: 'center', fontSize: '12px' }}>
+          <Col xs={1}>
+            <img src={team.logo} style={{ width: '20px' }} alt='Team Logo' />
           </Col>
-          <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center'}}>
-            <span>{betType && profit && teamIndex > oppteamIndex ? `Profit` : <></>}</span>
+          {renderTeamInfo(past)}
+          <Col xs={4} style={{ textAlign: 'center', padding: 5 }}>
+          <Row>
+            <Col>
+            {score}
+            </Col>
+            <Col>
+            <OddsDisplayBox teamIndex={teamIndex} key={`${team.espnDisplayName} h2h`} team={team} oppTeam={oppTeam} gameData={gameData} sportsbook={sportsbook} market='h2h' total={total} />
+            </Col>
+          </Row>
+          </Col>
+          <Col>
+            <Row>
+              <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+                <span> {betType && profit && teamIndex > oppteamIndex ? `Bet` : <></>} </span>
+              </Col>
+              <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+                <span>{betType && profit && teamIndex > oppteamIndex ? `Profit` : <></>}</span>
+              </Col>
+            </Row>
+            <Row>
+              <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+                {betType === 'Value' ? renderBettorBetDisplay() : betType === 'Kelley' ? renderKelleyBetDisplay() : betType === 'Proportional' ? renderProportionalBetDisplay() : <></>}
+              </Col>
+              <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+                {profit ? renderProfit() : <></>}
+              </Col>
+            </Row>
+          </Col>
+        </Row> :
+        <Row style={{ marginTop: 5, alignItems: 'center', fontSize: '12px' }}>
+          <Col xs={1}>
+            <img src={team.logo} style={{ width: '20px' }} alt='Team Logo' />
+          </Col>
+          {renderTeamInfo()}
+          <Col xs={2} style={{ textAlign: 'center', padding: 5 }}>
+            {past ? `${score}` : <OddsDisplayBox teamIndex={teamIndex} key={`${team.espnDisplayName} h2h`} team={team} oppTeam={oppTeam} gameData={gameData} sportsbook={sportsbook} market='h2h' total={total} />}
+          </Col>
+          <Col>
+            <Row>
+              <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+                <span> {betType && profit && teamIndex > oppteamIndex ? `Bet` : <></>} </span>
+              </Col>
+              <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+                <span>{betType && profit && teamIndex > oppteamIndex ? `Profit` : <></>}</span>
+              </Col>
+            </Row>
+            <Row>
+              <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+                {betType === 'Value' ? renderBettorBetDisplay() : betType === 'Kelley' ? renderKelleyBetDisplay() : betType === 'Proportional' ? renderProportionalBetDisplay() : <></>}
+              </Col>
+              <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+                {profit ? renderProfit() : <></>}
+              </Col>
+            </Row>
           </Col>
         </Row>
-        <Row>
-        <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
-            {betType === 'Value' ? renderBettorBetDisplay() : betType === 'Kelley' ? renderKelleyBetDisplay() : betType === 'Proportional' ? renderProportionalBetDisplay() : <></>}
-          </Col>
-          <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center'}}>
-            {profit ? renderProfit() : <></>}
-          </Col>
-        </Row>
+      }
+    </div>
 
-
-        </Col>
-    </Row>
   );
 };
 
