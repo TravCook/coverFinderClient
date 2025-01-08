@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Container, Row, Col, Dropdown, Form, Button } from 'react-bootstrap'
 import PastGameCard from '../pastGameCard/pastGameCard.js'
 import moment from 'moment'
+import MatchupCard from '../matchupCard/matchupCard.js'
 
 const PastGamesDisplay = (props) => {
     const [filteredGames, setFilteredGames] = useState([])  // Initialize as an empty array
@@ -129,25 +130,6 @@ const PastGamesDisplay = (props) => {
     return (
         <Container fluid>
             <Row>
-                {/* <Col>
-                    <Row>
-                        <Col><Form.Control type="date" name="startDate" value={searchFilter.startDate} onChange={handleDateChange} /></Col>
-                        <Col><Form.Control type="date" name="endDate" value={searchFilter.endDate} onChange={handleDateChange} /></Col>
-                        <Col>
-                            <Dropdown>
-                                <Dropdown.Toggle variant="success" id="dropdown-league">
-                                    {searchFilter.league || "Select League"}
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                    <Dropdown.Item onClick={() => setSearchFilter({ ...searchFilter, league: 'NBA' })}>NBA</Dropdown.Item>
-                                    <Dropdown.Item onClick={() => setSearchFilter({ ...searchFilter, league: 'NFL' })}>NFL</Dropdown.Item>
-                                    <Dropdown.Item onClick={() => setSearchFilter({ ...searchFilter, league: 'MLB' })}>MLB</Dropdown.Item>
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        </Col>
-                        <Col><Form.Control type="text" placeholder="Search teams" name="teams" value={searchFilter.teams} onChange={handleDateChange} /></Col>
-                    </Row>
-                </Col> */}
                 <Col>
                     <Row>
                         <Col>
@@ -171,18 +153,23 @@ const PastGamesDisplay = (props) => {
 
             {/* Games List */}
             <Row >
-                <Col>
-                <Row style={{ display: 'flex', justifyContent: 'space-evenly', height: '50rem' }}>
+                <Col xs={12} md={6}>
+                <Row style={{ height: '54rem', overflow: 'scroll' }}>
                 {currentGames.filter((game)=> game.predictionCorrect === true).map((game) => (
-                    <PastGameCard bestBets={props.bestBets} setBestBets={props.setBestBets} bankroll={props.bankroll} betType={props.betType} valueBets={props.valueBets} todaysGames={props.todaysGames} key={game.id} gameData={game} sportsbook={props.sportsBook} winRates={props.winRates} />
+                    <Col xs={12} xl={6}>
+                     <MatchupCard final={true} bestBets={props.bestBets} setBestBets={props.setBestBets} bankroll={props.bankroll} betType={props.betType} valueBets={props.valueBets} todaysGames={props.todaysGames} key={game.id} gameData={game} sportsbook={props.sportsBook} winRates={props.winRates} />
+                    </Col>
+                   
                 ))}
                 </Row>
 
                 </Col>
-                <Col>
-                <Row style={{ display: 'flex', justifyContent: 'space-evenly', height: '50rem' }}>
+                <Col  xs={12} md={6}>
+                <Row style={{height: '54rem',  overflow: 'scroll' }}>
                 {currentGames.filter((game)=> game.predictionCorrect === false).map((game) => (
-                    <PastGameCard bestBets={props.bestBets} setBestBets={props.setBestBets} bankroll={props.bankroll} betType={props.betType} valueBets={props.valueBets} todaysGames={props.todaysGames} key={game.id} gameData={game} sportsbook={props.sportsBook} winRates={props.winRates} />
+                    <Col xs={12} xl={6}>
+                    <MatchupCard final={true} bestBets={props.bestBets} setBestBets={props.setBestBets} bankroll={props.bankroll} betType={props.betType} valueBets={props.valueBets} todaysGames={props.todaysGames} key={game.id} gameData={game} sportsbook={props.sportsBook} winRates={props.winRates} />
+                    </Col>
                 ))}
                 </Row>
 
@@ -192,10 +179,10 @@ const PastGamesDisplay = (props) => {
             {/* Pagination */}
             <Row>
                 <Col>
-                    <Button disabled={currentPage === 0} onClick={() => handlePageChange(currentPage - 1)}>Previous</Button>
+                    <Button style={{backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'}} disabled={currentPage === 0} onClick={() => handlePageChange(currentPage - 1)}>Previous</Button>
                 </Col>
                 <Col style={{textAlign: 'right'}}>
-                    <Button disabled={currentPage >= filteredGames.length - 1} onClick={() => handlePageChange(currentPage + 1)}>Next</Button>
+                    <Button style={{backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'}} disabled={currentPage >= filteredGames.length - 1} onClick={() => handlePageChange(currentPage + 1)}>Next</Button>
                 </Col>
             </Row>
         </Container>

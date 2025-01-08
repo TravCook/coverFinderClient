@@ -104,7 +104,7 @@ const NavBar = (props) => {
                     }
                     return false;
                 });
-                return selectedOutcome ? selectedOutcome.price : null;
+                return selectedOutcome ? selectedOutcome.price : <></>;
             };
             // Get the outcome prices for both games
             let priceA = getOutcomePrice(a, sportsbook);
@@ -231,11 +231,18 @@ const NavBar = (props) => {
     };
 
     const renderYesterdayWinsRow = () => {
+        let screenWidth = window.innerWidth
+        let splitEnd
+        if(screenWidth < 520){
+            splitEnd=2
+        }else if( screenWidth < 900){
+            splitEnd=3
+        }else{
+            splitEnd=5
+        }
         return (
             <Row>
-                <Col xs={2}>Yesterday's Biggest Wins: </Col>
-                {yDayBigWins && yDayBigWins.slice(0, 3).map((game, idx) => {
-
+                {yDayBigWins && yDayBigWins.slice(0,splitEnd).map((game, idx) => {
                     return game.bookmakers.map((bookmaker) => {
                         if (bookmaker.key === sportsbook) {
                             return bookmaker.markets.map((market) => {
@@ -243,56 +250,36 @@ const NavBar = (props) => {
 
                                     if (game.winner === 'home' && outcome.name === game.home_team) {
                                         if (game.homeTeamIndex > game.awayTeamIndex) {
-                                            let betSize = bankroll / yesterdaysGames.length
-                                            let decimalOdds = outcome.price > 0
-                                                ? (outcome.price + 100) / 100
-                                                : ((100 / Math.abs(outcome.price)) + 1);
-
                                             return (
 
-                                                <Col key={idx} sm={3}> {/* Adjust the layout for 3 columns */}
-                                                    <Row style={{ display: 'flex', justifyContent: 'space-around' }}>
-                                                        <Col style={{ padding: 0 }} xs={1}><img src={game.awayTeamlogo} style={{ width: '20px' }} alt='Team Logo' /></Col> {/* Away team */}
-                                                        <Col style={{ padding: 0 }} xs={1}>vs</Col>
-                                                        <Col style={{
-                                                            padding: 0,
+                                                <Col key={idx} style={{marginLeft: '2rem', marginRight: '2rem'}}>
+                                                    <Row style={{ textAlign: 'center' }}>
+                                                        <Col style={{marginLeft: '1rem', marginRight: '1rem', padding: 0}}><img src={game.awayTeamlogo} style={{ width: '100%', maxWidth: '20px' }} alt='Team Logo' /></Col> {/* Away team */}
+                                                        <Col style={{padding: 0}}>vs</Col>
+                                                        <Col style={{marginLeft: '1rem', marginRight: '1rem',
                                                             borderRadius: 15,
-                                                            boxShadow: game.winner === 'away' ? '0px 0px 8px rgba(255, 215, 0, 0.6)' : 'none', // Soft glow
-                                                        }} xs={1}><img src={game.homeTeamlogo} style={{ width: '20px' }} alt='Team Logo' /></Col> {/* Home team */}
-                                                        <Col style={{ padding: 0, borderStyle: 'solid', boxShadow: `inset 0 0 20px ${getColor(game.homeTeamIndex)}`, textAlign: 'center' }} xs={2} >{outcome.price > 0 ? `+${outcome.price}` : outcome.price}</Col> {/* Odds */}
-                                                        <Col style={{ textAlign: 'left', padding: 0 }} xs={2}>
-                                                            {`$${betSize.toFixed(2)}`}
-                                                        </Col>
-                                                        <Col style={{ textAlign: 'left', padding: 0, borderRightStyle: 'solid' }} xs={2}>
-                                                            {`$${((decimalOdds * betSize) - betSize).toFixed(2)}`}
-                                                        </Col>
+                                                            padding: 0,
+                                                            boxShadow: game.winner === 'home' ? '0px 0px 8px rgba(255, 215, 0, 0.6)' : 'none', // Soft glow
+                                                        }}><img src={game.homeTeamlogo} style={{ width: '100%', maxWidth: '20px' }} alt='Team Logo' /></Col> {/* Home team */}
+                                                        <Col lg={2} style={{ borderStyle: 'solid', boxShadow: `inset 0 0 20px ${getColor(game.homeTeamIndex)}`, textAlign: 'center', padding: 0 }} >{outcome.price > 0 ? `+${outcome.price}` : outcome.price}</Col> {/* Odds */}
                                                     </Row>
                                                 </Col>
                                             );
                                         }
                                     } else if (game.winner === 'away' && outcome.name === game.away_team) {
                                         if (game.awayTeamIndex > game.homeTeamIndex) {
-                                            let betSize = bankroll / yesterdaysGames.length
-                                            let decimalOdds = outcome.price > 0
-                                                ? (outcome.price + 100) / 100
-                                                : ((100 / Math.abs(outcome.price)) + 1);
                                             return (
-                                                <Col key={idx} sm={3}> {/* Adjust the layout for 3 columns */}
-                                                    <Row style={{ textAlign: 'center', display: 'flex', justifyContent: 'space-around' }}>
+                                                <Col key={idx} style={{marginLeft: '2rem', marginRight: '2rem'}}>
+                                                    <Row style={{ textAlign: 'center', display: 'flex', justifyContent: 'center' }}>
                                                         <Col style={{
-                                                            padding: 0,
+                                                            marginLeft: '1rem', marginRight: '1rem',
                                                             borderRadius: 15,
+                                                            padding: 0,
                                                             boxShadow: game.winner === 'away' ? '0px 0px 8px rgba(255, 215, 0, 0.6)' : 'none', // Soft glow
-                                                        }} xs={1}><img src={game.awayTeamlogo} style={{ width: '20px' }} alt='Team Logo' /></Col> {/* Away team */}
-                                                        <Col style={{ padding: 0 }} xs={1}>vs</Col>
-                                                        <Col style={{ padding: 0 }} xs={1}><img src={game.homeTeamlogo} style={{ width: '20px' }} alt='Team Logo' /></Col> {/* Home team */}
-                                                        <Col style={{ padding: 0, borderStyle: 'solid', boxShadow: `inset 0 0 20px ${getColor(game.awayTeamIndex)}`, textAlign: 'center' }} xs={2}>{outcome.price > 0 ? `+${outcome.price}` : outcome.price}</Col> {/* Odds */}
-                                                        <Col style={{ textAlign: 'left', padding: 0 }} xs={2}>
-                                                            {`$${betSize.toFixed(2)}`}
-                                                        </Col>
-                                                        <Col style={{ textAlign: 'left', padding: 0, borderRightStyle: 'solid' }} xs={2}>
-                                                            {`$${((decimalOdds * betSize) - betSize).toFixed(2)}`}
-                                                        </Col>
+                                                        }}><img src={game.awayTeamlogo} style={{ width: '100%', maxWidth: '20px' }} alt='Team Logo' /></Col> {/* Away team */}
+                                                        <Col style={{padding: 0}}>vs</Col>
+                                                        <Col style={{marginLeft: '1rem', marginRight: '1rem',padding: 0}} ><img src={game.homeTeamlogo} style={{ width: '100%', maxWidth: '20px' }} alt='Team Logo' /></Col> {/* Home team */}
+                                                        <Col lg={2} style={{borderStyle: 'solid', boxShadow: `inset 0 0 20px ${getColor(game.awayTeamIndex)}`, textAlign: 'center', padding: 0 }} >{outcome.price > 0 ? `+${outcome.price}` : outcome.price}</Col> {/* Odds */}
                                                     </Row>
                                                 </Col>
                                             );
@@ -319,80 +306,85 @@ const NavBar = (props) => {
     return (
         <Navbar sticky="top" style={{ backgroundColor: '#2A2A2A', color: '#E0E0E0', marginBottom: 10 }}>
             <Container fluid>
-                <Col xs={1} style={{ textAlign: 'left' }}>
+                <Col style={{ textAlign: 'left'}}>
                     BETTOR
                 </Col>
-                <Col>
-                    {renderYesterdayWinsRow()}
-                </Col>
+                <Col style={{ textAlign: 'right' }}>
+                    <Dropdown align='end' >
+                        <DropdownToggle style={{fontSize: '.75rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }} >
+                            Options
+                        </DropdownToggle>
+                        <DropdownMenu style={{ padding: 5, backgroundColor: '#303036', textAlign: 'right' }}>
+                            <Row style={{ marginBottom: 5 }}>
+                                <Col>
+                                    <Dropdown align='end'>
+                                        <DropdownToggle
+                                            id="sportbookDropdown"
+                                            style={{
+                                                backgroundColor: dropdownBG,
+                                                borderColor: dropdownBG,
+                                                color: dropdownFont,
+                                            }}
+                                        >
+                                            {sportsbook}
+                                        </DropdownToggle>
+                                        <DropdownMenu>
+                                            {['draftkings', 'betmgm', 'fanduel', 'williamhill_us', 'betrivers', 'unibet_us', 'betonlineag', 'lowvig', 'mybookieag', 'wynnbet', 'bovada', 'betus', 'superbook', 'pointsbetus'].map((sportsbook) => (
+                                                <DropdownItem
+                                                    key={sportsbook}
+                                                    id={sportsbook}
+                                                    onClick={handleDropDownClick}
+                                                >
+                                                    {sportsbook.charAt(0).toUpperCase() + sportsbook.slice(1).replace(/_/g, ' ')}
+                                                </DropdownItem>
+                                            ))}
+                                        </DropdownMenu>
+                                    </Dropdown>
+                                </Col>
+                            </Row>
+                            <Row >
+                                <Col>
+                                    <Dropdown align='end'>
+                                        <DropdownToggle
+                                            id="sportbookDropdown"
+                                            style={{ backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }}
+                                        >
+                                            Bet Type
+                                        </DropdownToggle>
+                                        <DropdownMenu>
+                                            {['Kelley Criterion', 'Proportional Bet', 'Value Bet'].map((betType) => (
+                                                <DropdownItem
+                                                    key={betType}
+                                                    id={sportsbook}
+                                                    onClick={handleFormChange}
+                                                >
+                                                    {betType}
+                                                </DropdownItem>
+                                            ))}
+                                        </DropdownMenu>
+                                    </Dropdown>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col>
+                                    <InputGroup>
+                                        <FormControl
+                                            type="number"
+                                            value={bankroll}
+                                            onChange={handleSubmit}
+                                            min="1"
+                                            max="10000"
+                                            step="1"
+                                            placeholder="Enter Bankroll"
+                                        />
+                                    </InputGroup>
+                                </Col>
+                            </Row>
+                        </DropdownMenu>
+                    </Dropdown>
 
 
-                <Col xs={3} style={{ textAlign: 'right' }}>
-                    <Row>
-                        <Col>
-                            <InputGroup>
-                                <FormControl
-                                    type="number"
-                                    value={bankroll}
-                                    onChange={handleSubmit}
-                                    min="1"
-                                    max="10000"
-                                    step="1"
-                                    placeholder="Enter Bankroll"
-                                />
-                            </InputGroup>
-                        </Col>
-                        <Col>
-                            <Dropdown align='end'>
-                                <DropdownToggle
-                                    id="sportbookDropdown"
-                                    style={{
-                                        backgroundColor: dropdownBG,
-                                        borderColor: dropdownBG,
-                                        color: dropdownFont
-                                    }}
-                                >
-                                    Bet Type
-                                </DropdownToggle>
-                                <DropdownMenu>
-                                    {['Kelley Criterion', 'Proportional Bet', 'Value Bet'].map((sportsbook) => (
-                                        <DropdownItem
-                                            key={sportsbook}
-                                            id={sportsbook}
-                                            onClick={handleFormChange}
-                                        >
-                                            {sportsbook.charAt(0).toUpperCase() + sportsbook.slice(1).replace(/_/g, ' ')}
-                                        </DropdownItem>
-                                    ))}
-                                </DropdownMenu>
-                            </Dropdown>
-                        </Col>
-                        <Col>
-                            <Dropdown align='end'>
-                                <DropdownToggle
-                                    id="sportbookDropdown"
-                                    style={{
-                                        backgroundColor: dropdownBG,
-                                        borderColor: dropdownBG,
-                                        color: dropdownFont
-                                    }}
-                                >
-                                    Sportsbook
-                                </DropdownToggle>
-                                <DropdownMenu>
-                                    {['draftkings', 'betmgm', 'fanduel', 'williamhill_us', 'betrivers', 'unibet_us', 'betonlineag', 'lowvig', 'mybookieag', 'wynnbet', 'bovada', 'betus', 'superbook', 'pointsbetus'].map((sportsbook) => (
-                                        <DropdownItem
-                                            key={sportsbook}
-                                            id={sportsbook}
-                                            onClick={handleDropDownClick}
-                                        >
-                                            {sportsbook.charAt(0).toUpperCase() + sportsbook.slice(1).replace(/_/g, ' ')}
-                                        </DropdownItem>
-                                    ))}
-                                </DropdownMenu>
-                            </Dropdown>
-                        </Col>
-                    </Row>
+
                 </Col>
             </Container>
         </Navbar>

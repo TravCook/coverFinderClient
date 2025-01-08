@@ -1,8 +1,8 @@
-import { Container, Row, Col, Button, Card, Collapse } from 'react-bootstrap';
+import { Container, Row, Col, Button, Card } from 'react-bootstrap';
 import MatchupCard from '../matchupCard/matchupCard.js';
 import { useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBasketball, faBaseball, faFootball, faHockeyPuck } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBasketball, faBaseball, faFootball, faHockeyPuck } from '@fortawesome/free-solid-svg-icons';
 import moment from 'moment';
 import { Link } from 'react-router';
 
@@ -15,236 +15,97 @@ const UpcomingGames = ({ bankroll, sportsBook, setPageSelect, games, betType, va
     { name: "baseball_mlb", espnSport: 'Baseball', league: 'MLB', startMonth: 3, endMonth: 10, multiYear: false, statYear: 2024 },
   ];
 
-  const [upcomingGames, setUpcomingGames] = useState()
-  // Helper function to fetch team data
-  const fetchTeamData = () => {
-    fetch('http://localhost:3001/api/odds/upcomingGames', {
-      method: 'GET',
-      headers: {
-        "Content-type": "application/json; charset=UTF-8"
-      }
-    })
-      .then((res) => res.json())
-      .then((data) => setUpcomingGames(data));
-  };
+  const [upcomingGames, setUpcomingGames] = useState();
+  const [selectedSection, setSelectedSection] = useState('todaysGames'); // Default section
 
-  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    fetchUpcomingGames();
+  }, []);
 
-  const handleClick = (event) => {
-    setPageSelect(event.target.id);
+  const fetchUpcomingGames = async () => {
+    try {
+      const response = await fetch('http://3.137.71.56:3001/api/odds/upcomingGames');
+      const data = await response.json();
+      setUpcomingGames(data);
+    } catch (error) {
+      console.error('Error fetching upcoming games:', error);
+    }
   };
 
   const filterAndMapGames = (condition) => {
     return games?.filter(condition).map((game) => (
-      <MatchupCard valueBets={valueBets} todaysGames={todaysGames} betType={betType} key={game.id} bankroll={bankroll} gameData={game} sportsbook={sportsBook} />
+      <Col xs={12 } sm={6} xl={3}>
+        <MatchupCard key={game.id} valueBets={valueBets} todaysGames={todaysGames} betType={betType} bankroll={bankroll} gameData={game} sportsbook={sportsBook} />
+      </Col>
     ));
   };
 
   const handleSportSelect = (e) => {
-    console.log(e.target.id)
-  }
+    setPageSelect(e.target.id);
+  };
 
-  const renderSportCard = (sport, filterCondition, title, buttonText = 'more') => {
-    const filteredGames = games.filter((game) => game.sport_title === sport.league)
-      .filter(filterCondition);
+  const renderSportCard = (sport, filterCondition) => {
+    const filteredGames = games.filter((game) => game.sport_title === sport.league).filter(filterCondition);
     if (filteredGames.length === 0) return null;
 
     const renderNextGames = () => {
-      if (sport.league === 'NFL' && upcomingGames) {
-        return (
-          upcomingGames.nextNFLGames.map((game, idx) => {
-            if (idx < 3) {
-              return (
-                <Col>
-                  <Row style={{ textAlign: 'center' }}>
-                    <Col style={{ padding: 0 }}><img src={game.awayTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
-                    <Col xs={2} style={{ padding: 0 }}>vs</Col>
-                    <Col style={{ padding: 0 }}><img src={game.homeTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
-                  </Row>
-                </Col>
-              )
-            }
-          })
-        )
-
-      } else if (sport.league === 'NCAAF' && upcomingGames) {
-        return (
-          upcomingGames.nextNCAAFGames.map((game, idx) => {
-            if (idx < 3) {
-              return (
-                <Col>
-                  <Row style={{ textAlign: 'center' }}>
-                    <Col style={{ padding: 0 }}><img src={game.awayTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
-                    <Col xs={2} style={{ padding: 0 }}>vs</Col>
-                    <Col style={{ padding: 0 }}><img src={game.homeTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
-                  </Row>
-                </Col>
-              )
-            }
-          })
-        )
-
-      } else if (sport.league === 'NBA' && upcomingGames) {
-        return (
-          upcomingGames.nextNBAGames.map((game, idx) => {
-            if (idx < 3) {
-              return (
-                <Col>
-                  <Row style={{ textAlign: 'center' }}>
-                    <Col style={{ padding: 0 }}><img src={game.awayTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
-                    <Col xs={2} style={{ padding: 0 }}>vs</Col>
-                    <Col style={{ padding: 0 }}><img src={game.homeTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
-                  </Row>
-                </Col>
-              )
-            }
-          })
-        )
-
-      } else if (sport.league === 'NHL' && upcomingGames) {
-        return (
-          upcomingGames.nextNHLGames.map((game, idx) => {
-            if (idx < 3) {
-              return (
-                <Col>
-                  <Row style={{ textAlign: 'center' }}>
-                    <Col style={{ padding: 0 }}><img src={game.awayTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
-                    <Col xs={2} style={{ padding: 0 }}>vs</Col>
-                    <Col style={{ padding: 0 }}><img src={game.homeTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
-                  </Row>
-                </Col>
-              )
-            }
-          })
-        )
-
-      } else if (sport.league === 'MLB' && upcomingGames) {
-        return (
-          upcomingGames.nextMLBGames.map((game, idx) => {
-            if (idx < 3) {
-              return (
-                <Col>
-                  <Row style={{ textAlign: 'center' }}>
-                    <Col style={{ padding: 0 }}><img src={game.awayTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
-                    <Col xs={2} style={{ padding: 0 }}>vs</Col>
-                    <Col style={{ padding: 0 }}><img src={game.homeTeamLogo} style={{ width: '20px' }} alt='Team Logo' /></Col>
-                  </Row>
-                </Col>
-              )
-            }
-          })
-        )
-
-      }
-    }
+      const leagueGameMap = {
+        NFL: upcomingGames?.nextNFLGames,
+        NCAAF: upcomingGames?.nextNCAAFGames,
+        NBA: upcomingGames?.nextNBAGames,
+        NHL: upcomingGames?.nextNHLGames,
+        MLB: upcomingGames?.nextMLBGames
+      };
+    };
 
     const renderTitleRow = () => {
-      if (sport.league === 'NFL' && upcomingGames) {
-        return (
-          <Row>
-            <Col xs={2} ><FontAwesomeIcon style={{ marginLeft: 5 }} icon={faFootball} /> </Col>
-            <Col style={{textAlign: 'left'}}>{sport.league}</Col>
-            
-          </Row>
-        )
-
-      } else if (sport.league === 'NCAAF' && upcomingGames) {
-        return (
-          <Row>
-            <Col xs={2}><FontAwesomeIcon style={{ marginLeft: 5 }} icon={faFootball} /></Col>
-            <Col style={{textAlign: 'left'}}>{sport.league}</Col>
-          </Row>
-        )
-
-      } else if (sport.league === 'NBA' && upcomingGames) {
-        return (
-          <Row>
-            <Col xs={2}><FontAwesomeIcon style={{ marginLeft: 5 }} icon={faBasketball} /></Col>
-            <Col style={{textAlign: 'left'}}>{sport.league}</Col>
-          </Row>
-        )
-
-      } else if (sport.league === 'NHL' && upcomingGames) {
-        return (
-          <Row>
-            <Col xs={2}><FontAwesomeIcon style={{ marginLeft: 5 }} icon={faHockeyPuck} /></Col>
-            <Col style={{textAlign: 'left'}}>{sport.league}</Col>
-          </Row>
-        )
-
-      } else if (sport.league === 'MLB' && upcomingGames) {
-        return (
-          <Row>
-            <Col xs={2}><FontAwesomeIcon style={{ marginLeft: 5 }} icon={faBaseball} /></Col>
-            <Col style={{textAlign: 'left'}}>{sport.league} </Col>
-          </Row>
-        )
-
-      }
-    }
-
+      const sportIcons = {
+        NFL: faFootball,
+        NCAAF: faFootball,
+        NBA: faBasketball,
+        NHL: faHockeyPuck,
+        MLB: faBaseball
+      };
+      return (
+        <Row style={{display: 'flex', alignItems: 'center'  }}>
+          {/* <Col  style={{fontSize: '1.6rem', paddingLeft: 5, paddingRight: 5 }}><FontAwesomeIcon icon={sportIcons[sport.league]} /></Col> */}
+          <Col style={{fontSize: '.8rem', padding: 5}}>{sport.league}</Col>
+          <Col style={{textAlign: 'right'}} >
+            <Link to={`/sport/${sport.league}`}>
+              <Button id={sport.name} variant="outline-light" style={{ fontSize: '.8rem',backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }}>
+                {filteredGames.length} Games
+              </Button>
+            </Link>
+          </Col>
+        </Row>
+      );
+    };
 
     return (
-      <Col className="mb-4">
-        <Card style={{ cursor: 'pointer', backgroundColor: '#2c2c2c', color: '#D4D2D5' }} onClick={handleClick}>
-          <Card.Body>
-            <Card.Title style={{ textAlign: 'center' }}>{renderTitleRow()} </Card.Title>
-            <Row>
-              {renderNextGames(filteredGames)}
-            </Row>
-            <Col style={{ padding: '.5em' }}>
-              <Row >
-                <Col style={{ alignContent: 'center' }} >
-                  <Card.Text>
-                    {filteredGames.length} upcoming games
-                  </Card.Text>
-                </Col>
-                <Col xs={4}>
-                <Link to={`/sport/${sport.league}`}>
-                <Button id={sport.name} variant="outline-light" style={{ backgroundColor: '#0A0A0B', borderColor: '#0A0A0B' }} onClick={handleSportSelect}>
-                    {buttonText}
-                  </Button>
-                </Link>
-
-                </Col>
-
-              </Row>
-            </Col>
-
-          </Card.Body>
+      <Col xs={12} className="mb-4">
+        <Card style={{ backgroundColor: '#2c2c2c', color: '#D4D2D5' }} onClick={handleSportSelect}>
+            <div style={{ textAlign: 'center'}}>{renderTitleRow()}</div>
         </Card>
       </Col>
     );
   };
 
-
-  useEffect(() => {
-    fetchTeamData(games)
-  }, [games])
-
-    const [selectedSection, setSelectedSection] = useState('todaysGames'); // Default section
-  
-    const handleSectionClick = (section) => {
-      setSelectedSection(section);
-    };
-
-    
   const renderContent = () => {
     switch (selectedSection) {
       case 'todaysGames':
         return (
-          <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+          <Row className="g-3">
             {games.filter((game) =>
               moment(game.commence_time).local().isSame(moment().local(), 'day')
             ).length > 0
               ? filterAndMapGames((game) => moment(game.commence_time).local().isSame(moment().local(), 'day'))
-              : filterAndMapGames((game) => moment(game.commence_time).local().isSame(moment().add('1', 'days').local(), 'day'))
+              : filterAndMapGames((game) => moment(game.commence_time).local().isSame(moment().add(1, 'days').local(), 'day'))
             }
           </Row>
         );
       case 'highStatDisparity':
         return (
-          <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+          <Row className="g-3">
             {filterAndMapGames((game) =>
               Math.abs(game.homeTeamIndex - game.awayTeamIndex) > 0.5 && moment(game.commence_time).local().isSame(moment().local(), 'day')
             )}
@@ -252,7 +113,7 @@ const UpcomingGames = ({ bankroll, sportsBook, setPageSelect, games, betType, va
         );
       case 'closeCalls':
         return (
-          <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+          <Row className="g-3">
             {filterAndMapGames((game) =>
               Math.abs(game.homeTeamIndex - game.awayTeamIndex) < 0.2 && moment(game.commence_time).local().isSame(moment().local(), 'day')
             )}
@@ -266,59 +127,53 @@ const UpcomingGames = ({ bankroll, sportsBook, setPageSelect, games, betType, va
   return (
     <Container fluid>
       <Row>
-      <Col xs={10}>
-      <Card style={{ background: 'linear-gradient(90deg, rgba(44,44,44,1) 0%, rgba(94,94,94,1) 50%, rgba(44,44,44,1) 100%)', borderColor: '#575757' }}>
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <span
-            style={{ color: 'whitesmoke', cursor: 'pointer' }}
-            onClick={() => handleSectionClick('todaysGames')}
-          >
-            {games.filter((game) =>
-              moment(game.commence_time).local().isSame(moment().local(), 'day')
-            ).length > 0 ? `Today's Games` : `Tomorrow's Games`}
-          </span>
-          <span
-            style={{ color: 'whitesmoke', cursor: 'pointer' }}
-            onClick={() => handleSectionClick('highStatDisparity')}
-          >
-            High Stat Disparity
-          </span>
-          <span
-            style={{ color: 'whitesmoke', cursor: 'pointer' }}
-            onClick={() => handleSectionClick('closeCalls')}
-          >
-            Close Calls
-          </span>
-        </Card.Header>
-        <Card.Body>
-          {renderContent()}
-        </Card.Body>
-      </Card>
-    </Col>
-        <Col>
-          {/* Upcoming Sports */}
-          {sports.map((sport) => {
-            const currentMonth = moment().format('M');
-            const isInSeason =
-              sport.multiYear
-                ? currentMonth >= sport.startMonth || currentMonth <= sport.endMonth
-                : currentMonth >= sport.startMonth && currentMonth <= sport.endMonth;
+        {sports.map((sport) => {
+          const currentMonth = moment().format('M');
+          const isInSeason =
+            sport.multiYear
+              ? currentMonth >= sport.startMonth || currentMonth <= sport.endMonth
+              : currentMonth >= sport.startMonth && currentMonth <= sport.endMonth;
+              let largeSplit = 12/sports.filter((sport)=>sport.multiYear
+              ? currentMonth >= sport.startMonth || currentMonth <= sport.endMonth
+              : currentMonth >= sport.startMonth && currentMonth <= sport.endMonth).length
+          if (!isInSeason) return null;
 
-            // Only render sports that are in season
-            if (!isInSeason) return null;
-
-            return (
-              <Row key={sport.name}>
-                {/* Render each sport in a column */}
-                <Col xs={12}>
-                  <div className="sport-section">
-                    {/* <h3>{sport.league} Upcoming Games</h3> */}
-                    {renderSportCard(sport, (game) => moment(game.commence_time).local().isBefore(moment().add(6, 'days')), sport.league)}
-                  </div>
-                </Col>
-              </Row>
-            );
-          })}
+          return (
+            <Col xs={6} sm={3} lg={largeSplit}>
+              <div className="sport-section">
+                {renderSportCard(sport, (game) => moment(game.commence_time).local().isBefore(moment().add(30, 'days')), sport.league)}
+              </div>
+            </Col>
+          );
+        })}
+      </Row>
+      <Row>
+        <Col xs={12}>
+          <Card style={{ background: 'linear-gradient(90deg, rgba(44,44,44,1) 0%, rgba(94,94,94,1) 50%, rgba(44,44,44,1) 100%)', borderColor: '#575757' }}>
+            <Card.Header className="d-flex justify-content-between align-items-center">
+              <span
+                style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                onClick={() => setSelectedSection('todaysGames')}
+              >
+                {games.filter((game) =>
+                  moment(game.commence_time).local().isSame(moment().local(), 'day')
+                ).length > 0 ? `Today's Games` : `Tomorrow's Games`}
+              </span>
+              <span
+                style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                onClick={() => setSelectedSection('highStatDisparity')}
+              >
+                High Stat Disparity
+              </span>
+              <span
+                style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                onClick={() => setSelectedSection('closeCalls')}
+              >
+                Close Calls
+              </span>
+            </Card.Header>
+            <Card.Body>{renderContent()}</Card.Body>
+          </Card>
         </Col>
 
       </Row>

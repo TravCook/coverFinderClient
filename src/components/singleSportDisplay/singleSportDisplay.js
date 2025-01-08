@@ -9,11 +9,9 @@ const SingleSportDisplay = (props) => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
-    const navigate = useNavigate(); // Initialize the navigate function
-
     const upcomingGamesGet = () => {
         setLoading(true)
-        fetch('http://localhost:3001/api/odds/sport', {
+        fetch('http://3.137.71.56:3001/api/odds/sport', {
             method: 'POST',
             body: JSON.stringify({
                 sport: props.pageSelect
@@ -35,7 +33,7 @@ const SingleSportDisplay = (props) => {
 
     useEffect(() => {
         upcomingGamesGet()
-    }, [props.pageSelect])
+    }, [props.pageSelect, props.games])
 
     // Function to navigate back to the landing page
     const handleBackToLanding = () => {
@@ -56,7 +54,10 @@ const SingleSportDisplay = (props) => {
                 ) : (
                     games && games.length > 0 ? (
                         games.map((game) => (
-                            <MatchupCard valueBets={props.valueBets} todaysGames={props.todaysGames} betType={props.betType} key={game.id} bankroll={props.bankroll} gameData={game} sportsbook={props.sportsBook}  winRates={props.winRates} />
+                            <Col xs={12 } sm={6} xl={3}>
+                                <MatchupCard valueBets={props.valueBets} todaysGames={props.todaysGames} betType={props.betType} key={game.id} bankroll={props.bankroll} gameData={game} sportsbook={props.sportsBook}  winRates={props.winRates} />
+                            </Col>
+
                         ))
                     ) : (
                         <Col style={{ textAlign: 'center' }}>
@@ -70,7 +71,7 @@ const SingleSportDisplay = (props) => {
             <Row style={{ justifyContent: 'center', marginTop: '20px' }}>
                 <Col style={{ textAlign: 'center' }}>
                 <Link to={"/"} >
-                <Button variant="primary">
+                <Button style={{backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'}}>
                         Back to Landing Page
                     </Button>
                 </Link>

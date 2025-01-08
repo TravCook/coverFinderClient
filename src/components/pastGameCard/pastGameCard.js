@@ -10,7 +10,7 @@ const PastGameCard = (props) => {
 
   // Fetch team data based on the team's name
   const fetchTeamData = (teamName, setTeam) => {
-    fetch('http://localhost:3001/api/teams/search', {
+    fetch('http://3.137.71.56:3001/api/teams/search', {
       method: 'POST',
       body: JSON.stringify({ searchTeam: teamName, sport: props.gameData.sport }),
       headers: {
@@ -40,10 +40,10 @@ const PastGameCard = (props) => {
   }, [props.gameData]);
 
   // Set background color based on prediction correctness
-  const backgroundColor = props.gameData.predictionCorrect ? '#06402B' : '#4d0000';
+  const backgroundColor = props.gameData.predictionCorrect ? 'rgba(6, 64, 43, .7)' : 'rgba(77, 0, 0, .7)';
 
   return (
-    <div style={{ ...styles.card, backgroundColor }}>
+    <div style={{ ...styles.card }}>
       <Row>
         <Col style={styles.timeColumn}>
           {moment(props.gameData.commence_time).format('MM/DD/YYYY') === moment().format('MM/DD/YYYY')
@@ -80,6 +80,7 @@ const PastGameCard = (props) => {
               bankroll={props.bankroll}
               valueBets={props.valueBets}
               todaysGames={props.todaysGames}
+              backgroundColor={backgroundColor}
             />
           )}
           {homeTeam && (
@@ -98,6 +99,7 @@ const PastGameCard = (props) => {
               bankroll={props.bankroll}
               valueBets={props.valueBets}
               todaysGames={props.todaysGames}
+              backgroundColor={backgroundColor}
             />
           )}
         </>
@@ -111,7 +113,7 @@ const styles = {
     backgroundColor: '#303036',
     color: '#D4D2D5',
     fontSize: '14px',
-    width: '22rem',
+    width: '90%',
     borderRight: 'solid',
     borderLeft: 'solid',
     borderRadius: '.5em',

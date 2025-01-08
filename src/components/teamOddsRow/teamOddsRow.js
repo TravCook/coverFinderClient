@@ -18,7 +18,7 @@ const calculateBetAmount = (kellyCriterion, bankroll) => {
   return `$${((kellyCriterion * bankroll)).toFixed(2)}`; // 0.25 multiplier for bet sizing
 };
 
-const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, gameData, sportsbook, total, market, bankroll, betType, valueBets, todaysGames }) => {
+const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, gameData, sportsbook, total, market, bankroll, betType, valueBets, todaysGames, backgroundColor }) => {
   const [profit, setProfit] = useState()
   // Extracting bookmakers data for clarity
   const bookmakerData = gameData.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
@@ -96,8 +96,8 @@ const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, game
 
   const renderTeamInfo = (past) => {
       return (
-        <Col xs={4} style={{ alignContent: 'center' }}>
-          {team ? `${team.abbreviation} ${team.teamName}` : null}
+        <Col xs={4} style={{ alignContent: 'center', padding: 5 }}>
+          {team ? `${team.abbreviation} ${team.teamName}` : <></>}
           <sup style={{ marginLeft: 5 }}>{(teamIndex).toFixed(2).padEnd(4, '0')}</sup>
         </Col>
       );
@@ -125,13 +125,14 @@ const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, game
   return (
     <div>
       {
-        <Row style={{ marginTop: 5, alignItems: 'center', fontSize: '12px' }}>
-          <Col xs={1}>
-            <img src={team.logo} style={{ width: '20px' }} alt='Team Logo' />
+        teamIndex && oppteamIndex &&teamIndex > oppteamIndex ? 
+        <Row style={{ alignItems: 'center', fontSize: '.8rem',paddingLeft: 5, paddingRight: 5, backgroundColor: backgroundColor,  borderRadius: 5}}>
+          <Col style={{padding: 0, textAlign: 'center'}} xs={1}>
+            <img src={team.logo} style={{ width: '200%', maxWidth: '30px' }} alt='Team Logo' />
           </Col>
           {renderTeamInfo(past)}
           <Col xs={4} style={{ textAlign: 'center', padding: 5 }}>
-          <Row>
+          <Row style={{ textAlign: 'center', padding: 5 }}>
             <Col>
               {score}
             </Col>
@@ -159,34 +160,41 @@ const TeamOddsRow = ({ score, past, team, teamIndex, oppTeam, oppteamIndex, game
             </Row>
           </Col>
         </Row>
-        //  :
-        // <Row style={{ marginTop: 5, alignItems: 'center', fontSize: '12px' }}>
-        //   <Col xs={1}>
-        //     <img src={team.logo} style={{ width: '20px' }} alt='Team Logo' />
-        //   </Col>
-        //   {renderTeamInfo()}
-        //   <Col xs={2} style={{ textAlign: 'center', padding: 5 }}>
-        //     {past ? `${score}` : <OddsDisplayBox teamIndex={teamIndex} key={`${team.espnDisplayName} h2h`} team={team} oppTeam={oppTeam} gameData={gameData} sportsbook={sportsbook} market='h2h' total={total} />}
-        //   </Col>
-        //   <Col>
-        //     <Row>
-        //       <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
-        //         <span> {betType && profit && teamIndex > oppteamIndex ? `Bet` : <></>} </span>
-        //       </Col>
-        //       <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
-        //         <span>{betType && profit && teamIndex > oppteamIndex ? `Profit` : <></>}</span>
-        //       </Col>
-        //     </Row>
-        //     <Row>
-        //       <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
-        //         {betType === 'Value' ? renderBettorBetDisplay() : betType === 'Kelley' ? renderKelleyBetDisplay() : betType === 'Proportional' ? renderProportionalBetDisplay() : <></>}
-        //       </Col>
-        //       <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
-        //         {profit ? renderProfit() : <></>}
-        //       </Col>
-        //     </Row>
-        //   </Col>
-        // </Row>
+         : 
+         <Row style={{ alignItems: 'center', fontSize: '.8rem', paddingLeft: 5, paddingRight: 5}}>
+         <Col style={{padding: 0, textAlign: 'center'}} xs={1}>
+           <img src={team.logo} style={{  width: '200%', maxWidth: '30px' }} alt='Team Logo' />
+         </Col>
+         {renderTeamInfo(past)}
+         <Col xs={4} style={{ textAlign: 'center', padding: 5 }}>
+         <Row style={{ textAlign: 'center', padding: 5 }}>
+           <Col>
+             {score}
+           </Col>
+           <Col>
+             <OddsDisplayBox teamIndex={teamIndex} key={`${team.espnDisplayName} h2h`} team={team} oppTeam={oppTeam} gameData={gameData} sportsbook={sportsbook} market='h2h' total={total} />
+           </Col>
+         </Row>
+         </Col>
+         <Col>
+           <Row>
+             <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+               <span> {betType && profit && teamIndex > oppteamIndex ? `Bet` : <></>} </span>
+             </Col>
+             <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+               <span>{betType && profit && teamIndex > oppteamIndex ? `Profit` : <></>}</span>
+             </Col>
+           </Row>
+           <Row>
+             <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+               {betType === 'Value' ? renderBettorBetDisplay() : betType === 'Kelley' ? renderKelleyBetDisplay() : betType === 'Proportional' ? renderProportionalBetDisplay() : <></>}
+             </Col>
+             <Col xs={6} style={{ alignContent: 'center', padding: 0, textAlign: 'center' }}>
+               {profit ? renderProfit() : <></>}
+             </Col>
+           </Row>
+         </Col>
+       </Row>
       }
     </div>
 

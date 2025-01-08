@@ -4,29 +4,32 @@ import TeamOddsRow from '../teamOddsRow/teamOddsRow';
 import moment from 'moment';
 import { Link } from 'react-router';
 
-const MatchupCard = ({ gameData, bestBets, setBestBets, bankroll, sportsbook, betType, valueBets, todaysGames }) => {
+const MatchupCard = ({ gameData, bestBets, setBestBets, bankroll, sportsbook, betType, valueBets, todaysGames, final }) => {
   const [homeTeam, setHomeTeam] = useState(null);
   const [awayTeam, setAwayTeam] = useState(null);
-
-  // Helper function to fetch team data
-  const fetchTeamData = (teamName, setTeam) => {
-    fetch('http://localhost:3001/api/teams/search', {
-      method: 'POST',
-      body: JSON.stringify({ searchTeam: teamName, sport: gameData.sport }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8"
-      }
-    })
-      .then((res) => res.json())
-      .then((data) => setTeam(data || null));
-  };
 
   useEffect(() => {
     if (gameData?.home_team && gameData?.away_team) {
       fetchTeamData(gameData.home_team, setHomeTeam);
       fetchTeamData(gameData.away_team, setAwayTeam);
     }
-  }, [gameData]); // Dependency on gameData, re-run if it changes
+  }, [gameData]);
+
+  const fetchTeamData = async (teamName, setTeam) => {
+    try {
+      const response = await fetch('http://3.137.71.56:3001/api/teams/search', {
+        method: 'POST',
+        body: JSON.stringify({ searchTeam: teamName, sport: gameData.sport }),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8"
+        }
+      });
+      const data = await response.json();
+      setTeam(data || null);
+    } catch (error) {
+      console.error('Error fetching team data:', error);
+    }
+  };
 
   const formatGameTime = () => {
     const gameTime = moment(gameData.commence_time).utc().local();
@@ -36,25 +39,64 @@ const MatchupCard = ({ gameData, bestBets, setBestBets, bankroll, sportsbook, be
   };
 
   const winPercent = gameData.winPercent === 0 ? `${(gameData.winPercent * 100).toFixed(2)}%` : gameData.winPercent ? `${(gameData.winPercent * 100).toFixed(2)}%` : 'Loading...';
-
+  const backgroundColor = gameData.predictionCorrect ? 'rgba(6, 64, 43, .7)' : 'rgba(77, 0, 0, .7)';
   return (
     <div style={styles.card}>
       <Row style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Col style={styles.timeColumn}>
-          {formatGameTime()}
+        <Col xs={7} style={styles.timeColumn}>
+          {gameData.timeRemaining ? gameData.timeRemaining : formatGameTime()}
         </Col>
         <Col xs={3} style={styles.winPercentColumn}>
           {winPercent}
         </Col>
-        <Col style={{textAlign: 'right', padding: 0}}>
-        <Link to={`/matchup/${gameData.id}`}>
-            <Button variant="outline-light" style={{ backgroundColor: '#0A0A0B', borderColor: '#0A0A0B' }}>
-              See stats
-            </Button>
+        <Col xs={2} style={{ textAlign: 'right', padding: 0 }}>
+          <Link to={`/matchup/${gameData.id}`}>
+            <Button variant="outline-light" style={styles.linkButton}>More</Button>
           </Link>
         </Col>
       </Row>
-      {awayTeam && (
+      {awayTeam && homeTeam && final ?
+        <>
+          {awayTeam && (
+            <TeamOddsRow
+              teamIndex={gameData.awayTeamIndex}
+              team={awayTeam}
+              oppTeam={homeTeam}
+              gameData={gameData}
+              sportsbook={sportsbook}
+              total="Over"
+              past="true"
+              market="h2h"
+              score={gameData.awayScore}
+              oppteamIndex={gameData.homeTeamIndex}
+              betType={betType}
+              bankroll={bankroll}
+              valueBets={valueBets}
+              todaysGames={todaysGames}
+              backgroundColor={backgroundColor}
+            />
+          )}
+          {homeTeam && (
+            <TeamOddsRow
+              teamIndex={gameData.homeTeamIndex}
+              team={homeTeam}
+              oppTeam={awayTeam}
+              gameData={gameData}
+              sportsbook={sportsbook}
+              total="Under"
+              past="true"
+              market="h2h"
+              score={gameData.homeScore}
+              oppteamIndex={gameData.awayTeamIndex}
+              betType={betType}
+              bankroll={bankroll}
+              valueBets={valueBets}
+              todaysGames={todaysGames}
+              backgroundColor={backgroundColor}
+            />
+          )}
+        </> :
+        homeTeam && awayTeam ?
         <>
           <TeamOddsRow
             score={gameData.awayScore}
@@ -74,10 +116,6 @@ const MatchupCard = ({ gameData, bestBets, setBestBets, bankroll, sportsbook, be
             betType={betType}
             total="Over"
           />
-        </>
-      )}
-      {homeTeam && (
-        <>
           <TeamOddsRow
             score={gameData.homeScore}
             market="h2h"
@@ -96,46 +134,46 @@ const MatchupCard = ({ gameData, bestBets, setBestBets, bankroll, sportsbook, be
             todaysGames={todaysGames}
             total="Under"
           />
-        </>
-      )}
+          
+        </>: <></>}
     </div>
   );
 };
 
 const styles = {
   card: {
-    backgroundColor: '#222222',
-    color: '#E0E0E0',
-    fontSize: '14px',
-    width: '22rem',
+    backgroundColor: '#303036',
+    color: '#D4D2D5',
+    fontSize: '.8rem',
     borderRadius: '.5em',
-    marginBottom: '1rem',
+    marginTop: '10px',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-    transition: 'all 0.3s ease'
+    maxHeight: '8rem',
+    paddingLeft: '10px',
+    paddingRight: '10px',
+
   },
   timeColumn: {
     textAlign: 'center',
-    borderStyle: 'solid',
-    borderTopStyle: 'none',
-    borderLeftStyle: 'none',
-    borderRadius: '.25em',
-    padding: '.5rem',
+    fontWeight: 'bold',
+    fontSize: '1rem',
   },
   winPercentColumn: {
-    textAlign: 'center',
-    padding: '0px',
-    fontWeight: 'bold',
-    fontSize: '16px',
-    paddingTop: '0.5rem',
+    fontSize: '.9rem',
   },
-  rowHeader: {
-    display: 'flex',
-    textAlign: 'right',
-    justifyContent: 'right',
-    padding: '0.5rem 0',
-    fontSize: '12px',
-    color: '#A4A6A8',
+  teamColumn: {
     fontWeight: 'bold',
+    paddingTop: '10px',
+    textAlign: 'center',
+  },
+  linkButton: {
+    padding: 0,
+    marginRight: '5px',
+    backgroundColor: '#4E4E50',
+    borderColor: '#4E4E50',
+    fontSize: '.8rem',
+    paddingLeft: '7px',
+    paddingRight: '7px',
   }
 };
 

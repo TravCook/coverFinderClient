@@ -23,14 +23,14 @@ function App() {
 
 
   const upcomingGamesGet = () => {
-    fetch('http://localhost:3001/api/odds')
+    fetch('http://3.137.71.56:3001/api/odds')
       .then((res) => res.json())
       .then((data) => {
         setGames(data);
       });
   };
   const pastGamesGet = () => {
-    fetch('http://localhost:3001/api/odds/pastGameOdds', {
+    fetch('http://3.137.71.56:3001/api/odds/pastGameOdds', {
       method: 'POST',
       headers: {
         "Content-type": "application/json; charset=UTF-8"

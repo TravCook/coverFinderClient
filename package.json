@@ -2,6 +2,7 @@
   "name": "blankapp",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://3.137.71.56:3001",
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",

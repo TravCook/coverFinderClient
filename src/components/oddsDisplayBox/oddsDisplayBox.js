@@ -89,15 +89,16 @@ const OddsDisplayBox = ({ gameData, team, teamIndex, sportsbook, market, total }
     }
   ];
 
-  // Function to get color based on the team index
-  const getColor = (index) => {
-    return indexColors.find(color => index <= color.key)?.hexCode || '#f20707';
+
+  const getColorForIndex = (index) => {
+    let hue = (index / 45) * 120; // Scale from 0 to 120 degrees
+    return `hsl(${hue}, 100%, 50%)`; // Full saturation and lightness at 50%
   };
 
-  const [indexColor, setIndexColor] = useState(getColor(teamIndex));
+  const [indexColor, setIndexColor] = useState(getColorForIndex(teamIndex));
 
   useEffect(() => {
-    setIndexColor(getColor(teamIndex)); // Update color when teamIndex changes
+    setIndexColor(getColorForIndex(teamIndex)); // Update color when teamIndex changes
   }, [teamIndex]);
 
   const getOdds = () => {
@@ -113,11 +114,11 @@ const OddsDisplayBox = ({ gameData, team, teamIndex, sportsbook, market, total }
       return out.name === team.espnDisplayName || out.name === total || outcomeSplit[outcomeSplit.length - 1] === espnNameSplit[espnNameSplit.length - 1];
     });
 
-    return outcome ? (outcome.price < 0 ? outcome.price : `+${outcome.price}`) : null;
+    return outcome ? (outcome.price < 0 ? outcome.price : `+${outcome.price}`) : <></>;
   };
 
   return (
-    <Col xs={12} style={{ borderStyle: 'solid', boxShadow: `inset 0 0 10px ${indexColor}` }}>
+    <Col style={{ borderStyle: 'solid', boxShadow: `inset 0 0 13px ${indexColor}`, padding: 0 }}>
       <Row style={{ margin: 0 }}>
         <Col style={{ padding: 0, textAlign: 'center' }}>
           {getOdds()}
