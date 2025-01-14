@@ -10,7 +10,7 @@ const PastGameCard = (props) => {
 
   // Fetch team data based on the team's name
   const fetchTeamData = (teamName, setTeam) => {
-    fetch('http://3.137.71.56:3001/api/teams/search', {
+    fetch(`http://${process.env.REACT_APP_API_URL}/api/teams/search`, {
       method: 'POST',
       body: JSON.stringify({ searchTeam: teamName, sport: props.gameData.sport }),
       headers: {

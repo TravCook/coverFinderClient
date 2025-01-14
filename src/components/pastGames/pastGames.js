@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Container, Row, Col, Dropdown, Form, Button } from 'react-bootstrap'
-import PastGameCard from '../pastGameCard/pastGameCard.js'
+import { Container, Row, Col, Dropdown, Form, Button, DropdownToggle, DropdownMenu } from 'react-bootstrap'
 import moment from 'moment'
 import MatchupCard from '../matchupCard/matchupCard.js'
+import { sports } from '../../utils/constants.js';
+import { useSelector } from 'react-redux';
 
-const PastGamesDisplay = (props) => {
+const PastGamesDisplay = () => {
     const [filteredGames, setFilteredGames] = useState([])  // Initialize as an empty array
     const [searchFilter, setSearchFilter] = useState({
         startDate: '',
@@ -15,20 +16,23 @@ const PastGamesDisplay = (props) => {
         awayIndexRange: [0, 100],
         winPercentRange: [0, 100],
     })
+    const { bankroll, betType, sportsbook } = useSelector((state) => state.user);
+    const {games, pastGames} = useSelector((state) => state.games)
+    const {teams} = useSelector((state) => state.teams)
+    const todaysGames = games.filter((game) => moment(game.commence_time).isSame(moment(), 'day'))
     const [currentPage, setCurrentPage] = useState(0)
 
-    // Function to calculate decimal odds from moneyline odds
     const calculateDecimalOdds = (moneylineOdds) => {
         return moneylineOdds > 0 ? (moneylineOdds / 100) + 1 : (100 / -moneylineOdds) + 1;
     };
 
     const calculateKellyCriterion = (decimalOdds, impliedProb) => {
         return (decimalOdds * impliedProb - (1 - impliedProb)) / (decimalOdds - 1);
-      };
+    };
 
     // Group games by their commence_time date
     useEffect(() => {
-        const groupedGames = props.games
+        const groupedGames = pastGames
             // .filter((game) => {
             //     const gameDate = moment.utc(game.commence_time)
             //     const isWithinDateRange =
@@ -52,7 +56,7 @@ const PastGamesDisplay = (props) => {
         }))
 
         setFilteredGames(groupedGamesArray) // Set the filtered grouped games
-    }, [props.games, searchFilter])
+    }, [pastGames, searchFilter])
 
     const handleDateChange = (e) => {
         const { name, value } = e.target
@@ -75,7 +79,7 @@ const PastGamesDisplay = (props) => {
         let betAmount
         currentGames.map((game) => {
             game.bookmakers.map((bookmaker) => {
-                if (bookmaker.key === props.sportsBook) {
+                if (bookmaker.key === sportsbook) {
                     bookmaker.markets.map((market) => {
                         if (market.key === 'h2h') {
                             market.outcomes.map((outcome) => {
@@ -83,9 +87,9 @@ const PastGamesDisplay = (props) => {
                                     correctGames.push(outcome)
                                 } else if (outcome.name === game.away_team && game.awayTeamIndex > game.homeTeamIndex && game.awayScore > game.homeScore && game.predictionCorrect) {
                                     correctGames.push(outcome)
-                                }else if(outcome.name === game.home_team && game.homeTeamIndex > game.awayTeamIndex && game.awayScore > game.homeScore) {
+                                } else if (outcome.name === game.home_team && game.homeTeamIndex > game.awayTeamIndex && game.awayScore > game.homeScore) {
                                     incorrectGames.push(outcome)
-                                }else if(outcome.name === game.away_team && game.awayTeamIndex > game.homeTeamIndex && game.homeScore > game.awayScore) {
+                                } else if (outcome.name === game.away_team && game.awayTeamIndex > game.homeTeamIndex && game.homeScore > game.awayScore) {
                                     incorrectGames.push(outcome)
                                 }
                             })
@@ -97,22 +101,22 @@ const PastGamesDisplay = (props) => {
         incorrectGames.map((game) => {
             decimalOdds = (calculateDecimalOdds(game.price))
             if (type === 'proportional') {
-                betAmount = (props.bankroll / currentGames.length)
+                betAmount = bankroll ? (bankroll / currentGames.length) : 5
             } else if (type === 'value') {
-                betAmount = (props.bankroll / currentGames.length);
+                betAmount = bankroll ? (bankroll / currentGames.length) : 5;
             } else if (type === 'kelley') {
-                betAmount = (calculateKellyCriterion(decimalOdds, game.impliedProb) * props.bankroll)
+                betAmount = bankroll ? (calculateKellyCriterion(decimalOdds, game.impliedProb) * bankroll) : (calculateKellyCriterion(decimalOdds, game.impliedProb) * 5)
             }
             loss = loss + betAmount
         })
         correctGames.map((game) => {
             decimalOdds = (calculateDecimalOdds(game.price))
             if (type === 'proportional') {
-                betAmount = (props.bankroll / currentGames.length)
+                betAmount = bankroll ? (bankroll / currentGames.length) : 5
             } else if (type === 'value') {
-                betAmount = (props.bankroll / currentGames.length);
+                betAmount = bankroll ? (bankroll / currentGames.length) : 5;
             } else if (type === 'kelley') {
-                betAmount = (calculateKellyCriterion(decimalOdds, game.impliedProb) * props.bankroll)
+                betAmount = bankroll ? (calculateKellyCriterion(decimalOdds, game.impliedProb) * bankroll) : (calculateKellyCriterion(decimalOdds, game.impliedProb) * 5)
             }
             profit = profit + ((betAmount * decimalOdds) - betAmount)
         })
@@ -131,21 +135,55 @@ const PastGamesDisplay = (props) => {
         <Container fluid>
             <Row>
                 <Col>
-                    <Row>
+                    <Row style={{ fontSize: '.80rem' }}>
                         <Col>
-                            {props.games ? `Ovr Win Rate: ${((props.games.filter((game) => game.predictionCorrect).length / props.games.length) * 100).toFixed(2)}%` : <> </>}
+                            {pastGames ? `Ovr Win Rate: ${((pastGames.filter((game) => game.predictionCorrect).length / pastGames.length) * 100).toFixed(2)}%` : <> </>}
                         </Col>
                         <Col>
                             {currentGames.length > 0 ? `Day Win Rate: ${((currentGames.filter((game) => game.predictionCorrect).length / currentGames.length) * 100).toFixed(2)}%` : <> </>}
                         </Col>
                         <Col>
-                            {currentGames.length > 0 ? `Value Profit: $${renderProfit('value')}` : <> </>}
+                            {`Correct Games: ${currentGames.filter((game) => game.predictionCorrect).length}`}
+                        </Col>
+                        <Col>
+                            {`Total Games: ${currentGames.length}`}
                         </Col>
                         <Col>
                             {currentGames.length > 0 ? `Prop Profit: $${renderProfit('proportional')}` : <> </>}
                         </Col>
                         <Col>
-                            {currentGames.length > 0 ? `Kelley Profit: $${renderProfit('kelley')}` : <> </>}
+                            <Dropdown align="end">
+                                <DropdownToggle
+                                    style={{
+                                        fontSize: '.75rem',
+                                        backgroundColor: 'rgb(198 159 66)',
+                                        borderColor: 'rgb(198 159 66)',
+                                        color: '#121212',
+                                    }}
+                                >
+                                    Winrates
+                                </DropdownToggle>
+                                <DropdownMenu style={{ padding: 5, backgroundColor: '#303036', textAlign: 'right', color: 'white' }}>
+                                    {currentGames && sports.map((sport) => {
+                                        // Filter current games for the sport's league
+                                        const sportGames = currentGames.filter((game) => game.sport_title.toLowerCase() === sport.league.toLowerCase());
+
+                                        if (sportGames.length === 0) return null;
+
+                                        // Calculate the win rate for the league
+                                        const totalGames = sportGames.length;
+                                        const correctGames = sportGames.filter((game) => game.predictionCorrect).length;
+                                        const winRate = ((correctGames / totalGames) * 100).toFixed(2); // Win rate in percentage
+
+                                        return (
+                                            <Row key={sport.league}>
+                                                <Col>{sport.league.toUpperCase()}</Col>
+                                                <Col>{winRate}%</Col>
+                                            </Row>
+                                        );
+                                    })}
+                                </DropdownMenu>
+                            </Dropdown>
                         </Col>
                     </Row>
                 </Col>
@@ -154,24 +192,24 @@ const PastGamesDisplay = (props) => {
             {/* Games List */}
             <Row >
                 <Col xs={12} md={6}>
-                <Row style={{ height: '54rem', overflow: 'scroll' }}>
-                {currentGames.filter((game)=> game.predictionCorrect === true).map((game) => (
-                    <Col xs={12} xl={6}>
-                     <MatchupCard final={true} bestBets={props.bestBets} setBestBets={props.setBestBets} bankroll={props.bankroll} betType={props.betType} valueBets={props.valueBets} todaysGames={props.todaysGames} key={game.id} gameData={game} sportsbook={props.sportsBook} winRates={props.winRates} />
-                    </Col>
-                   
-                ))}
-                </Row>
+                    <Row style={{ height: '54rem', overflow: 'scroll' }}>
+                        {currentGames.filter((game) => game.predictionCorrect === true).map((game) => (
+                            <Col xs={12} xl={6}>
+                                <MatchupCard final={true} bankroll={bankroll} betType={betType} todaysGames={todaysGames} key={game.id} gameData={game} sportsbook={sportsbook} />
+                            </Col>
+
+                        ))}
+                    </Row>
 
                 </Col>
-                <Col  xs={12} md={6}>
-                <Row style={{height: '54rem',  overflow: 'scroll' }}>
-                {currentGames.filter((game)=> game.predictionCorrect === false).map((game) => (
-                    <Col xs={12} xl={6}>
-                    <MatchupCard final={true} bestBets={props.bestBets} setBestBets={props.setBestBets} bankroll={props.bankroll} betType={props.betType} valueBets={props.valueBets} todaysGames={props.todaysGames} key={game.id} gameData={game} sportsbook={props.sportsBook} winRates={props.winRates} />
-                    </Col>
-                ))}
-                </Row>
+                <Col xs={12} md={6}>
+                    <Row style={{ height: '54rem', overflow: 'scroll' }}>
+                        {currentGames.filter((game) => game.predictionCorrect === false).map((game) => (
+                            <Col xs={12} xl={6}>
+                                <MatchupCard teams={teams[game.sport]} final={true} bankroll={bankroll} betType={betType} todaysGames={todaysGames} key={game.id} gameData={game} sportsbook={sportsbook} />
+                            </Col>
+                        ))}
+                    </Row>
 
                 </Col>
             </Row>
@@ -179,10 +217,10 @@ const PastGamesDisplay = (props) => {
             {/* Pagination */}
             <Row>
                 <Col>
-                    <Button style={{backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'}} disabled={currentPage === 0} onClick={() => handlePageChange(currentPage - 1)}>Previous</Button>
+                    <Button style={{ backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }} disabled={currentPage === 0} onClick={() => handlePageChange(currentPage - 1)}>Previous</Button>
                 </Col>
-                <Col style={{textAlign: 'right'}}>
-                    <Button style={{backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'}} disabled={currentPage >= filteredGames.length - 1} onClick={() => handlePageChange(currentPage + 1)}>Next</Button>
+                <Col style={{ textAlign: 'right' }}>
+                    <Button style={{ backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }} disabled={currentPage >= filteredGames.length - 1} onClick={() => handlePageChange(currentPage + 1)}>Next</Button>
                 </Col>
             </Row>
         </Container>
