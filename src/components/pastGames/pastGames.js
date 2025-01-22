@@ -1,25 +1,15 @@
 import { useState, useEffect } from 'react'
-import { Container, Row, Col, Dropdown, Form, Button, DropdownToggle, DropdownMenu } from 'react-bootstrap'
-import moment from 'moment'
+import { Container, Row, Col, Dropdown, Button, DropdownToggle, DropdownMenu } from 'react-bootstrap'
 import MatchupCard from '../matchupCard/matchupCard.js'
-import { sports } from '../../utils/constants.js';
+import { sports, isSameDay, formatDate } from '../../utils/constants.js';
 import { useSelector } from 'react-redux';
 
 const PastGamesDisplay = () => {
     const [filteredGames, setFilteredGames] = useState([])  // Initialize as an empty array
-    const [searchFilter, setSearchFilter] = useState({
-        startDate: '',
-        endDate: '',
-        league: '',
-        teams: '',
-        homeIndexRange: [0, 100],
-        awayIndexRange: [0, 100],
-        winPercentRange: [0, 100],
-    })
     const { bankroll, betType, sportsbook } = useSelector((state) => state.user);
-    const {games, pastGames} = useSelector((state) => state.games)
-    const {teams} = useSelector((state) => state.teams)
-    const todaysGames = games.filter((game) => moment(game.commence_time).isSame(moment(), 'day'))
+    const { games, pastGames } = useSelector((state) => state.games)
+    const { teams } = useSelector((state) => state.teams)
+    const todaysGames = games.filter((game) => isSameDay(game.commence_time, new Date()))
     const [currentPage, setCurrentPage] = useState(0)
 
     const calculateDecimalOdds = (moneylineOdds) => {
@@ -32,20 +22,13 @@ const PastGamesDisplay = () => {
 
     // Group games by their commence_time date
     useEffect(() => {
-        const groupedGames = pastGames
-            // .filter((game) => {
-            //     const gameDate = moment.utc(game.commence_time)
-            //     const isWithinDateRange =
-            //         (!searchFilter.startDate || gameDate.isAfter(moment(searchFilter.startDate))) &&
-            //         (!searchFilter.endDate || gameDate.isBefore(moment(searchFilter.endDate)))
-            //     return isWithinDateRange
-            // })
+        const groupedGames = pastGames.filter((game) => game.homeTeamIndex != game.awayTeamIndex)
             .reduce((groups, game) => {
-                const date = moment.utc(game.commence_time).local().format('YYYY-MM-DD') // Group by date
-                if (!groups[date]) {
-                    groups[date] = []
+                const formattedDate = formatDate(game.commence_time)
+                if (!groups[formattedDate]) {
+                    groups[formattedDate] = []
                 }
-                groups[date].push(game)
+                groups[formattedDate].push(game)
                 return groups
             }, {})
 
@@ -56,15 +39,7 @@ const PastGamesDisplay = () => {
         }))
 
         setFilteredGames(groupedGamesArray) // Set the filtered grouped games
-    }, [pastGames, searchFilter])
-
-    const handleDateChange = (e) => {
-        const { name, value } = e.target
-        setSearchFilter((prev) => ({
-            ...prev,
-            [name]: value
-        }))
-    }
+    }, [pastGames])
 
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber)
@@ -129,6 +104,7 @@ const PastGamesDisplay = () => {
         }
     }
 
+
     const currentGames = filteredGames[currentPage] ? filteredGames[currentPage].games : []
 
     return (
@@ -137,7 +113,7 @@ const PastGamesDisplay = () => {
                 <Col>
                     <Row style={{ fontSize: '.80rem' }}>
                         <Col>
-                            {pastGames ? `Ovr Win Rate: ${((pastGames.filter((game) => game.predictionCorrect).length / pastGames.length) * 100).toFixed(2)}%` : <> </>}
+                            {pastGames ? `Ovr Win Rate: ${((pastGames.filter((game) => game.homeTeamIndex != game.awayTeamIndex).filter((game) => game.predictionCorrect).length / pastGames.filter((game) => game.homeTeamIndex != game.awayTeamIndex).length) * 100).toFixed(2)}%` : <> </>}
                         </Col>
                         <Col>
                             {currentGames.length > 0 ? `Day Win Rate: ${((currentGames.filter((game) => game.predictionCorrect).length / currentGames.length) * 100).toFixed(2)}%` : <> </>}

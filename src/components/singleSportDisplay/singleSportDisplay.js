@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { Container, Row, Col, Button } from 'react-bootstrap'
 import MatchupCard from '../matchupCard/matchupCard.js'
-import moment from 'moment'
 import { Link, useParams } from 'react-router' // Import useNavigate for navigation
 import { useSelector } from 'react-redux';
+import { isSameDay } from '../../utils/constants.js'
 
 const SingleSportDisplay = (props) => {
     const { league } = useParams(); // Get the matchup ID from the URL
@@ -34,7 +34,7 @@ const SingleSportDisplay = (props) => {
                     games && games.filter((game) => game.sport_title === league.toUpperCase()).length > 0 ? (
                         games.filter((game) => game.sport_title === league.toUpperCase()).map((game) => (
                             <Col xs={12} sm={6} xl={3}>
-                                <MatchupCard teams={teams[game.sport]} todaysGames={games.filter((game) => moment(game.commence_time).isSame(moment(), 'day'))} key={game.id} gameData={game} />
+                                <MatchupCard teams={teams[game.sport]} todaysGames={games.filter((game) => isSameDay(game.commence_time, new Date()))} key={game.id} gameData={game} />
                             </Col>
 
                         ))

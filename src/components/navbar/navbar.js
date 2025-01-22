@@ -1,10 +1,9 @@
-import { Navbar, Container, Row, Col, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, InputGroup, FormControl, Button, Card, NavbarBrand } from "react-bootstrap"
+import { Navbar, Container, Row, Col, Button, Modal, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, InputGroup, FormControl, NavbarBrand } from "react-bootstrap"
 import { useState, useEffect } from 'react'
-import moment from 'moment'
 import { Link } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { setBankroll, setBetType, setSportsbook } from '../../redux/user/actions/userActions';
-import {sports} from '../../utils/constants'
+import { sports } from '../../utils/constants'
 
 const NavBar = () => {
     const dispatch = useDispatch()
@@ -14,7 +13,7 @@ const NavBar = () => {
     const [dropdownTitle, setDropdownTitle] = useState("Select Sportsbook");
     const [dropdownBG, setDropdownBG] = useState('#527595');
     const [dropdownFont, setDropdownFont] = useState('#eef3f3');
-
+    const [showModal, setShowModal] = useState(false); // State to control modal visibility
 
     // Set the default sportsbook if props.sportsBook is not provided
     // const sportsbook = sportsBook || 'fanduel'; // Default to 'fanduel' if not passed
@@ -35,6 +34,8 @@ const NavBar = () => {
         dispatch(setBetType(betTypeSplit[0]))
     }
 
+    const handleModalClose = () => setShowModal(false); // Close modal
+    const handleModalShow = () => setShowModal(true); // Show modal
 
     const setDropdownStyles = (sportsbook) => {
         const colors = {
@@ -60,7 +61,6 @@ const NavBar = () => {
         const filteredGames = games.filter((game) => game.sport_title === sport.league.toUpperCase()).filter(filterCondition);
         if (filteredGames.length === 0) return null;
 
-
         return (
             <div style={{ color: '#D4D2D5' }}>
                 <Link to={`/sport/${sport.league}`}>
@@ -71,8 +71,6 @@ const NavBar = () => {
             </div>
         );
     };
-
-
 
     useEffect(() => {
         const { bg, font } = setDropdownStyles(sportsbook); // Use sportsbook instead of sportsBook
@@ -88,12 +86,11 @@ const NavBar = () => {
                     <NavbarBrand style={{ color: '#E0E0E0' }} href="/" >
                         BETTOR
                     </NavbarBrand>
-
                 </Col>
                 <Col className="mx-3">
                     <Row style={{ display: 'flex', justifyContent: 'flex-end' }}>
                         {sports.map((sport) => {
-                            const currentMonth = moment().format('M');
+                            const currentMonth = new Date().getMonth() + 1;
                             const isInSeason =
                                 sport.multiYear
                                     ? currentMonth >= sport.startMonth || currentMonth <= sport.endMonth
@@ -108,7 +105,14 @@ const NavBar = () => {
                             return (
                                 <Col xs="auto" className="mx-1" style={{ padding: 0, textAlign: 'center' }} key={sport.name}>
                                     <div className="sport-section">
-                                        {renderSportCard(sport, (game) => moment(game.commence_time).local().isBefore(moment().add(30, 'days')), sport.league)}
+                                        {renderSportCard(sport, (game) => {
+                                            const gameDate = new Date(game.commence_time);
+                                            const currentDate = new Date();
+                                            const futureDate = new Date(currentDate);
+                                            futureDate.setDate(currentDate.getDate() + 30);
+
+                                            return gameDate < futureDate;
+                                        }, sport.league)}
                                     </div>
                                 </Col>
                             );
@@ -116,11 +120,17 @@ const NavBar = () => {
                     </Row>
                 </Col>
                 <Col xs={1} style={{ textAlign: 'right' }}>
-                    <Dropdown align='end' >
-                        <DropdownToggle style={{ fontSize: '.75rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }} >
-                            Options
-                        </DropdownToggle>
-                        <DropdownMenu style={{ padding: 5, backgroundColor: '#303036', textAlign: 'right' }}>
+                    <Button
+                        variant="outline-light"
+                        style={{ fontSize: '.75rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }}
+                        onClick={handleModalShow} // Open modal on button click
+                    >
+                        Options
+                    </Button>
+
+                    {/* Modal for Options */}
+                    <Modal show={showModal} onHide={handleModalClose}>
+                        <Modal.Body style={{ backgroundColor: '#303036'}}>
                             <Row style={{ marginBottom: 5 }}>
                                 <Col>
                                     <Dropdown align='end'>
@@ -147,12 +157,10 @@ const NavBar = () => {
                                         </DropdownMenu>
                                     </Dropdown>
                                 </Col>
-                            </Row>
-                            <Row >
                                 <Col>
                                     <Dropdown align='end'>
                                         <DropdownToggle
-                                            id="sportbookDropdown"
+                                            id="betTypeDropdown"
                                             style={{ backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }}
                                         >
                                             Bet Type
@@ -161,7 +169,7 @@ const NavBar = () => {
                                             {['Kelley Criterion', 'Proportional Bet', 'Value Bet'].map((betType) => (
                                                 <DropdownItem
                                                     key={betType}
-                                                    id={sportsbook}
+                                                    id={betType}
                                                     onClick={handleFormChange}
                                                 >
                                                     {betType}
@@ -170,8 +178,6 @@ const NavBar = () => {
                                         </DropdownMenu>
                                     </Dropdown>
                                 </Col>
-                            </Row>
-                            <Row>
                                 <Col>
                                     <InputGroup>
                                         <FormControl
@@ -186,11 +192,19 @@ const NavBar = () => {
                                     </InputGroup>
                                 </Col>
                             </Row>
-                        </DropdownMenu>
-                    </Dropdown>
+                            <Row>
 
+                            </Row>
+                            <Row>
 
-
+                            </Row>
+                        </Modal.Body>
+                        <Modal.Footer style={{borderColor: '#303036', backgroundColor: '#303036'}}>
+                            <Button variant="secondary" onClick={handleModalClose}>
+                                Close
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
                 </Col>
             </Container>
         </Navbar>

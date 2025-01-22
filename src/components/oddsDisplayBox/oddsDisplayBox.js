@@ -31,7 +31,9 @@ const OddsDisplayBox = ({ gameData, team, teamIndex, market, total }) => {
   };
 
   return (
-    <Col style={{ borderStyle: 'solid', boxShadow: `inset 0 0 13px ${indexColor}`, padding: 0 }}>
+    <Col style={{ borderStyle: 'solid',
+     boxShadow: `inset 0 0 13px ${indexColor}`, 
+     padding: 0 }}>
       <Row style={{ margin: 0 }}>
         <Col style={{ padding: 0, textAlign: 'center' }}>
           {getOdds()}

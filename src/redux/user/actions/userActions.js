@@ -1,5 +1,5 @@
 // src/redux/actions/userActions.js
-import { SET_BANKROLL, SET_BET_TYPE, SET_SPORTBOOK } from '../types/userTypes';
+import { SET_BANKROLL, SET_BET_TYPE, SET_SPORTBOOK, SET_STARRED_GAMES } from '../types/userTypes';
 
 // Action to set bankroll
 export const setBankroll = (amount) => ({
@@ -18,3 +18,8 @@ export const setSportsbook = (sportsbook) => ({
   type: SET_SPORTBOOK,
   payload: sportsbook,  // Sportsbook name (e.g., 'DraftKings', 'FanDuel')
 });
+
+export const setStarredGames = (games) => ({
+  type: SET_STARRED_GAMES,
+  payload: games
+})
