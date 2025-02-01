@@ -1,4 +1,4 @@
-import { Row, Col, Button } from 'react-bootstrap';
+import { Row, Col, Button, Container } from 'react-bootstrap';
 import OddsDisplayBox from '../oddsDisplayBox/oddsDisplayBox';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -29,7 +29,7 @@ const TeamOddsRow = ({backgroundColor, isExpanded, setIsExpanded, final, score, 
   };
   return (
     <div>
-      {
+      {<Container>
         <Row style={{ alignItems: 'center', fontSize: '.7rem', paddingLeft: 5, paddingRight: 5, backgroundColor: backgroundColor && teamIndex > oppteamIndex ? backgroundColor : '#303036' }}>
           <Col style={{ padding: 0, textAlign: 'center' }} xs={1}>
             <img src={team.logo} style={{ width: '1.5rem', maxWidth: '30px' }} alt='Team Logo' />
@@ -50,8 +50,12 @@ const TeamOddsRow = ({backgroundColor, isExpanded, setIsExpanded, final, score, 
               </Col>
             </Row>
           </Col>
-          {gameData.home_team === team.espnDisplayName ? isExpanded ? <Button style={isExpanded ? buttonHoverStyle : buttonStyle} onClick={handleToggle}>Collapse</Button> : <Button style={isExpanded ? buttonHoverStyle : buttonStyle} onClick={handleToggle}>Details</Button> : <></>}
+          
         </Row>
+        <Row>
+        {gameData.home_team === team.espnDisplayName ? isExpanded ? <Button style={isExpanded ? buttonHoverStyle : buttonStyle} onClick={handleToggle}>Collapse</Button> : <Button style={isExpanded ? buttonHoverStyle : buttonStyle} onClick={handleToggle}>Details</Button> : <></>}
+        </Row>
+        </Container>
       }
     </div>
 

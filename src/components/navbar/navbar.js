@@ -109,7 +109,7 @@ const NavBar = () => {
                                             const gameDate = new Date(game.commence_time);
                                             const currentDate = new Date();
                                             const futureDate = new Date(currentDate);
-                                            futureDate.setDate(currentDate.getDate() + 30);
+                                            futureDate.setDate(currentDate.getDate() + 360);
 
                                             return gameDate < futureDate;
                                         }, sport.league)}

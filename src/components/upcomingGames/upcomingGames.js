@@ -1,15 +1,17 @@
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import MatchupCard from '../matchupCard/matchupCard.js';
-import { useState } from 'react';
+import { useState, } from 'react';
 import { isSameDay } from '../../utils/constants.js';
 import { Link } from 'react-router';
 import { sports } from '../../utils/constants.js';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 const UpcomingGames = () => {
+    document.title = 'Upcoming Games'
   const games = useSelector((state) => state.games.games);
   const [selectedSection, setSelectedSection] = useState('todaysGames'); // Default section
   const starredGames = useSelector((state) => state.user.starredGames);
+
 
   const filterAndMapGames = (condition, league) => {
     return games
@@ -210,27 +212,27 @@ const UpcomingGames = () => {
           <Card style={{ background: 'linear-gradient(90deg, rgba(44,44,44,1) 0%, rgba(94,94,94,1) 50%, rgba(44,44,44,1) 100%)', borderColor: '#575757' }}>
             <Card.Body>
               {renderStarredGames()} {/* Starred games section */}
-              <Card.Header className="d-flex justify-content-between align-items-center">
-                <span
-                  style={{ color: 'whitesmoke', cursor: 'pointer' }}
+              <Card.Header className="d-flex justify-content-evenly align-items-center">
+                <Button
+                  style={{ cursor: 'pointer', fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }}
                   onClick={() => setSelectedSection('todaysGames')}
                 >
                   {games.filter((game) =>
                     isSameDay(game.commence_time, new Date())
                   ).length > 0 ? `Today's Games` : `Tomorrow's Games`}
-                </span>
-                <span
-                  style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                </Button>
+                <Button
+                  style={{ cursor: 'pointer', fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                   onClick={() => setSelectedSection('highStatDisparity')}
                 >
                   High Stat Disparity
-                </span>
-                <span
-                  style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                </Button>
+                <Button
+                  style={{ cursor: 'pointer', fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                   onClick={() => setSelectedSection('closeCalls')}
                 >
                   Close Calls
-                </span>
+                </Button>
               </Card.Header>
               {renderContent()} {/* Render the main content based on the selected section */}
             </Card.Body>

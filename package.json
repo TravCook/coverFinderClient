@@ -2,7 +2,7 @@
   "name": "blankapp",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:3001",
+  "proxy": "http://3.137.71.56:3001",
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
@@ -24,6 +24,7 @@
     "react-redux": "^9.2.0",
     "react-router": "^7.0.1",
     "react-scripts": "5.0.1",
+    "recharts": "^2.15.0",
     "socket.io-client": "^4.8.1",
     "web-vitals": "^2.1.4"
   },

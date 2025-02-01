@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Col, Row, Collapse } from 'react-bootstrap';
+import { Button, Col, Row, Collapse, Container } from 'react-bootstrap';
 import TeamOddsRow from '../teamOddsRow/teamOddsRow';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons'; // Filled star
@@ -8,17 +8,168 @@ import { Link } from 'react-router';
 import { isSameDay } from '../../utils/constants';
 import { useSelector, useDispatch } from 'react-redux';
 import { setStarredGames } from '../../redux/user/actions/userActions';
+import { allStatLabelsShort } from '../../utils/constants'
 
 const MatchupCard = ({ gameData, sportsbook, final }) => {
   const dispatch = useDispatch()
   const { teams } = useSelector((state) => state.teams)
   const { pastGames } = useSelector((state) => state.games)
   const { starredGames } = useSelector((state) => state.user)
-  const [homeTeam, setHomeTeam] = useState(null);
-  const [awayTeam, setAwayTeam] = useState(null);
+  const [homeTeam, setHomeTeam] = useState();
+  const [awayTeam, setAwayTeam] = useState();
   const [dbLeague, setdbLeague] = useState()
   const [isExpanded, setIsExpanded] = useState(false);
+  const [awayStatIndex, setAwayStatIndex] = useState(0)
+  const [homeStatIndex, setHomeStatIndex] = useState(0)
 
+  const handleHomeStatIncrease = () => {
+    setHomeStatIndex(homeStatIndex + 1)
+  }
+
+  const handleHomeStatDecrease = () => {
+    setHomeStatIndex(homeStatIndex - 1)
+  }
+
+  const handleAwayStatIncrease = () => {
+    setAwayStatIndex(awayStatIndex + 1)
+  }
+
+  const handleAwayStatDecrease = () => {
+    setAwayStatIndex(awayStatIndex - 1)
+  }
+
+
+  const highestStat = (teamStats, oppStats, team, homeAway) => {
+    let advStats = []
+    for (const stat in teamStats) {
+      if (stat === 'seasonWinLoss') {
+        let splitArr = teamStats[stat].split("-")
+        let oppSplitArr = oppStats[stat].split("-")
+        let oppWins = oppSplitArr[0]
+        let wins = splitArr[0]
+        if (oppStats[stat] !== 0 && wins > oppWins) {
+          advStats.push({
+            stat: allStatLabelsShort[stat],
+            adv: wins / oppWins,
+            value: teamStats[stat],
+            oppValue: oppStats[stat]
+          })
+        }
+      } else if (stat === 'homeWinLoss' || stat === 'awayWinLoss') {
+        if (stat === 'homeWinLoss' && team === gameData.home_team) {
+          let splitArr = teamStats[stat].split("-")
+          let oppSplitArr = oppStats['awayWinLoss'].split("-")
+          let oppWins = parseInt(oppSplitArr[0])
+          let wins = parseInt(splitArr[0])
+          if (oppStats[stat] !== 0 && wins > oppWins) {
+            advStats.push({
+              stat: allStatLabelsShort[stat],
+              adv: wins / oppWins,
+              value: teamStats[stat],
+              oppValue: oppStats['awayWinLoss']
+            })
+          }
+        } else if (stat === 'awayWinLoss' && team === gameData.away_team) {
+          let splitArr = teamStats[stat].split("-")
+          let oppSplitArr = oppStats['homeWinLoss'].split("-")
+          let oppWins = parseInt(oppSplitArr[0])
+          let wins = parseInt(splitArr[0])
+          if (oppStats[stat] !== 0 && wins > oppWins) {
+            advStats.push({
+              stat: allStatLabelsShort[stat],
+              adv: wins / oppWins,
+              value: teamStats[stat],
+              oppValue: oppStats['homeWinLoss']
+            })
+          }
+        }
+
+      } else if (oppStats[stat] !== 0 && teamStats[stat] > oppStats[stat]) {
+        advStats.push({
+          stat: allStatLabelsShort[stat],
+          adv: teamStats[stat] / oppStats[stat],
+          value: teamStats[stat],
+          oppValue: oppStats[stat]
+        })
+      }
+    }
+    let sortedStatArr = advStats.sort((a, b) => b.adv - a.adv)
+    if (sortedStatArr.length > 0) {
+      return (
+        <>
+          {homeAway === 'home' ?
+            <>
+              <Row style={{ textAlign: 'center' }}>
+                <Col xs={3} style={{ padding: 0 }}>
+                  {<Button style={{ padding: 0, }} onClick={handleHomeStatDecrease} disabled={homeStatIndex === 0}>←</Button>}
+                </Col>
+                <Col xs={6} style={{ padding: 0 }}>{sortedStatArr[homeStatIndex].stat}</Col>
+                <Col xs={3} style={{ padding: 0 }}>
+                  {<Button style={{ padding: 0 }} onClick={handleHomeStatIncrease} disabled={homeStatIndex >= advStats.length - 1}>→</Button>}
+                </Col>
+              </Row>
+              <Row>
+                <Col xs={8} style={{ textAlign: 'center', padding: 0 }}>
+                  Amount
+                </Col>
+                <Col style={{ textAlign: 'center', padding: 0 }}>
+                  Adv Δ
+                </Col>
+              </Row>
+              <Row style={{ textAlign: 'center' }}>
+                <Col style={{ padding: 0 }}>
+                  {typeof sortedStatArr[homeStatIndex].value == 'number' ? sortedStatArr[homeStatIndex].value > 100 ? sortedStatArr[homeStatIndex].value.toFixed(0) : sortedStatArr[homeStatIndex].value.toFixed(2) : sortedStatArr[homeStatIndex].value}
+                </Col>
+                <Col style={{ padding: 0 }}>
+                  {typeof sortedStatArr[homeStatIndex].oppValue === 'number' ? sortedStatArr[homeStatIndex].oppValue > 100 ? sortedStatArr[homeStatIndex].oppValue.toFixed(0) : sortedStatArr[homeStatIndex].oppValue.toFixed(2) : sortedStatArr[homeStatIndex].oppValue}
+                </Col>
+                <Col style={{ padding: 0 }}>
+                  {`${((sortedStatArr[homeStatIndex].adv - 1) * 100).toFixed(1)}%`}
+                </Col>
+              </Row>
+            </>
+            :
+            <>
+              <Row style={{ textAlign: 'center' }}>
+                <Col xs={3} style={{ padding: 0 }}>
+                  {<Button style={{ padding: 0 }} onClick={handleAwayStatDecrease} disabled={awayStatIndex === 0}>←</Button>}
+                </Col>
+                <Col xs={6} style={{ padding: 0 }}>{sortedStatArr[awayStatIndex].stat}</Col>
+                <Col xs={3} style={{ padding: 0 }}>
+                  {<Button style={{ padding: 0 }} onClick={handleAwayStatIncrease} disabled={awayStatIndex >= advStats.length - 1}>→</Button>}
+                </Col>
+              </Row>
+              <Row>
+                <Col xs={8} style={{ textAlign: 'center', padding: 0 }}>
+                  Amount
+                </Col>
+                <Col style={{ textAlign: 'center', padding: 0 }}>
+                  Adv Δ
+                </Col>
+              </Row>
+              <Row style={{ textAlign: 'center' }}>
+                <Col style={{ padding: 0 }}>
+                  {typeof sortedStatArr[awayStatIndex].value == 'number' ? sortedStatArr[awayStatIndex].value > 100 ? sortedStatArr[awayStatIndex].value.toFixed(0) : sortedStatArr[awayStatIndex].value.toFixed(2) : sortedStatArr[awayStatIndex].value}
+                </Col>
+                <Col style={{ padding: 0 }}>
+                  {typeof sortedStatArr[awayStatIndex].oppValue === 'number' ? sortedStatArr[awayStatIndex].oppValue > 100 ? sortedStatArr[awayStatIndex].oppValue.toFixed(0) : sortedStatArr[awayStatIndex].oppValue.toFixed(2) : sortedStatArr[awayStatIndex].oppValue}
+                </Col>
+                <Col style={{ padding: 0 }}>
+                  {`${((sortedStatArr[awayStatIndex].adv - 1) * 100).toFixed(1)}%`}
+                </Col>
+              </Row>
+            </>}
+
+        </>
+      )
+    } else {
+    }
+  }
+
+  const getColorForIndex = (index) => {
+    let hue = (index / 45) * 120; // Scale from 0 to 120 degrees
+    return `hsl(${hue}, 100%, 50%)`; // Full saturation and lightness at 50%
+  };
 
 
   const filterGamesBeforeCommenceTime = (games, gameData) => {
@@ -112,7 +263,7 @@ const MatchupCard = ({ gameData, sportsbook, final }) => {
   useEffect(() => {
     if (gameData?.home_team && gameData?.away_team && teams && dbLeague) {
       if (gameData?.sport && teams[gameData.sport]) {
-        if (gameData.id === 'fe6606736a4fb10d975e371d8784f5b4') {
+        if (gameData.id === 'd99ae74013917039a4d71c59e5a11d25') {
           console.log(teams[gameData.sport]?.find((team) => team.league === dbLeague && gameData?.away_team === team.espnDisplayName))
         }
         const homeTeam = teams[gameData.sport]?.find((team) => team.league === dbLeague && gameData?.home_team === team.espnDisplayName);
@@ -138,8 +289,8 @@ const MatchupCard = ({ gameData, sportsbook, final }) => {
   const formatGameTime = () => {
     const gameTime = new Date(gameData.commence_time);
     return isSameDay(gameData.commence_time, new Date())
-      ? gameTime.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
-      : gameTime.toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
+      ? final ? `Final` : gameTime.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+      : final ? `${gameTime.toLocaleString('en-US', { month: '2-digit', day: '2-digit' })} Final` : gameTime.toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
   const winPercent = gameData?.winPercent === 0 ? `${(gameData?.winPercent * 100).toFixed(2)}%` : gameData?.winPercent ? `${(gameData?.winPercent * 100).toFixed(2)}%` : 'Loading';
@@ -154,27 +305,23 @@ const MatchupCard = ({ gameData, sportsbook, final }) => {
         <Col style={styles.timeColumn}>
           {gameData.timeRemaining ? gameData.timeRemaining : formatGameTime()}
         </Col>
-        <Col style={{ textAlign: 'right' }}>
-          {!final ?
+        {!final ?
+          <Col xs={2} style={{ textAlign: 'right' }}>
             <Button
               id={gameData.id}
               onClick={handleStarClick}
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
             >
               {starredGames.some((game) => game.id === gameData.id) ? (
-                <FontAwesomeIcon icon={faStar} style={{ color: 'gold', fontSize: '1.5rem' }} />
+                <FontAwesomeIcon icon={faStar} style={{ color: 'gold', fontSize: '1.0rem' }} />
               ) : (
-                <FontAwesomeIcon icon={farStar} style={{ color: 'gold', fontSize: '1.5rem' }} />
+                <FontAwesomeIcon icon={farStar} style={{ color: 'gold', fontSize: '1.0rem' }} />
               )}
             </Button>
-            : <span></span>}
+          </Col>
+          : <></>}
 
-        </Col>
-        <Col xs={2} style={{ textAlign: 'right', padding: 0, margin: 0 }}>
-          <Link to={`/matchup/${gameData.id}`}>
-            <Button variant="outline-light" style={styles.linkButton}>More</Button>
-          </Link>
-        </Col>
+
 
 
 
@@ -209,8 +356,8 @@ const MatchupCard = ({ gameData, sportsbook, final }) => {
         : <></>}
 
       <Collapse in={isExpanded}>
-        <div>
-          <Row>
+        <Container>
+          <Row style={{ borderBottom: '2px solid white', padding: 5 }}>
             <Col style={styles.winPercentColumn}>
               <Row>
                 <Col style={{ fontSize: '.8rem' }}>Winrate</Col>
@@ -229,13 +376,27 @@ const MatchupCard = ({ gameData, sportsbook, final }) => {
               </Row>
             </Col>
           </Row>
-          <Row style={{ paddingLeft: 5, paddingRight: 5 }}>
-            <Col xs={1} style={{ padding: 0 }}>
-              <img style={{ width: '1.5rem' }} src={gameData.awayTeamlogo} />
+          <Row style={{ paddingLeft: 5, paddingRight: 5, alignItems: 'center' }}>
+            <Col xs={6}>
+              <Row style={{ alignItems: 'center', textAlign: 'center' }}>
+                <Col xs={4} style={{ padding: 5, textAlign: 'left' }}>
+                  <img style={{ width: '100%', maxWidth: '1.5rem' }} src={gameData.awayTeamlogo} />
+
+                </Col>
+                <Col xs={6} style={{ boxShadow: `inset 0 0 13px ${getColorForIndex(gameData.awayTeamIndex)}`, borderRadius: '.5rem' }}>
+                  {gameData.awayTeamIndex.toFixed(2).padEnd(4, '0')}
+                </Col>
+              </Row>
 
             </Col>
-            <Col>
-              BBI: {gameData.awayTeamIndex.toFixed(2).padEnd(4, '0')}
+
+            <Col xs={6}>
+              {gameData.homeTeamStats != 'no stat data' && gameData.awayTeamStats != 'no stat data' ? highestStat(gameData.awayTeamStats, gameData.homeTeamStats, gameData.away_team, 'away') : <></>}
+            </Col>
+          </Row>
+          <Row style={{ borderBottom: '2px solid white', padding: 5 }}>
+            <Col style={{ padding: 0 }}>
+              {`${gameData.awayTeamAbbr} Last 5`}
             </Col>
             <Col style={{ textAlign: 'center' }}>
               <Row>
@@ -259,13 +420,27 @@ const MatchupCard = ({ gameData, sportsbook, final }) => {
               </Row>
             </Col>
           </Row>
-          <Row style={{ paddingLeft: 5, paddingRight: 5 }}>
-            <Col xs={1} style={{ padding: 0 }}>
-              <img style={{ width: '1.5rem' }} src={gameData.homeTeamlogo} />
+          <Row style={{ paddingLeft: 5, paddingRight: 5, alignItems: 'center' }}>
+            <Col xs={6}>
+              <Row style={{ alignItems: 'center', textAlign: 'center' }}>
+                <Col xs={4} style={{ padding: 5, textAlign: 'left' }}>
+                  <img style={{ width: '100%', maxWidth: '1.5rem' }} src={gameData.homeTeamlogo} />
+
+                </Col>
+                <Col xs={6} style={{ boxShadow: `inset 0 0 13px ${getColorForIndex(gameData.homeTeamIndex)}`, borderRadius: '.5rem' }}>
+                  {gameData.homeTeamIndex.toFixed(2).padEnd(4, '0')}
+                </Col>
+              </Row>
 
             </Col>
             <Col>
-              BBI: {gameData.homeTeamIndex.toFixed(2).padEnd(4, '0')}
+              {gameData.homeTeamStats != 'no stat data' && gameData.awayTeamStats != 'no stat data' ? highestStat(gameData.homeTeamStats, gameData.awayTeamStats, gameData.home_team, 'home') : <></>}
+            </Col>
+
+          </Row>
+          <Row style={{ padding: 5 }}>
+            <Col style={{ padding: 0 }}>
+              {`${gameData.homeTeamAbbr} Last 5`}
             </Col>
             <Col style={{ textAlign: 'center' }}>
               <Row>
@@ -289,7 +464,14 @@ const MatchupCard = ({ gameData, sportsbook, final }) => {
               </Row>
             </Col>
           </Row>
-        </div>
+          <Row>
+            <Col style={{ padding: 0, }}>
+              <Link to={`/matchup/${gameData.id}`}>
+                <Button variant="outline-light" style={styles.linkButton}>See Full Matchup</Button>
+              </Link>
+            </Col>
+          </Row>
+        </Container>
       </Collapse>
     </div>
   );
@@ -327,13 +509,13 @@ const styles = {
     textAlign: 'center',
   },
   linkButton: {
-    padding: 0,
-    marginRight: '5px',
-    backgroundColor: '#4E4E50',
-    borderColor: '#4E4E50',
+    backgroundColor: 'rgba(198, 159, 66, .6)',
+    borderColor: 'rgba(198, 159, 66, .6)',
+    // border: '2px solid rgba(198 159 66, .8)',
+    // background: 'transparent',
     fontSize: '.8rem',
-    paddingLeft: '7px',
-    paddingRight: '7px',
+    width: '100%',
+    padding: 0
   }
 };
 

@@ -48,94 +48,6 @@ const MatchupDetails = () => {
     }
 
 
-
-
-    const renderAwayRecent = () => {
-        let awayTeamGames = pastGames
-            .filter((game) => game.away_team === gameData.away_team || game.home_team === gameData.away_team)
-            .sort((a, b) => new Date(b.commence_time) - new Date(a.commence_time));
-
-
-        return (
-            <Table bordered variant='dark'>
-            <thead>
-                <tr>
-                    <th style={{fontSize: '1rem'}}>Opponent</th>
-                    <th style={{fontSize: '1rem'}}>W/L</th>
-                    <th style={{fontSize: '1rem'}}>Prediction</th>
-                </tr>
-            </thead>
-            <tbody>
-                {            
-                awayTeamGames.map((game) => {
-                    if(game.home_team === gameData.away_team){
-                        return (
-                            <tr key={game.id}>
-                            <td style={{fontSize: '.8rem'}}>
-                                {`${formatGameTime(game.commence_time)}`} vs <img style={{width: '1.4rem'}} src={game.awayTeamlogo} /> {`${game.awayTeamAbbr}`}
-                            </td>
-                            {game.winner === 'home'? <td style={{fontSize: '.8rem', backgroundColor: 'green'}}>W</td> : <td style={{fontSize: '.8rem', backgroundColor: 'red'}}>L</td>}
-                           {game.predictionCorrect ? <td style={{fontSize: '.8rem', backgroundColor: 'green'}}>Y</td> : <td style={{fontSize: '.8rem', backgroundColor: 'red'}}>N</td> }
-                        </tr>
-                        )
-                    }else if(game.away_team === gameData.away_team){
-                        return (
-                            <tr key={game.id}>
-                            <td style={{fontSize: '.8rem'}}>{`${formatGameTime(game.commence_time)}`} vs <img style={{width: '1.4rem'}} src={game.homeTeamlogo} /> {`${game.homeTeamAbbr}`}</td>
-                            {game.winner === 'away'? <td style={{fontSize: '.8rem', backgroundColor: 'green'}}>W</td> : <td style={{fontSize: '.8rem', backgroundColor: 'red'}}>L</td>}
-                            {game.predictionCorrect ? <td style={{fontSize: '.8rem', backgroundColor: 'green'}}>Y</td> : <td style={{fontSize: '.8rem', backgroundColor: 'red'}}>N</td> }
-                        </tr>
-                        )
-                    }
-            })}
-            </tbody>
-        </Table>
-
-        )
-    }
-
-    const renderHomeRecent = () => {
-        let homeTeamGames = pastGames
-            .filter((game) => game.home_team === gameData.home_team || game.away_team === gameData.home_team)
-            .sort((a, b) => new Date(b.commence_time) - new Date(a.commence_time));
-
-        return (
-            <Table bordered variant='dark'>
-            <thead>
-                <tr>
-                    <th style={{fontSize: '1rem'}}>Opponent</th>
-                    <th style={{fontSize: '1rem'}}>W/L</th>
-                    <th style={{fontSize: '1rem'}}>Prediction</th>
-                </tr>
-            </thead>
-            <tbody>
-                {            
-                homeTeamGames.map((game) => {
-                    if(game.home_team === gameData.home_team){
-                        return (
-                            <tr key={game.id}>
-                            <td style={{fontSize: '.8rem'}}>{`${formatGameTime(game.commence_time)}`} vs <img style={{width: '1.4rem'}} src={game.awayTeamlogo} /> {`${game.awayTeamAbbr}`}</td>
-                            {game.winner === 'home'? <td style={{fontSize: '.8rem', backgroundColor: 'green'}}>W</td> : <td style={{fontSize: '.8rem', backgroundColor: 'red'}}>L</td>}
-                            {game.predictionCorrect ? <td style={{fontSize: '.8rem', backgroundColor: 'green'}}>Y</td> : <td style={{fontSize: '.8rem', backgroundColor: 'red'}}>N</td> }
-                        </tr>
-                        )
-                    }else if(game.away_team === gameData.home_team){
-                        return (
-                            <tr key={game.id}>
-                            <td style={{fontSize: '.8rem'}}>{`${formatGameTime(game.commence_time)}`} vs <img style={{width: '1.4rem'}} src={game.homeTeamlogo} /> {`${game.homeTeamAbbr}`}</td>
-                            {game.winner === 'away'? <td style={{fontSize: '.8rem', backgroundColor: 'green'}}>W</td> : <td style={{fontSize: '.8rem', backgroundColor: 'red'}}>L</td>}
-                            {game.predictionCorrect ? <td style={{fontSize: '.8rem', backgroundColor: 'green'}}>Y</td> : <td style={{fontSize: '.8rem', backgroundColor: 'red'}}>N</td> }
-                        </tr>
-                        )
-                    }
-            })}
-            </tbody>
-        </Table>
-        )
-    }
-
-
-
     // Destructure home and away team stats
     const { home_team, away_team, homeTeamStats, homeTeamAbbr, awayTeamAbbr, awayTeamStats, commence_time, homeTeamIndex, awayTeamIndex, homeTeamlogo, awayTeamlogo } = gameData;
     const rows = []; // Create an array to hold the table rows
@@ -225,128 +137,128 @@ const MatchupDetails = () => {
     const renderStatsTable = (homeStats, awayStats) => {
         return (
             <Card style={{ background: 'linear-gradient(90deg, rgba(44,44,44,1) 0%, rgba(94,94,94,1) 50%, rgba(44,44,44,1) 100%)', borderColor: '#575757' }}>
-                <Card.Header className="d-flex justify-content-between align-items-center">
+                <Card.Header className="d-flex justify-content-evenly align-items-center">
                     {statHeaderSport ? statHeaderSport.map((header) => {
                         switch (header) {
                             case 'General':
                                 return (
 
-                                    <span
-                                        style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                                    <Button
+                                        style={{ cursor: 'pointer',  fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                                         onClick={() => setSelectedSection(generalStats)}
                                     >
                                         {header}
-                                    </span>
+                                    </Button>
                                 )
                             case 'Offense':
                                 return (
 
-                                    <span
-                                        style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                                    <Button
+                                        style={{ cursor: 'pointer',  fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                                         onClick={() => setSelectedSection(offenseStats)}
                                     >
                                         {header}
-                                    </span>
+                                    </Button>
                                 )
                             case 'Defense':
                                 return (
 
-                                    <span
-                                        style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                                    <Button
+                                        style={{ cursor: 'pointer',  fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                                         onClick={() => setSelectedSection(defenseStats)}
                                     >
                                         {header}
-                                    </span>
+                                    </Button>
                                 )
                             case 'Passing':
                                 return (
 
-                                    <span
-                                        style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                                    <Button
+                                        style={{ cursor: 'pointer',  fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                                         onClick={() => setSelectedSection(passingStats)}
                                     >
                                         {header}
-                                    </span>
+                                    </Button>
                                 )
                             case 'Receiving':
                                 return (
 
-                                    <span
-                                        style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                                    <Button
+                                        style={{ cursor: 'pointer',  fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                                         onClick={() => setSelectedSection(receivingStats)}
                                     >
                                         {header}
-                                    </span>
+                                    </Button>
                                 )
                             case 'Rushing':
                                 return (
 
-                                    <span
-                                        style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                                    <Button
+                                        style={{ cursor: 'pointer',  fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                                         onClick={() => setSelectedSection(rushingStats)}
                                     >
                                         {header}
-                                    </span>
+                                    </Button>
                                 )
                             case 'Kicking':
                                 return (
 
-                                    <span
-                                        style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                                    <Button
+                                        style={{ cursor: 'pointer',  fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                                         onClick={() => setSelectedSection(kickingStats)}
                                     >
                                         {header}
-                                    </span>
+                                    </Button>
                                 )
                             case 'Returning':
                                 return (
 
-                                    <span
-                                        style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                                    <Button
+                                        style={{ cursor: 'pointer',  fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                                         onClick={() => setSelectedSection(returningStats)}
                                     >
                                         {header}
-                                    </span>
+                                    </Button>
                                 )
                             case 'Penalty':
                                 return (
 
-                                    <span
-                                        style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                                    <Button
+                                        style={{ cursor: 'pointer',  fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                                         onClick={() => setSelectedSection(penaltyStats)}
                                     >
                                         {header}
-                                    </span>
+                                    </Button>
                                 )
                             case 'Batting':
                                 return (
 
-                                    <span
-                                        style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                                    <Button
+                                        style={{ cursor: 'pointer',  fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                                         onClick={() => setSelectedSection(battingStats)}
                                     >
                                         {header}
-                                    </span>
+                                    </Button>
                                 )
                             case 'Pitching':
                                 return (
 
-                                    <span
-                                        style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                                    <Button
+                                        style={{ cursor: 'pointer',  fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                                         onClick={() => setSelectedSection(pitchingStats)}
                                     >
                                         {header}
-                                    </span>
+                                    </Button>
                                 )
                             case 'Fielding':
                                 return (
 
-                                    <span
-                                        style={{ color: 'whitesmoke', cursor: 'pointer' }}
+                                    <Button
+                                        style={{ cursor: 'pointer',  fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212'  }}
                                         onClick={() => setSelectedSection(fieldingStats)}
                                     >
                                         {header}
-                                    </span>
+                                    </Button>
                                 )
 
                         }
