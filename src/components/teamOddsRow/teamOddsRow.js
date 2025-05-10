@@ -1,61 +1,43 @@
-import { Row, Col, Button, Container } from 'react-bootstrap';
+import { Row, Col, Container } from 'react-bootstrap';
 import OddsDisplayBox from '../oddsDisplayBox/oddsDisplayBox';
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 
-const TeamOddsRow = ({backgroundColor, isExpanded, setIsExpanded, final, score, team, teamIndex, oppTeam, oppteamIndex, gameData, total, }) => {
-  const { sportsbook } = useSelector((state) => state.user);
+const TeamOddsRow = ({ backgroundColor, final, gameData, total, homeAway }) => {
 
   const renderTeamInfo = () => {
-    if (final) {
-      return (
-        <Col xs={5} style={{ alignContent: 'center', padding: 5 }}>
-          {team ? `${team.abbreviation} ${team.teamName}` : <></>}
-          {teamIndex > oppteamIndex ? <sup style={{ marginLeft: '.2rem', fontSize: '.6rem', color: `hsl(${(teamIndex / 45) * 120}, 100%, 50%)` }}>▲</sup> : <></>}
-        </Col>
-      );
-    } else {
-      return (
-        <Col xs={6} style={{ alignContent: 'center', padding: 5 }}>
-          {team ? `${team.abbreviation} ${team.teamName}` : <></>}
-          {teamIndex > oppteamIndex ? <sup style={{ marginLeft: '.2rem', fontSize: '.6rem', color: `hsl(${(teamIndex / 45) * 120}, 100%, 50%)` }}>▲</sup> : <></>}
-        </Col>
-      );
-    }
-
-  };
-  const handleToggle = () => {
-    setIsExpanded(prevState => !prevState);
+    return (
+      <Col xs={7} style={{ letterSpacing: '.5px', alignContent: 'center', padding: '.5rem', fontSize: '1.1em' }}>
+        {gameData && homeAway === 'home' ? `${gameData.homeTeamAbbr} ${gameData.homeTeamShort}` : `${gameData.awayTeamAbbr} ${gameData.awayTeamShort}`}
+        {gameData.predictedWinner === homeAway && <sup style={{ marginLeft: '.2rem', fontSize: '.6rem', color: `hsl(${((homeAway === 'home' ? gameData.homeTeamScaledIndex : gameData.awayTeamScaledIndex) / 45) * 120}, 100%, 50%)` }}>▲</sup>}
+      </Col>
+    )
   };
   return (
     <div>
-      {<Container>
-        <Row style={{ alignItems: 'center', fontSize: '.7rem', paddingLeft: 5, paddingRight: 5, backgroundColor: backgroundColor && teamIndex > oppteamIndex ? backgroundColor : '#303036' }}>
+      {<Container style={{backgroundColor: `${backgroundColor && gameData.predictedWinner === homeAway ? backgroundColor : ''}`}}>
+        <Row style={{ color: '#FFFFFF', alignItems: 'center', fontSize: '.7rem', paddingLeft: 0, paddingRight: 0 }}>
           <Col style={{ padding: 0, textAlign: 'center' }} xs={1}>
-            <img src={team.logo} style={{ width: '1.5rem', maxWidth: '30px' }} alt='Team Logo' />
+            {<img src={homeAway === 'home' ? gameData.homeTeamlogo : gameData.awayTeamlogo} style={{ width: '1.5rem', maxWidth: !final ? '30px' : '17px' }} alt='Team Logo' /> }
+
           </Col>
           {renderTeamInfo()}
-          <Col style={{ textAlign: 'right', padding: 5 }}>
-            <Row style={{ padding: 5 }}>
-              {score || score === 0 ?
-                <Col style={{ textAlign: 'center', padding: 0 }}>
-                  {score}
-                </Col> :
-                <Col xs={6}>
-                  <span></span>
+          <Col xs={final ? 4 : 4} style={{ padding: 5 }}>
+            <Row style={{ padding: 5, display: 'flex', justifyContent: 'flex-end' }}>
+              {(((gameData.homeScore || gameData.homeScore === 0) && (gameData.awayScore || gameData.awayScore === 0))) &&
+                <Col style={{ textAlign: 'left', padding: 0 }}>
+                  {homeAway === 'home' ? gameData.homeScore : gameData.awayScore}
                 </Col>
               }
-              <Col xs={6} style={{ textAlign: 'right', paddingLeft: 5, paddingRight: 5 }}>
-                <OddsDisplayBox teamIndex={teamIndex} key={`${team?.espnDisplayName} h2h`} team={team} oppTeam={oppTeam} gameData={gameData} sportsbook={sportsbook} market='h2h' total={total} />
-              </Col>
+              {
+                <Col xs={8} style={{ textAlign: 'right', paddingLeft: 0, paddingRight: 0 }}>
+                  <OddsDisplayBox homeAway={homeAway} gameData={gameData} market='h2h' total={total} />
+                </Col>
+              }
             </Row>
           </Col>
-          
+
         </Row>
-        <Row>
-        {gameData.home_team === team.espnDisplayName ? isExpanded ? <Button style={isExpanded ? buttonHoverStyle : buttonStyle} onClick={handleToggle}>Collapse</Button> : <Button style={isExpanded ? buttonHoverStyle : buttonStyle} onClick={handleToggle}>Details</Button> : <></>}
-        </Row>
-        </Container>
+
+      </Container>
       }
     </div>
 
@@ -67,8 +49,8 @@ const buttonStyle = {
   color: '#D4D2D5',             // Light text color
   border: 'none',               // No border
   borderRadius: '5px',          // Slightly rounded corners
-  padding: '8px 16px',          // Padding for better click area
-  fontSize: '.9rem',            // Font size that is consistent with the card text
+  // padding: '8px 16px',          // Padding for better click area
+  fontSize: '.8rem',            // Font size that is consistent with the card text
   transition: 'all 0.2s ease',  // Smooth transition for hover effect
   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',  // Subtle shadow for depth
 };

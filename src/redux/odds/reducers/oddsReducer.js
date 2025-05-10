@@ -2,6 +2,8 @@
 const initialState = {
     games: [],
     pastGames: [],
+    valueGames: [],
+    sports: [],
     isLoading: false,
     error: null,
   };
@@ -12,6 +14,10 @@ const initialState = {
         return {...state, games: action.payload}
       case 'SET_PAST_ODDS':
         return {...state, pastGames: action.payload}
+      case 'SET_VALUE_ODDS':
+        return {...state, valueGames: action.payload}
+      case 'SET_SPORTS':
+        return {...state, sports: action.payload}
       default:
         return state;
     }

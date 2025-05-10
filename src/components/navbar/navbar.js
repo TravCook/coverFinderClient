@@ -2,18 +2,18 @@ import { Navbar, Container, Row, Col, Button, Modal, Dropdown, DropdownToggle, D
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { setBankroll, setBetType, setSportsbook } from '../../redux/user/actions/userActions';
-import { sports } from '../../utils/constants'
+import { setBankroll, setBetType, setSportsbook, setStarredGames } from '../../redux/user/actions/userActions';
+import { isSameDay, combinedCondition, valueBetConditionCheck } from '../../utils/constants'
 
-const NavBar = () => {
+const NavBar = ({allTimeProfit, allTimeValueProfit}) => {
     const dispatch = useDispatch()
-    const games = useSelector((state) => state.games.games);
-    const { bankroll, sportsbook } = useSelector((state) => state.user);
-
+    const { games, valueGames, sports, pastGames } = useSelector((state) => state.games);
+    const { bankroll, sportsbook, starredGames } = useSelector((state) => state.user);
     const [dropdownTitle, setDropdownTitle] = useState("Select Sportsbook");
     const [dropdownBG, setDropdownBG] = useState('#527595');
     const [dropdownFont, setDropdownFont] = useState('#eef3f3');
     const [showModal, setShowModal] = useState(false); // State to control modal visibility
+    const [valueWinPct, setValueWinPct] = useState()
 
     // Set the default sportsbook if props.sportsBook is not provided
     // const sportsbook = sportsBook || 'fanduel'; // Default to 'fanduel' if not passed
@@ -72,65 +72,119 @@ const NavBar = () => {
         );
     };
 
+    const handleAutoStar = () => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);  // Set time to midnight
+
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 2);
+        tomorrow.setHours(0, 0, 0, 0);  // Set time to midnight
+
+        let updatedStarredGames = [...starredGames];
+        games.filter((game) => {
+            const bookmaker = game.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
+            if (bookmaker) {
+                const marketData = bookmaker?.markets?.find(m => m.key === 'h2h');
+
+                let outcome = marketData?.outcomes?.find(o => {
+                    return o.name === (game.predictedWinner === 'home' ? game.home_team : game.away_team)
+                });
+
+                if (outcome) {
+                    let currentSport = sports.find(arraySport => arraySport.name === game.sport_key)
+                    let sportSettings = currentSport.valueBetSettings.find((setting) => setting.bookmaker === sportsbook)
+                    if (sportSettings !== undefined) {
+                        let valueBetCheck = combinedCondition(game, outcome, sportSettings.settings.indexDiffSmallNum, sportSettings.settings.indexDiffRangeNum, sportSettings.settings.confidenceLowNum, sportSettings.settings.confidenceRangeNum)
+                        if (valueBetCheck) {
+                            return game
+                        }
+                    }
+
+                }
+
+
+            }
+            return false;
+        }).filter((game) => isSameDay(new Date(game.commence_time), today)).map((gameData) => {
+            // Check if the game is already starred
+            if (!starredGames.some((game) => game.id === gameData.id)) {
+                // If not, create a new array with the new starred game
+                updatedStarredGames.push(gameData)
+
+                // Save the updated starred games to cookies
+                localStorage.setItem('starredGames', JSON.stringify(updatedStarredGames));
+
+                dispatch(setStarredGames(updatedStarredGames)); // Dispatch the updated array
+
+            }
+
+        })
+        starredGames.map((gameData) => {
+            if (!valueBetConditionCheck(sports, gameData, sportsbook, pastGames)) {
+                updatedStarredGames = starredGames.filter((filterGame) => filterGame.id !== gameData.id);
+                localStorage.setItem('starredGames', JSON.stringify(updatedStarredGames));
+                dispatch(setStarredGames(updatedStarredGames)); // Dispatch the filtered array
+
+            }
+        })
+
+
+
+    }
+
     useEffect(() => {
+        setValueWinPct(((valueGames.filter((game) => game.predictionCorrect === true).length / valueGames.length) * 100).toFixed(2))
         const { bg, font } = setDropdownStyles(sportsbook); // Use sportsbook instead of sportsBook
         setDropdownBG(bg);
         setDropdownFont(font);
         setDropdownTitle(sportsbook); // Update dropdown title with the new sportsbook name
-    }, [sportsbook, games, bankroll]);  // Dependencies for dynamic updates
+    }, [sportsbook, games, bankroll, valueGames, sports]);  // Dependencies for dynamic updates
 
     return (
-        <Navbar sticky="top" style={{ backgroundColor: '#2A2A2A', color: '#E0E0E0', marginBottom: 10 }}>
+        <Navbar style={{ backgroundColor: '#2A2A2A', color: '#E0E0E0', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10 }}>
             <Container fluid>
                 <Col xs={1} style={{ textAlign: 'left' }}>
                     <NavbarBrand style={{ color: '#E0E0E0' }} href="/" >
                         BETTOR
                     </NavbarBrand>
                 </Col>
-                <Col className="mx-3">
-                    <Row style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        {sports.map((sport) => {
-                            const currentMonth = new Date().getMonth() + 1;
-                            const isInSeason =
-                                sport.multiYear
-                                    ? currentMonth >= sport.startMonth || currentMonth <= sport.endMonth
-                                    : currentMonth >= sport.startMonth && currentMonth <= sport.endMonth;
-
-                            // Filter the games for the sport to check if there is any game data
-                            const filteredGames = games.filter((game) => game.sport_title === sport.league.toUpperCase());
-
-                            // If the sport is in season and there are games for that sport, render the <Col>
-                            if (!isInSeason || filteredGames.length === 0) return null;
-
-                            return (
-                                <Col xs="auto" className="mx-1" style={{ padding: 0, textAlign: 'center' }} key={sport.name}>
-                                    <div className="sport-section">
-                                        {renderSportCard(sport, (game) => {
-                                            const gameDate = new Date(game.commence_time);
-                                            const currentDate = new Date();
-                                            const futureDate = new Date(currentDate);
-                                            futureDate.setDate(currentDate.getDate() + 360);
-
-                                            return gameDate < futureDate;
-                                        }, sport.league)}
-                                    </div>
-                                </Col>
-                            );
-                        })}
+                <Col xs={1}>
+                    {`${valueWinPct}%`}
+                </Col>
+                <Col>
+                    <Row style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                        <Col>{allTimeProfit.toFixed(2)}</Col>
+                        <Col>{allTimeValueProfit.toFixed(2)}</Col>
                     </Row>
                 </Col>
-                <Col xs={1} style={{ textAlign: 'right' }}>
+                <Col xs={1} className="mx-3">
+                    <Row style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button
+                            variant="outline-light"
+                            style={{ fontSize: '.75rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }}
+                            onClick={handleAutoStar}>
+                            Auto Star
+                        </Button>
+                    </Row>
+                </Col>
+                <Col xs={2} style={{ textAlign: 'right' }}>
                     <Button
                         variant="outline-light"
-                        style={{ fontSize: '.75rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }}
+                        style={{ fontSize: '.75rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212', margin: 5 }}
                         onClick={handleModalShow} // Open modal on button click
                     >
                         Options
                     </Button>
+                    <Button
+                        variant="outline-light"
+                        style={{ fontSize: '.75rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212', margin: 5 }}
+                    >
+                        Log In
+                    </Button>
 
                     {/* Modal for Options */}
                     <Modal show={showModal} onHide={handleModalClose}>
-                        <Modal.Body style={{ backgroundColor: '#303036'}}>
+                        <Modal.Body style={{ backgroundColor: '#303036' }}>
                             <Row style={{ marginBottom: 5 }}>
                                 <Col>
                                     <Dropdown align='end'>
@@ -199,7 +253,7 @@ const NavBar = () => {
 
                             </Row>
                         </Modal.Body>
-                        <Modal.Footer style={{borderColor: '#303036', backgroundColor: '#303036'}}>
+                        <Modal.Footer style={{ borderColor: '#303036', backgroundColor: '#303036' }}>
                             <Button variant="secondary" onClick={handleModalClose}>
                                 Close
                             </Button>

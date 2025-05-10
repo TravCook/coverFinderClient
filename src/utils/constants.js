@@ -1,14 +1,70 @@
 export const sports = [
-  { name: "americanfootball_nfl", espnSport: 'football', league: 'nfl', startMonth: 9, endMonth: 2, multiYear: true, statYear: 2024, decayFactor: 0.95 },
-  { name: "basketball_nba", espnSport: 'basketball', league: 'nba', startMonth: 10, endMonth: 4, multiYear: true, statYear: 2025, decayFactor: 0.85 },
-  { name: "icehockey_nhl", espnSport: 'hockey', league: 'nhl', startMonth: 10, endMonth: 4, multiYear: true, statYear: 2025, prevstatYear: 2024, decayFactor: 0.85 },
-  { name: "baseball_mlb", espnSport: 'baseball', league: 'mlb', startMonth: 3, endMonth: 10, multiYear: false, statYear: 2024, decayFactor: 0.75 },
-  { name: "americanfootball_ncaaf", espnSport: 'football', league: 'ncaaf', startMonth: 9, endMonth: 1, multiYear: true, statYear: 2024, decayFactor: 0.90 },
-  { name: "basketball_ncaab", espnSport: 'basketball', league: 'NCAAB', startMonth: 11, endMonth: 4, multiYear: true, statYear: 2025, decayFactor: 0.85 },
-  { name: "basketball_wncaab", espnSport: 'basketball', league: 'WNCAAB', startMonth: 11, endMonth: 4, multiYear: true, statYear: 2025, decayFactor: 0.85 },
+  {
+    name: "americanfootball_nfl", espnSport: 'football', league: 'NFL', startMonth: 9, endMonth: 2, multiYear: true, statYear: 2024, decayFactor: 0.95, valueBetSettings: {
+      winPercentIncrease: 0,
+      indexDiffSmallNum: 0,
+      indexDiffRangeNum: 0,
+      confidenceLowNum: 0,
+      confidenceRangeNum: 0
+    }
+  },
+  {
+    name: "basketball_nba", espnSport: 'basketball', league: 'NBA', startMonth: 10, endMonth: 4, multiYear: true, statYear: 2025, decayFactor: 0.85, valueBetSettings: {
+      winPercentIncrease: 30,
+      indexDiffSmallNum: 40,
+      indexDiffRangeNum: 25,
+      confidenceLowNum: .9,
+      confidenceRangeNum: .35
+    }
+  },
+  {
+    name: "icehockey_nhl", espnSport: 'hockey', league: 'NHL', startMonth: 10, endMonth: 4, multiYear: true, statYear: 2025, prevstatYear: 2024, decayFactor: 0.85, valueBetSettings: {
+      winPercentIncrease: 15,
+      indexDiffSmallNum: 30,
+      indexDiffRangeNum: 35,
+      confidenceLowNum: .55,
+      confidenceRangeNum: .2
+    }
+  },
+  {
+    name: "baseball_mlb", espnSport: 'baseball', league: 'MLB', startMonth: 3, endMonth: 10, multiYear: false, statYear: 2024, decayFactor: 0.75, valueBetSettings: {
+      winPercentIncrease: 0,
+      indexDiffSmallNum: 0,
+      indexDiffRangeNum: 0,
+      confidenceLowNum: 0,
+      confidenceRangeNum: 0
+    }
+  },
+  {
+    name: "americanfootball_ncaaf", espnSport: 'football', league: 'NCAAF', startMonth: 9, endMonth: 1, multiYear: true, statYear: 2024, decayFactor: 0.90, valueBetSettings: {
+      winPercentIncrease: 0,
+      indexDiffSmallNum: 0,
+      indexDiffRangeNum: 0,
+      confidenceLowNum: 0,
+      confidenceRangeNum: 0
+    }
+  },
+  {
+    name: "basketball_ncaab", espnSport: 'basketball', league: 'NCAAB', startMonth: 11, endMonth: 4, multiYear: true, statYear: 2025, decayFactor: 0.85, valueBetSettings: {
+      winPercentIncrease: 10,
+      indexDiffSmallNum: 25,
+      indexDiffRangeNum: 30,
+      confidenceLowNum: .8,
+      confidenceRangeNum: .1
+    }
+  },
+  {
+    name: "basketball_wncaab", espnSport: 'basketball', league: 'WNCAAB', startMonth: 11, endMonth: 4, multiYear: true, statYear: 2025, decayFactor: 0.85, valueBetSettings: {
+      winPercentIncrease: 50,
+      indexDiffSmallNum: 45,
+      indexDiffRangeNum: 30,
+      confidenceLowNum: .8,
+      confidenceRangeNum: .5
+    }
+  },
 ]
 
-export const generalStats ={
+export const generalStats = {
   'seasonWinLoss': 'Season Win-Loss Record',
   'homeWinLoss': 'Home Win-Loss Record',
   'awayWinLoss': 'Away Win-Loss Record',
@@ -45,10 +101,10 @@ export const generalStats ={
   'USFBgiveaways': 'Giveaways',
   'USFBtakeaways': 'Takeaways',
   'USFBturnoverDiff': 'Turnover Differential',
-  
+
 }
-export const offenseStats ={
-   'BSKBtotalPoints': 'Total Points',
+export const offenseStats = {
+  'BSKBtotalPoints': 'Total Points',
   'BSKBpointsPerGame': 'Points per Game',
   'BSKBassists': 'Assists',
   'BSKBassistsPerGame': 'Assists per Game',
@@ -111,7 +167,7 @@ export const offenseStats ={
   'HKYshotDifferentialPerGame': 'Shot Differential per Game',
   'HKYgoalDifferentialPerGame': 'Goal Differential per Game',
 }
-export const defenseStats ={
+export const defenseStats = {
   'BSKBblocks': 'Blocks',
   'BSKBblocksPerGame': 'Blocks per Game',
   'BSKBdefensiveRebounds': 'Defensive Rebounds',
@@ -155,7 +211,7 @@ export const defenseStats ={
   'USFBpassesDefendedPerGame': 'Passes Defended per Game',
   'USFBsafties': 'Safeties',
 }
-export const passingStats ={
+export const passingStats = {
   'USFBcompletionPercent': 'Completion Percentage',
   'USFBcompletions': 'Completions',
   'USFBcompletionsPerGame': 'Completions per Game',
@@ -169,7 +225,7 @@ export const passingStats ={
   'USFBpassingAttemptsPerGame': 'Passing Attempts per Game',
   'USFByardsPerPassAttempt': 'Yards per Pass Attempt',
 }
-export const receivingStats ={
+export const receivingStats = {
   'USFBreceivingFirstDowns': 'Receiving First Downs',
   'USFBreceivingTouchdowns': 'Receiving Touchdowns',
   'USFBreceivingYards': 'Receiving Yards',
@@ -178,7 +234,7 @@ export const receivingStats ={
   'USFBreceivingYardsAfterCatch': 'Receiving Yards After Catch',
   'USFBreceivingYardsAfterCatchPerGame': 'Receiving Yards After Catch per Game',
 }
-export const rushingStats ={
+export const rushingStats = {
   'USFBrushingAttempts': 'Rushing Attempts',
   'USFBrushingFirstDowns': 'Rushing First Downs',
   'USFBrushingTouchdowns': 'Rushing Touchdowns',
@@ -186,7 +242,7 @@ export const rushingStats ={
   'USFBrushingYardsPerGame': 'Rushing Yards per Game',
   'USFByardsPerRushAttempt': 'Yards per Rush Attempt',
 }
-export const kickingStats ={
+export const kickingStats = {
   'USFBaverageKickoffYards': 'Average Kickoff Yards',
   'USFBaverageKickoffYardsPerGame': 'Average Kickoff Yards per Game',
   'USFBextraPointAttempts': 'Extra Point Attempts',
@@ -205,7 +261,7 @@ export const kickingStats ={
   'USFBtouchbacksPerGame': 'Touchbacks per Game',
   'USFBtouchBackPercentage': 'Touchback Percentage',
 }
-export const returningStats ={
+export const returningStats = {
   'USFBkickReturns': 'Kick Returns',
   'USFBkickReturnsPerGame': 'Kick Returns per Game',
   'USFBkickReturnYards': 'Kick Return Yards',
@@ -217,8 +273,8 @@ export const returningStats ={
   'USFBpuntReturnYardsPerGame': 'Punt Return Yards per Game',
   'USFByardsPerReturn': 'Yards per Return',
 }
-export const battingStats ={
-   'BSBbattingStrikeouts': 'Batting Strikeouts',
+export const battingStats = {
+  'BSBbattingStrikeouts': 'Batting Strikeouts',
   'BSBrunsBattedIn': 'Runs Batted In',
   'BSBsacrificeHits': 'Sacrifice Hits',
   'BSBHitsTotal': 'Total Hits',
@@ -237,7 +293,7 @@ export const battingStats ={
   'BSBstolenBasePercentage': 'Stolen Base Percentage',
   'BSBbatterWalkToStrikeoutRatio': 'Batter Walk to Strikeout Ratio',
 }
-export const pitchingStats ={
+export const pitchingStats = {
   'BSBsaves': 'Saves',
   'BSBpitcherStrikeouts': 'Pitcher Strikeouts',
   'BSBhitsGivenUp': 'Hits Given Up',
@@ -261,8 +317,8 @@ export const pitchingStats ={
   'BSBstrikeoutsPerNine': 'Strikeouts per Nine',
   'BSBpitcherStrikeoutToWalkRatio': 'Pitcher Strikeout to Walk Ratio',
 }
-export const fieldingStats ={
-   'BSBdoublePlays': 'Double Plays',
+export const fieldingStats = {
+  'BSBdoublePlays': 'Double Plays',
   'BSBerrors': 'Errors',
   'BSBpassedBalls': 'Passed Balls',
   'BSBassists': 'Assists',
@@ -273,7 +329,7 @@ export const fieldingStats ={
   'BSBfieldingPercentage': 'Fielding Percentage',
   'BSBrangeFactor': 'Range Factor',
 }
-export const penaltyStats ={
+export const penaltyStats = {
   'HKYpimDifferential': 'PIM Differential',
   'HKYpimDifferentialPerGame': 'PIM Differential per Game',
   'HKYtotalPenalties': 'Total Penalties',
@@ -282,7 +338,7 @@ export const penaltyStats ={
   'HKYpenaltyMinutesPerGame': 'Penalty Minutes per Game',
 }
 
-export const allStatLabels ={
+export const allStatLabels = {
   'seasonWinLoss': 'Season Win-Loss Record',
   'homeWinLoss': 'Home Win-Loss Record',
   'awayWinLoss': 'Away Win-Loss Record',
@@ -748,15 +804,64 @@ export const isSameDay = (date1, date2) => {
   const d2 = new Date(date2);
 
   return d1.getFullYear() === d2.getFullYear() &&
-         d1.getMonth() === d2.getMonth() &&
-         d1.getDate() === d2.getDate();
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
 };
 
-  // Helper function to format Date as 'YYYY-MM-DD'
-export  const formatDate = (date) => {
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0'); // getMonth is zero-based
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+// Helper function to format Date as 'YYYY-MM-DD'
+export const formatDate = (date) => {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0'); // getMonth is zero-based
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Calculate the index difference
+export const indexCondition = (game, indexDifSmall, indexDiffRange) => {
+
+  const indexDiff = game.predictedWinner === 'home'
+    ? Math.abs(game.homeTeamScaledIndex - game.awayTeamScaledIndex)
+    : Math.abs(game.awayTeamScaledIndex - game.homeTeamScaledIndex);
+  return indexDiff >= indexDifSmall && (indexDiff <= (indexDifSmall + indexDiffRange));
+};
+
+export const strengthCondition = (game, confidenceLow, confidenceRange) => {
+  return game.predictionStrength > confidenceLow && game.predictionStrength < (confidenceLow + confidenceRange);
+};
+
+export const probabilityCondition = (o, game, sportsbook) => {
+  return (o.impliedProb * 100) < (game.winPercent) 
+};
+
+
+
+// You can also combine them into a single condition
+export const combinedCondition = (game, o, indexDifSmall, indexDiffRange, confidenceLow, confidenceRange, sportsbook) => {
+
+  return probabilityCondition(o, game, sportsbook)
+    && indexCondition(game, indexDifSmall, indexDiffRange)
+    && strengthCondition(game, confidenceLow, confidenceRange)
+};
+
+
+export const valueBetConditionCheck = (sports, game, sportsbook, pastGames) => {
+  const bookmaker = game.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
+  if (bookmaker) {
+    const marketData = bookmaker?.markets?.find(m => m.key === 'h2h');
+
+    let outcome = marketData?.outcomes?.find(o => {
+      return o.name === (game.predictedWinner === 'home' ? game.home_team : game.away_team)
+    });
+
+    if (outcome) {
+      let currentSport = sports.find(arraySport => arraySport.name === game.sport_key)
+      let sportSettings = currentSport?.valueBetSettings.find((setting) => setting.bookmaker === sportsbook)
+      if (sportSettings !== undefined) {
+        return combinedCondition(game, outcome, sportSettings.settings.indexDiffSmallNum, sportSettings.settings.indexDiffRangeNum, sportSettings.settings.confidenceLowNum, sportSettings.settings.confidenceRangeNum, sportsbook)
+      }
+
+    }
+  }
+}
+

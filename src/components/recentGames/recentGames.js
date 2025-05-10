@@ -10,15 +10,13 @@ const RecentGames = ({team}) => {
         return isSameDay(time, new Date())
           ? gameTime.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
           : gameTime.toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit', hour12: true });
-      };
+    };
 
 
 
     let games = pastGames
     .filter((game) => (game.away_team === team || game.home_team === team) && (game.awayTeamIndex != game.homeTeamIndex))
     .sort((a, b) => new Date(b.commence_time) - new Date(a.commence_time));
-
-
 
     return (
         <Table bordered variant='dark'>
@@ -33,7 +31,7 @@ const RecentGames = ({team}) => {
         <tbody>
             {            
             games.map((game , idx) => {
-                if(idx < 4){
+                if(idx < 5){
                     if(game.home_team === team){
                         return (
                             <tr key={game.id}>

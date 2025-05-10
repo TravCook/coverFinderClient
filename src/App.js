@@ -1,5 +1,5 @@
 import './App.css';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router'; // Fixed import for `react-router-dom`
 import { socket } from './socket';
 import NavBar from './components/navbar/navbar';
@@ -8,24 +8,38 @@ import SingleSportDisplay from './components/singleSportDisplay/singleSportDispl
 import Results from './components/results/results';
 import MatchupDetails from './components/matchupDetails/matchupDetails';
 import { useDispatch, useSelector } from 'react-redux';
-import { setOdds, setPastOdds } from './redux/odds/actions/oddsActions'
+import { setOdds, setPastOddsEmit, setValueOdds, setSports, setPastOdds } from './redux/odds/actions/oddsActions'
 import { setTeams } from './redux/teams/actions/teamActions';
 import { updateStarredGames, loadStarredGamesFromLocalStorage, removeStarredGames } from './redux/user/actions/userActions';
 
 function App() {
   const dispatch = useDispatch()
   const { teams } = useSelector((state) => state.teams)
-  const { games, pastGames } = useSelector((state) => state.games)
-  const { starredGames } = useSelector((state) => state.user)
+  const { games, pastGames, sports } = useSelector((state) => state.games)
+  const { starredGames, sportsbook } = useSelector((state) => state.user)
+  const [allTimeProfit, setAllTimeProfit] = useState(0);
+  const [allTimeValueProfit, setAllTimeValueProfit] = useState(0);
 
 
 
   useEffect(() => {
     dispatch(loadStarredGamesFromLocalStorage());
-    fetch(`http://${process.env.REACT_APP_API_URL}/api/odds`).then((res) => res.json()).then((data) => {
+    fetch(`http://${process.env.REACT_APP_API_URL}/api/odds`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sportsbook: sportsbook
+      })
+    }).then((res) => res.json()).then((data) => {
+      dispatch(setSports(data.sports))
       dispatch(setOdds(data.odds))
-      dispatch(setPastOdds(data.pastGameOdds))
       dispatch(setTeams(data.teams))
+      dispatch(setValueOdds(data.valueGames))
+      dispatch(setPastOdds(data.pastGames))
+      setAllTimeProfit(data.allTimeProfit);
+      setAllTimeValueProfit(data.allTimeValueProfit);
     })
     function onGameUpdate(data) {
       dispatch(updateStarredGames(data))
@@ -33,7 +47,7 @@ function App() {
     }
     function onPastGameUpdate(data) {
       dispatch(removeStarredGames(data));
-      dispatch(setPastOdds(data));  // Update past odds with the incoming data
+      dispatch(setPastOddsEmit(data));  // Update past odds with the incoming data
     }
     function onTeamUpdate(data) {
       dispatch(setTeams(data))
@@ -46,7 +60,7 @@ function App() {
       socket.off('pastGameUpdate', onPastGameUpdate);
       socket.off('teamUpdate', onTeamUpdate)
     };
-  }, [dispatch]);
+  }, [dispatch, sportsbook]);
 
   useEffect(() => {
     if (starredGames) {
@@ -56,18 +70,18 @@ function App() {
 
   return (
     <div className="App">
-      {teams && games && pastGames ?
+      { games && sports &&
         <BrowserRouter>
-          <NavBar />
+          <NavBar allTimeProfit={allTimeProfit} allTimeValueProfit={allTimeValueProfit} />
           <Routes>
             <Route path="/" element={<UpcomingGames />} />
             <Route path="/sport/:league" element={<SingleSportDisplay />} />
-            <Route path="/results" element={<Results />} />
+            <Route path="/results" element={pastGames && <Results />} />
             <Route path="/matchup/:id" element={<MatchupDetails />} />
           </Routes>
         </BrowserRouter>
 
-        : <></>}
+      }
 
     </div>
   );

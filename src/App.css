@@ -1,16 +1,18 @@
 .App {
   background-color: #121212;
   min-height: 100vh;
-  color: #eef3f3;
+  color: #ffffff;
   font-size: 16px;
 }
-
 
 .App-logo {
   height: 40vmin;
   pointer-events: none;
 }
 
+.expandButton:hover {
+  background-color: darkgreen;
+}
 
 
 @media (prefers-reduced-motion: no-preference) {

@@ -1,424 +1,612 @@
 import { useState, useEffect } from 'react'
-import { Container, Row, Col, Dropdown, Button, DropdownToggle, DropdownMenu, DropdownItem } from 'react-bootstrap'
+import { Container, Row, Col, Dropdown, Button, DropdownToggle, DropdownMenu, DropdownItem, Table } from 'react-bootstrap'
 import PastGamesDisplay from '../pastGames/pastGames.js';
-import { sports, isSameDay, formatDate } from '../../utils/constants.js';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useSelector } from 'react-redux';
+import { isSameDay, formatDate, combinedCondition, valueBetConditionCheck } from '../../utils/constants.js';
+import { setPastOdds } from '../../redux/odds/actions/oddsActions.js'
+import { setTeams } from '../../redux/teams/actions/teamActions';
+import { useDispatch, useSelector } from 'react-redux';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import MatchupCard from '../matchupCard/matchupCard.js';
+
 
 const Results = () => {
-      document.title = 'Results'
+    const dispatch = useDispatch()
+    document.title = 'Results'
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);  // Set time to midnight
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0);  // Set time to midnight
+
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+    fifteenDaysAgo.setHours(0, 0, 0, 0);  // Set time to midnight
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);  // Set time to midnight
+
+    const sixyDaysAgo = new Date();
+    sixyDaysAgo.setDate(sixyDaysAgo.getDate() - 60);
+    sixyDaysAgo.setHours(0, 0, 0, 0);  // Set time to midnight
+
+    let indexRows = ["1-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50"]
+    let winrateRows = ["1-10", "10-20", "20-30", "30-40", "40-50", "50-60", "60-70", "70-80", "80-90", "90-100"]
+    let confidenceRows = ["1-10", "10-20", "20-30", "30-40", "40-50", "50-60", "60-70", "70-80", "80-90", "90-100"]
+
     const { bankroll, betType, sportsbook } = useSelector((state) => state.user);
-    const { games, pastGames } = useSelector((state) => state.games)
+    const { games, pastGames, sports } = useSelector((state) => state.games)
     const { teams } = useSelector((state) => state.teams)
-    const [chartData, setChartData] = useState([]);
-    const [leagueData, setLeagueData] = useState([])
-    const [selectedLeague, setSelectedLeague] = useState('americanfootball_nfl')
-    const leagueKeys = [
-        'americanfootball_nfl', 'americanfootball_ncaaf', 'basketball_nba',
-        'basketball_wncaab', 'basketball_ncaab', 'icehockey_nhl', 'baseball_mlb'
-    ];
-    const timePeriods = ['day', 'week', 'month', 'year'];
-    
-    const [selectedTimePeriod, setSelectedTimePeriod] = useState('day'); // Default to 'day'
-    // Custom Tooltip component
-    const CustomTooltip = ({ active, payload }) => {
-        if (active && payload && payload.length) {
-            const { date, winPercentage } = payload[0].payload;  // Access the data of the active point
-            return (
-                <div style={{ backgroundColor: '#303036', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', color: '#d4d2d5' }}>
-                    <p style={{ margin: 0, fontWeight: 'bold' }}>Date: {date}</p>
-                    <p style={{ margin: 0, color: '#8884d8' }}>Win Percentage: {winPercentage.toFixed(2)}%</p>
-                </div>
-            );
-        }
-
-        return null;
-    };
-
-    // Helper function to get the year and week number
-    function getYearWeek(date) {
-        const startDate = new Date(date.getFullYear(), 0, 1);
-        const days = Math.floor((date - startDate) / (24 * 60 * 60 * 1000));
-        const week = Math.ceil((days + 1) / 7);
-        return { year: date.getFullYear(), week };
-    }
-
-    const processData = (games, timeUnit) => {
-        const groupedData = {};
-
-        // Process each game
-        games.forEach((game) => {
-            const date = new Date(game.commence_time);
-            let timeKey;
-
-            switch (timeUnit) {
-                case "week":
-                    const yearWeek = getYearWeek(date);
-                    timeKey = `${yearWeek.year}-W${yearWeek.week}`; // Format as year-week
-                    break;
-                case "month":
-                    const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                    timeKey = yearMonth; // Format as year-month
-                    break;
-                case "year":
-                    timeKey = `${date.getFullYear()}`; // Use just the year
-                    break;
-                case "day":
-                default:
-                    timeKey = date.toLocaleDateString(); // Default to day (format as YYYY-MM-DD)
-                    break;
-            }
-
-            const correctPrediction = game.predictionCorrect ? 1 : 0;
-
-            if (!groupedData[timeKey]) {
-                groupedData[timeKey] = { totalGames: 0, correctPredictions: 0 };
-            }
-
-            groupedData[timeKey].totalGames += 1;
-            groupedData[timeKey].correctPredictions += correctPrediction;
-        });
-
-        // Convert to an array of objects suitable for Recharts
-        const chartData = Object.keys(groupedData).map((key) => ({
-            timeKey: key,
-            winPercentage: (groupedData[key].correctPredictions / groupedData[key].totalGames) * 100,
-        }));
-
-        // Sort by timeKey (the sorting will depend on the timeUnit)
-        chartData.sort((a, b) => {
-            if (timeUnit === "week") {
-                const [yearA, weekA] = a.timeKey.split('-W').map(Number);
-                const [yearB, weekB] = b.timeKey.split('-W').map(Number);
-                return yearA === yearB ? weekA - weekB : yearA - yearB;
-            } else if (timeUnit === "month") {
-                const [yearA, monthA] = a.timeKey.split('-').map(Number);
-                const [yearB, monthB] = b.timeKey.split('-').map(Number);
-                return yearA === yearB ? monthA - monthB : yearA - yearB;
-            } else if (timeUnit === "year") {
-                return a.timeKey - b.timeKey;
-            } else { // day or default sorting
-                return new Date(a.timeKey) - new Date(b.timeKey);
-            }
-        });
-
-        return chartData;
-    };
-
-
-
-    const processLeagueData = (games, timeUnit) => {
-        const leagueData = {};
-
-        // Initialize the leagueData structure with empty objects for each league
-        leagueKeys.forEach((league) => {
-            leagueData[league] = {};
-        });
-
-        // Process each game
-        games.forEach((game) => {
-            const date = new Date(game.commence_time);
-            let timeKey;
-
-            const correctPrediction = game.predictionCorrect ? 1 : 0;
-            const league = game.sport_key;
-
-            // Only process the games for the defined leagues
-            if (leagueKeys.includes(league)) {
-                // Dynamically create the timeKey based on the selected timeUnit
-                switch (timeUnit) {
-                    case "week":
-                        const { year, week } = getYearWeek(date);
-                        timeKey = `${year}-W${week}`; // Format as year-week
-                        break;
-                    case "month":
-                        timeKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; // Format as year-month
-                        break;
-                    case "year":
-                        timeKey = `${date.getFullYear()}`; // Just the year
-                        break;
-                    case "day":
-                    default:
-                        timeKey = date.toLocaleDateString(); // Default to day (format as YYYY-MM-DD)
-                        break;
-                }
-
-                // Initialize the leagueData structure for the timeKey if it doesn't exist
-                if (!leagueData[league][timeKey]) {
-                    leagueData[league][timeKey] = { totalGames: 0, correctPredictions: 0 };
-                }
-
-                // Increment the total games and correct predictions
-                leagueData[league][timeKey].totalGames += 1;
-                leagueData[league][timeKey].correctPredictions += correctPrediction;
-            }
-        });
-
-        // Convert the leagueData into a format suitable for Recharts
-        const formattedData = {};
-
-        Object.keys(leagueData).forEach((league) => {
-            const timeData = leagueData[league];
-
-            // Only add leagues with at least one game
-            const leagueChartData = Object.keys(timeData).map((time) => ({
-                timeKey: time,
-                winPercentage: (timeData[time].correctPredictions / timeData[time].totalGames) * 100,
-            }));
-
-            // If the league has data, add it to the formatted data
-            if (leagueChartData.length > 0) {
-                // Sort the league chart data based on the timeUnit
-                leagueChartData.sort((a, b) => {
-                    if (timeUnit === "week") {
-                        const [yearA, weekA] = a.timeKey.split('-W').map(Number);
-                        const [yearB, weekB] = b.timeKey.split('-W').map(Number);
-                        return yearA === yearB ? weekA - weekB : yearA - yearB;
-                    } else if (timeUnit === "month") {
-                        const [yearA, monthA] = a.timeKey.split('-').map(Number);
-                        const [yearB, monthB] = b.timeKey.split('-').map(Number);
-                        return yearA === yearB ? monthA - monthB : yearA - yearB;
-                    } else if (timeUnit === "year") {
-                        return a.timeKey - b.timeKey;
-                    } else { // day or default sorting
-                        return new Date(a.timeKey) - new Date(b.timeKey);
-                    }
-                });
-
-                // Add the formatted data for the league
-                formattedData[league] = leagueChartData;
-            }
-        });
-
-        return formattedData;
-    };
-
+    const [overallChartDataFinal, setoverallChartDataFinal] = useState()
 
 
     useEffect(() => {
-        const data = processData(pastGames, selectedTimePeriod);  // Assuming pastGames is your data
-        setChartData(data);
-        const leagueData = processLeagueData(pastGames, selectedTimePeriod)
-        setLeagueData(leagueData)
-    }, [pastGames, selectedTimePeriod]);
+        fetch(`http://${process.env.REACT_APP_API_URL}/api/odds/pastGameOdds`, {
+            method: "POST",
+        }).then((res) => res.json()).then((data) => {
+            console.log(data)
+            dispatch(setPastOdds(data.pastGames))
+        })
+    }, [])
 
-    console.log(chartData)
+    useEffect(() => {
+        let overallChartData = []
+        for (let i = 0; i < 21; i++) {
+            let dataDate = new Date()
+            dataDate.setDate(dataDate.getDate() - i);
+            dataDate.setHours(0, 0, 0, 0);  // Set time to midnight
 
+            let dataGames = pastGames.filter((game) => isSameDay(new Date(game.commence_time), dataDate))
+
+            let valueGames = dataGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames))
+
+            let overallWinRate = dataGames.filter((game) => game.predictionCorrect === true).length / dataGames.length
+
+            let valueWinRate = valueGames.filter((game) => game.predictionCorrect === true).length / valueGames.length
+
+            overallChartData.unshift({
+                date: `${dataDate.getDate()}/${dataDate.getMonth() + 1}/${dataDate.getFullYear()}`,
+                winrates: [overallWinRate * 100, valueWinRate * 100]
+            })
+        }
+        console.log(overallChartData)
+        setoverallChartDataFinal(overallChartData)
+    }, [pastGames])
+
+
+
+    let valueGames = pastGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames))
+    let todayGames = pastGames.filter((game) => isSameDay(new Date(game.commence_time), new Date()))
+    todayGames.length === 0 ? todayGames = pastGames : todayGames = todayGames
     return (
-        <Container fluid>
-            <Row>                {/* Dropdown for Time Period */}
-                <Col xs={6} md={3}>
-                    <Dropdown>
-                        <DropdownToggle variant="success" id="dropdown-basic">
-                            {selectedTimePeriod.charAt(0).toUpperCase() + selectedTimePeriod.slice(1)} {/* Capitalize first letter */}
-                        </DropdownToggle>
-                        <DropdownMenu>
-                            {timePeriods.map((period) => (
-                                <DropdownItem key={period} onClick={() => setSelectedTimePeriod(period)}>
-                                    {period.charAt(0).toUpperCase() + period.slice(1)}
-                                </DropdownItem>
-                            ))}
-                        </DropdownMenu>
-                    </Dropdown>
-                </Col></Row>
-            <Row style={{ height: '42vh' }}>
-                <Row>
-                    <Col>
-                        <Row>
-                            <Col style={{ textAlign: 'center' }}>
-                                <span>Overall</span>
-                            </Col>
-                        </Row>
+        <Container fluid style={{ position: 'relative', top: 60, backgroundColor: '#121212', margin: '1em 0' }}>
+            <Row style={{ border: 'solid .25em gray' }}>
+                <Row style={{ fontSize: '.85rem', textAlign: 'center' }}>
+                    <Row>
+                        <Col>
+                            ALL GAMES
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            <Row>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Total Games
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {pastGames.filter((game) => game.predictionCorrect === true || game.predictionCorrect === false).length}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Total wins
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {pastGames.filter((game) => game.predictionCorrect === true).length}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Today Games
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {todayGames.length}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Today wins
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {todayGames.filter((game) => game.predictionCorrect === true).length}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                            </Row>
+                        </Col>
+                        <Col>
+                            <Row>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Total Value
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {pastGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).length}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Total V wins
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {pastGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).filter((game) => game.predictionCorrect === true).length}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Today Value
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {todayGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).length}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Today V wins
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {todayGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).filter((game) => game.predictionCorrect === true).length}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                            </Row>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            <Row>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Games/Day
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {(pastGames.length / 7).toFixed(2)}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Wins/Day
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {(pastGames.filter((game) => game.predictionCorrect === true).length / 7).toFixed(2)}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Total winrate
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {((pastGames.filter((game) => game.predictionCorrect === true).length / pastGames.filter((game) => game.predictionCorrect === true || game.predictionCorrect === false).length) * 100).toFixed(2)}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Today winrate
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {((todayGames.filter((game) => game.predictionCorrect === true).length / todayGames.length) * 100).toFixed(2)}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                            </Row>
+                        </Col>
+                        <Col>
+                            <Row>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Value/Day
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {(pastGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).length / 7).toFixed(2)}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Vwins/Day
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {(pastGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).filter((game) => game.predictionCorrect === true).length / 7).toFixed(2)}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            V winrate
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {((pastGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).filter((game) => game.predictionCorrect === true).length / pastGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).length) * 100).toFixed(2)}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                <Col>
+                                    <Row>
+                                        <Col>
+                                            Today V
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            {((todayGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).filter((game) => game.predictionCorrect === true).length / todayGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).length) * 100).toFixed(2)}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                            </Row>
+                        </Col>
 
-                        {/* Graph Row */}
-                        <Row>
-                            <Col>
-                                <ResponsiveContainer width="100%" height={175}>
-                                    <LineChart data={chartData}>
-                                        <XAxis dataKey="date" />
-                                        <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} interval={0} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="winPercentage" stroke="#8884d8" />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </Col>
-                        </Row>
-
-                    </Col>
-                    <Col>
-                        <Row>
-                            <Col style={{ textAlign: 'center' }}>
-                                <span>NFL</span>
-                            </Col>
-                        </Row>
-
-                        {/* Graph Row */}
-                        <Row>
-                            <Col>
-                                <ResponsiveContainer width="100%" height={175}>
-                                    <LineChart data={leagueData[selectedLeague]}>
-                                        <XAxis dataKey="date" />
-                                        <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} interval={0} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="winPercentage" stroke="#8884d8" />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </Col>
-                        </Row>
-
-                    </Col>
-                    <Col>
-                        <Row>
-                            <Col style={{ textAlign: 'center' }}>
-                                <span>NCAAF</span>
-                            </Col>
-                        </Row>
-
-                        {/* Graph Row */}
-                        <Row>
-                            <Col>
-                                <ResponsiveContainer width="100%" height={175}>
-                                    <LineChart data={leagueData['americanfootball_ncaaf']}>
-                                        <XAxis dataKey="date" />
-                                        <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} interval={0} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="winPercentage" stroke="#8884d8" />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </Col>
-                        </Row>
-
-                    </Col>
-                    <Col>
-                        <Row>
-                            <Col style={{ textAlign: 'center' }}>
-                                <span>NHL</span>
-                            </Col>
-                        </Row>
-
-                        {/* Graph Row */}
-                        <Row>
-                            <Col>
-                                <ResponsiveContainer width="100%" height={175}>
-                                    <LineChart data={leagueData['icehockey_nhl']}>
-                                        <XAxis dataKey="date" />
-                                        <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} interval={0} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="winPercentage" stroke="#8884d8" />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </Col>
-                        </Row>
-
-                    </Col>
-
+                    </Row>
                 </Row>
                 <Row>
-
-                    <Col>
-                        <Row>
-                            <Col style={{ textAlign: 'center' }}>
-                                <span>NBA</span>
-                            </Col>
-                        </Row>
-
-                        {/* Graph Row */}
-                        <Row>
-                            <Col>
-                                <ResponsiveContainer width="100%" height={175}>
-                                    <LineChart data={leagueData['basketball_nba']}>
-                                        <XAxis dataKey="date" />
-                                        <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} interval={0} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="winPercentage" stroke="#8884d8" />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </Col>
-                        </Row>
-
-                    </Col>
-                    <Col>
-                        <Row>
-                            <Col style={{ textAlign: 'center' }}>
-                                <span>NCAAB</span>
-                            </Col>
-                        </Row>
-
-                        {/* Graph Row */}
-                        <Row>
-                            <Col>
-                                <ResponsiveContainer width="100%" height={175}>
-                                    <LineChart data={leagueData['basketball_ncaab']}>
-                                        <XAxis dataKey="date" />
-                                        <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} interval={0} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="winPercentage" stroke="#8884d8" />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </Col>
-                        </Row>
-
-                    </Col>                    <Col>
-                        <Row>
-                            <Col style={{ textAlign: 'center' }}>
-                                <span>WNCAAB</span>
-                            </Col>
-                        </Row>
-
-                        {/* Graph Row */}
-                        <Row>
-                            <Col>
-                                <ResponsiveContainer width="100%" height={175}>
-                                    <LineChart data={leagueData['basketball_wncaab']}>
-                                        <XAxis dataKey="date" />
-                                        <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} interval={0} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="winPercentage" stroke="#8884d8" />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </Col>
-                        </Row>
-
-                    </Col>
-                    <Col>
-                        <Row>
-                            <Col style={{ textAlign: 'center' }}>
-                                <span>MLB</span>
-                            </Col>
-                        </Row>
-
-                        {/* Graph Row */}
-                        <Row>
-                            <Col>
-                                <ResponsiveContainer width="100%" height={175}>
-                                    <LineChart data={leagueData['baseball_mlb']}>
-                                        <XAxis dataKey="date" />
-                                        <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} interval={0} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="winPercentage" stroke="#8884d8" />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </Col>
-                        </Row>
-
-                    </Col>
-
+                    {overallChartDataFinal && <ResponsiveContainer width='100%' height={250}>
+                        <BarChart data={overallChartDataFinal}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="date" />
+                            <YAxis domain={[0, 100]} />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="winrates[0]" fill="#8884d8" name='Winrate' />
+                            <Bar dataKey="winrates[1]" fill="#82ca9d" name='Value Winrate' />
+                        </BarChart>
+                    </ResponsiveContainer>}
                 </Row>
+                {pastGames && <PastGamesDisplay displayGames={pastGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames))} />}
+            </Row>
+            <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+                {sports.filter((sport) => pastGames.filter((game) => game.sport_key === sport.name).length > 0).map((sport) => {
+                    let sportNameArr = sport.name.split('_')
+                    let leagueName = sportNameArr[1]
+                    let sportGames = pastGames.filter((game) => game.sport_key === sport.name).filter((game) => isSameDay(new Date(game.commence_time), new Date()))
+                    sportGames.length === 0 ? sportGames = pastGames.filter((game) => game.sport_key === sport.name) : sportGames = sportGames
 
+                    let sportChartData = []
+                    for (let x = 0; x < 21; x++) {
+                        let dataDate = new Date()
+                        dataDate.setDate(dataDate.getDate() - x);
+                        dataDate.setHours(0, 0, 0, 0);  // Set time to midnight
+
+                        let dataGames = pastGames.filter((game) => game.sport_key === sport.name).filter((game) => isSameDay(new Date(game.commence_time), dataDate))
+
+                        let valueGames = dataGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames))
+
+                        let overallWinRate = dataGames.filter((game) => game.predictionCorrect === true).length / dataGames.length
+
+                        let valueWinRate = valueGames.filter((game) => game.predictionCorrect === true).length / valueGames.length
+
+                        sportChartData.unshift({
+                            date: `${dataDate.getDate()}/${dataDate.getMonth() + 1}/${dataDate.getFullYear()}`,
+                            winrates: [overallWinRate * 100, valueWinRate * 100]
+                        })
+                    }
+                    let sportSettings = sport?.valueBetSettings.find((setting) => setting.bookmaker === sportsbook)
+                    let valueBetSettings = sportSettings?.settings
+                    return (
+                        <Col xs={12} style={{ border: 'solid .25em gray', margin: '1em auto' }}>
+                            <Row style={{ fontSize: '.85rem', textAlign: 'center' }}>
+                                <Row>
+                                    <Col>
+                                        {leagueName.toUpperCase()}
+                                    </Col>
+                                    <Col>
+                                        { valueBetSettings && <Row>
+                                            <Col>Value Settings</Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        {`(${valueBetSettings?.indexDiffSmallNum} - ${valueBetSettings?.indexDiffSmallNum + valueBetSettings?.indexDiffRangeNum})`}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                    {`(${((valueBetSettings?.confidenceLowNum) * 100).toFixed(0)} - ${((valueBetSettings?.confidenceLowNum + valueBetSettings?.confidenceRangeNum) * 100).toFixed(0)})`}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                        </Row>}
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col>
+                                        <Row>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Total Games
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {sportGames.length}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Total wins
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {sportGames.filter((game) => game.predictionCorrect === true).length}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Today Games
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {todayGames.filter((game) => game.sport_key === sport.name).length}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Today wins
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {todayGames.filter((game) => game.sport_key === sport.name).filter((game) => game.predictionCorrect === true).length}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                        </Row>
+                                    </Col>
+                                    <Col>
+                                        <Row>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Total Value
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {sportGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).length}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Total V wins
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {sportGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).filter((game) => game.predictionCorrect === true).length}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Today Value
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {todayGames.filter((game) => game.sport_key === sport.name).filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).length}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Today V wins
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {todayGames.filter((game) => game.sport_key === sport.name).filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).filter((game) => game.predictionCorrect === true).length}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                        </Row>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col>
+                                        <Row>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Games/Day
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {(sportGames.length / 7).toFixed(2)}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Wins/Day
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {(sportGames.filter((game) => game.predictionCorrect === true).length / 7).toFixed(2)}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Total winrate
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {((sportGames.filter((game) => game.predictionCorrect === true).length / sportGames.length) * 100).toFixed(2)}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Today winrate
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {((todayGames.filter((game) => game.sport_key === sport.name).filter((game) => game.predictionCorrect === true).length / todayGames.filter((game) => game.sport_key === sport.name).length) * 100).toFixed(2)}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                        </Row>
+                                    </Col>
+                                    <Col>
+                                        <Row>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Value/Day
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {(sportGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).length / 7).toFixed(2)}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Vwins/Day
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {(sportGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).filter((game) => game.predictionCorrect === true).length / 7).toFixed(2)}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        V winrate
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {((sportGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).filter((game) => game.predictionCorrect === true).length / sportGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).length) * 100).toFixed(2)}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                            <Col>
+                                                <Row>
+                                                    <Col>
+                                                        Today V
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col>
+                                                        {((todayGames.filter((game) => game.sport_key === sport.name).filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).filter((game) => game.predictionCorrect === true).length / todayGames.filter((game) => game.sport_key === sport.name).filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames)).length) * 100).toFixed(2)}
+                                                    </Col>
+                                                </Row>
+                                            </Col>
+                                        </Row>
+                                    </Col>
+
+                                </Row>
+                            </Row>
+
+                            {<ResponsiveContainer width='100%' height={250}>
+                                <BarChart data={sportChartData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="date" />
+                                    <YAxis domain={[0, 100]} />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="winrates[0]" fill="#8884d8" name='Winrate' />
+                                    <Bar dataKey="winrates[1]" fill="#82ca9d" name='Value Winrate' />
+                                </BarChart>
+                            </ResponsiveContainer>}
+                            {pastGames && <PastGamesDisplay displayGames={sportGames.length > 0 ? sportGames : pastGames.filter((game) => game.sport_key === sport.name)} />}
+                        </Col>
+
+                    )
+
+
+                })}
             </Row>
-            <Row>
-                <Col>
-                    <PastGamesDisplay timePeriod={selectedTimePeriod} />
-                </Col>
-            </Row>
+
         </Container>
     )
 }

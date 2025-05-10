@@ -1,0 +1,56 @@
+.winrate-container {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .winrate-bar {
+    width: 100%; /* Full width */
+    height: 30px;
+    margin: 0 auto;
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .winrate-half {
+    height: 50%;
+  }
+  
+  .top {
+    background-color: #c69f42; /* Blue for winrate */
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  
+  .bottom {
+    background-color: #2a2a2a; /* Orange for implied probability */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
+  
+  .winrate-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  
+  .winrate-status {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 15px;
+  }
+  
+  .winrate-status.higher {
+    color: green;
+  }
+  
+  .winrate-status.lower {
+    color: red;
+  }
+  

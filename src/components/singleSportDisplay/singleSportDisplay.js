@@ -8,7 +8,6 @@ import { isSameDay } from '../../utils/constants.js'
 const SingleSportDisplay = (props) => {
     const { league } = useParams(); // Get the matchup ID from the URL
     const { games } = useSelector((state) => state.games)
-    const { teams } = useSelector((state) => state.teams)
 
 
     useEffect(() => {
@@ -17,7 +16,7 @@ const SingleSportDisplay = (props) => {
     // Function to navigate back to the landing page
 
     return (
-        <Container fluid>
+        <Container fluid style={{ position: 'relative', top: 60 }}>
             {/* Button to navigate back to the landing page */}
             <Row style={{ justifyContent: 'center', marginTop: '20px' }}>
                 <Col style={{ textAlign: 'center' }}>
@@ -33,8 +32,8 @@ const SingleSportDisplay = (props) => {
                 {
                     games && games.filter((game) => game.sport_title === league.toUpperCase()).length > 0 ? (
                         games.filter((game) => game.sport_title === league.toUpperCase()).map((game) => (
-                            <Col xs={12} sm={6} xl={3}>
-                                <MatchupCard teams={teams[game.sport]} todaysGames={games.filter((game) => isSameDay(game.commence_time, new Date()))} key={game.id} gameData={game} />
+                            <Col xs={12} sm={4} xl={3}>
+                                <MatchupCard todaysGames={games.filter((game) => isSameDay(game.commence_time, new Date()))} key={game.id} gameData={game} />
                             </Col>
 
                         ))

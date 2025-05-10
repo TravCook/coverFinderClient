@@ -64,7 +64,6 @@ export const removeStarredGames = (pastGames) => {
       const index = updatedStarredGames.findIndex(starredGame => starredGame.id === pastGame.id);
 
       if (index !== -1) {
-        console.log(pastGame.id)
         // If the game exists, remove it from the array
         updatedStarredGames.splice(index, 1);  // Remove the game from the array
       }
