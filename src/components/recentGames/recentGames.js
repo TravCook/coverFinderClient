@@ -15,7 +15,7 @@ const RecentGames = ({team}) => {
 
 
     let games = pastGames
-    .filter((game) => (game.away_team === team || game.home_team === team) && (game.awayTeamIndex != game.homeTeamIndex))
+    .filter((game) => (game.away_team === team || game.home_team === team) && (game.awayTeamIndex !== game.homeTeamIndex))
     .sort((a, b) => new Date(b.commence_time) - new Date(a.commence_time));
 
     return (
@@ -35,7 +35,7 @@ const RecentGames = ({team}) => {
                     if(game.home_team === team){
                         return (
                             <tr key={game.id}>
-                            <td style={{fontSize: '.8rem'}}>{`${formatGameTime(game.commence_time)}`} vs <img style={{width: '1.4rem'}} src={game.awayTeamlogo} /> {`${game.awayTeamAbbr}`}</td>
+                            <td style={{fontSize: '.8rem'}}>{`${formatGameTime(game.commence_time)}`} vs <img style={{width: '1.4rem'}} src={game.awayTeamlogo} alt={`${game.away_team} logo`} /> {`${game.awayTeamAbbr}`}</td>
                             {game.winner === 'home'? <td style={{fontSize: '.8rem', backgroundColor: 'rgba(0, 255, 0, .2)'}}>W</td> : <td style={{fontSize: '.8rem', backgroundColor: 'rgba(255, 0, 0, .2)'}}>L</td>}
                             <td style={{fontSize: '.8rem'}}>{(game.homeTeamIndex - game.awayTeamIndex).toFixed(2)}</td>
                             {game.predictionCorrect ? <td style={{fontSize: '.8rem', backgroundColor: 'rgba(0, 255, 0, .2)'}}>✓</td> : <td style={{fontSize: '.8rem', backgroundColor: 'rgba(255, 0, 0, .2)'}}>X</td> }
@@ -44,7 +44,7 @@ const RecentGames = ({team}) => {
                     }else if(game.away_team === team){
                         return (
                             <tr key={game.id}>
-                            <td style={{fontSize: '.8rem'}}>{`${formatGameTime(game.commence_time)}`} vs <img style={{width: '1.4rem'}} src={game.homeTeamlogo} /> {`${game.homeTeamAbbr}`}</td>
+                            <td style={{fontSize: '.8rem'}}>{`${formatGameTime(game.commence_time)}`} vs <img style={{width: '1.4rem'}} src={game.homeTeamlogo} alt={`${game.home_team} logo`} /> {`${game.homeTeamAbbr}`}</td>
                             {game.winner === 'away'? <td style={{fontSize: '.8rem', backgroundColor: 'rgba(0, 255, 0, .2)'}}>W</td> : <td style={{fontSize: '.8rem', backgroundColor: 'rgba(255, 0, 0, .2)'}}>L</td>}
                             <td style={{fontSize: '.8rem'}}>{(game.awayTeamIndex - game.homeTeamIndex).toFixed(2)}</td>
                             {game.predictionCorrect ? <td style={{fontSize: '.8rem', backgroundColor: 'rgba(0, 255, 0, .2)'}}>✓</td> : <td style={{fontSize: '.8rem', backgroundColor: 'rgba(255, 0, 0, .2)'}}>X</td> }
@@ -52,6 +52,7 @@ const RecentGames = ({team}) => {
                         )
                     }
                 }
+                return null
         })}
         </tbody>
     </Table>

@@ -44,22 +44,5 @@ const TeamOddsRow = ({ backgroundColor, final, gameData, total, homeAway }) => {
   );
 };
 
-const buttonStyle = {
-  backgroundColor: '#303036',  // Green-ish background, adjust as needed
-  color: '#D4D2D5',             // Light text color
-  border: 'none',               // No border
-  borderRadius: '5px',          // Slightly rounded corners
-  // padding: '8px 16px',          // Padding for better click area
-  fontSize: '.8rem',            // Font size that is consistent with the card text
-  transition: 'all 0.2s ease',  // Smooth transition for hover effect
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',  // Subtle shadow for depth
-};
-
-// Hover effect
-const buttonHoverStyle = {
-  ...buttonStyle,
-  backgroundColor: '#2A2A2A', // Darker shade of green for hover effect
-  cursor: 'pointer',           // Cursor change to indicate interactivity
-};
 
 export default TeamOddsRow;

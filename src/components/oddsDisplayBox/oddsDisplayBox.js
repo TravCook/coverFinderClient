@@ -3,7 +3,7 @@ import { Col, Row } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import { valueBetConditionCheck } from '../../utils/constants';
 
-const OddsDisplayBox = ({ gameData, market, total, bestSportsbook, backgroundColor, homeAway }) => {
+const OddsDisplayBox = ({ gameData, market, total, bestSportsbook, homeAway }) => {
 
   const { sportsbook } = useSelector((state) => state.user);
   const { sports, pastGames } = useSelector((state) => state.games)
@@ -29,7 +29,7 @@ const OddsDisplayBox = ({ gameData, market, total, bestSportsbook, backgroundCol
 
   useEffect(() => {
     setIndexColor(getColorForIndex(homeAway === 'home' ? gameData.homeTeamScaledIndex : gameData.awayTeamScaledIndex)); // Update color when teamIndex changes
-  }, [gameData]);
+  }, [gameData, homeAway]);
 
   const getOdds = () => {
     const bookmaker = gameData?.bookmakers?.find(b => bestSportsbook ? b.key === bestSportsbook : b.key === sportsbook);

@@ -1,13 +1,13 @@
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import MatchupCard from '../matchupCard/matchupCard.js';
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { isSameDay, valueBetConditionCheck } from '../../utils/constants.js';
 import { Link } from 'react-router';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 const UpcomingGames = () => {
   document.title = 'Upcoming Games'
-  const { games, sports, pastGames } = useSelector((state) => state.games);
+  const { games, sports } = useSelector((state) => state.games);
   const { starredGames, sportsbook } = useSelector((state) => state.user);
   const divRefs = useRef([]);
 
@@ -35,6 +35,7 @@ const UpcomingGames = () => {
           if (game?.bookmakers?.find(b => b.key === sportsbook)) {
             return true
           }
+          return false
         }).sort((a, b) => {
           const dateA = new Date(a.commence_time).getTime();
           const dateB = new Date(b.commence_time).getTime();
@@ -55,6 +56,7 @@ const UpcomingGames = () => {
                 </Col>
               )
             }
+            
           } else {
             if (idx < 15) {
               return (
@@ -67,15 +69,16 @@ const UpcomingGames = () => {
               )
             }
           }
-
+          return null
         });
     } else if (sortType === 'bestValue') {
       return games.filter((game) => {
         if (game?.bookmakers?.find(b => b.key === sportsbook)) {
           return true
         }
+        return null
       }).filter((game) => {
-        return valueBetConditionCheck(sports, game, sportsbook, pastGames)
+        return valueBetConditionCheck(sports, game, sportsbook)
       }).filter((game) => isSameDay(game.commence_time, new Date()))
         .sort((a, b) => {
           let outcomeA
@@ -114,6 +117,7 @@ const UpcomingGames = () => {
               </Col>
             )
           }
+          return null
         });
     } else if (sortType === 'liveNow') {
       return games.filter((game) => game.timeRemaining).sort((a, b) => {
@@ -220,6 +224,7 @@ const UpcomingGames = () => {
             if (game?.bookmakers?.find(b => b.key === sportsbook)) {
               return true
             }
+            return null
           }).filter((game) =>
             // isSameDay(game.commence_time, new Date()) &&
             game.sport_title.toLowerCase() === leagueName
@@ -258,7 +263,7 @@ const UpcomingGames = () => {
                 </Card>
               </Col>}
             {games.filter((game) => {
-              return valueBetConditionCheck(sports, game, sportsbook, pastGames)
+              return valueBetConditionCheck(sports, game, sportsbook)
             }).filter((game) => isSameDay(game.commence_time, new Date())).length > 0 &&
               <Col xs={12}>
                 <Card style={{ backgroundColor: '#2a2a2a', borderColor: '#575757', margin: '1em 0' }}>
@@ -301,6 +306,7 @@ const UpcomingGames = () => {
                 if (game?.bookmakers?.find(b => b.key === sportsbook)) {
                   return true
                 }
+                return null
               }).filter((game) =>
                 // isSameDay(game.commence_time, new Date()) &&
                 game.sport_title.toLowerCase() === leagueName

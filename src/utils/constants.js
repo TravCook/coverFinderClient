@@ -845,7 +845,7 @@ export const combinedCondition = (game, o, indexDifSmall, indexDiffRange, confid
 };
 
 
-export const valueBetConditionCheck = (sports, game, sportsbook, pastGames) => {
+export const valueBetConditionCheck = (sports, game, sportsbook) => {
   const bookmaker = game.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
   if (bookmaker) {
     const marketData = bookmaker?.markets?.find(m => m.key === 'h2h');

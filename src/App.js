@@ -1,5 +1,5 @@
 import './App.css';
-import { useEffect, useState } from 'react';
+import { useEffect} from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router'; // Fixed import for `react-router-dom`
 import { socket } from './socket';
 import NavBar from './components/navbar/navbar';
@@ -8,17 +8,14 @@ import SingleSportDisplay from './components/singleSportDisplay/singleSportDispl
 import Results from './components/results/results';
 import MatchupDetails from './components/matchupDetails/matchupDetails';
 import { useDispatch, useSelector } from 'react-redux';
-import { setOdds, setPastOddsEmit, setValueOdds, setSports, setPastOdds } from './redux/odds/actions/oddsActions'
+import { setOdds, setPastOddsEmit, setSports, } from './redux/odds/actions/oddsActions'
 import { setTeams } from './redux/teams/actions/teamActions';
 import { updateStarredGames, loadStarredGamesFromLocalStorage, removeStarredGames } from './redux/user/actions/userActions';
 
 function App() {
   const dispatch = useDispatch()
-  const { teams } = useSelector((state) => state.teams)
   const { games, pastGames, sports } = useSelector((state) => state.games)
   const { starredGames, sportsbook } = useSelector((state) => state.user)
-  const [allTimeProfit, setAllTimeProfit] = useState(0);
-  const [allTimeValueProfit, setAllTimeValueProfit] = useState(0);
 
 
 
@@ -35,11 +32,6 @@ function App() {
     }).then((res) => res.json()).then((data) => {
       dispatch(setSports(data.sports))
       dispatch(setOdds(data.odds))
-      dispatch(setTeams(data.teams))
-      dispatch(setValueOdds(data.valueGames))
-      dispatch(setPastOdds(data.pastGames))
-      setAllTimeProfit(data.allTimeProfit);
-      setAllTimeValueProfit(data.allTimeValueProfit);
     })
     function onGameUpdate(data) {
       dispatch(updateStarredGames(data))
@@ -72,7 +64,7 @@ function App() {
     <div className="App">
       { games && sports &&
         <BrowserRouter>
-          <NavBar allTimeProfit={allTimeProfit} allTimeValueProfit={allTimeValueProfit} />
+          <NavBar />
           <Routes>
             <Route path="/" element={<UpcomingGames />} />
             <Route path="/sport/:league" element={<SingleSportDisplay />} />

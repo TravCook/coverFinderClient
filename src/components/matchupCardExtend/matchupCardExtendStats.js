@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Row, Col, Button } from 'react-bootstrap';
 import { allStatLabelsShort } from '../../utils/constants';
 
@@ -201,7 +201,7 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 <Col xs={6}>
                     <Row style={{ alignItems: 'center', textAlign: 'center' }}>
                         <Col xs={4} style={{ padding: 5, textAlign: 'left' }}>
-                            <img style={{ width: '100%', maxWidth: '1.5rem' }} src={gameData.awayTeamlogo} />
+                            <img style={{ width: '100%', maxWidth: '1.5rem' }} src={gameData.awayTeamlogo} alt='away team logo' />
                             {gameData.awayTeamAbbr}
                         </Col>
                         <Col xs={6} style={{ boxShadow: `inset 0 0 13px ${getColorForIndex(gameData.awayTeamScaledIndex ? gameData.awayTeamScaledIndex : 0)}`, borderRadius: '.5rem' }}>
@@ -212,14 +212,14 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 </Col>
 
                 <Col xs={6}>
-                    {gameData.homeTeamStats != 'no stat data' && gameData.awayTeamStats != 'no stat data' && highestStat(gameData.awayTeamStats, gameData.homeTeamStats, gameData.away_team, 'away')}
+                    {gameData.homeTeamStats !== 'no stat data' && gameData.awayTeamStats !== 'no stat data' && highestStat(gameData.awayTeamStats, gameData.homeTeamStats, gameData.away_team, 'away')}
                 </Col>
             </Row>
             <Row style={{ paddingLeft: 5, paddingRight: 5, alignItems: 'center' }}>
                 <Col xs={6}>
                     <Row style={{ alignItems: 'center', textAlign: 'center' }}>
                         <Col xs={4} style={{ padding: 5, textAlign: 'left' }}>
-                            <img style={{ width: '100%', maxWidth: '1.5rem' }} src={gameData.homeTeamlogo} />
+                            <img style={{ width: '100%', maxWidth: '1.5rem' }} src={gameData.homeTeamlogo} alt='home team logo' />
                             {gameData.homeTeamAbbr}
                         </Col>
                         <Col xs={6} style={{ boxShadow: `inset 0 0 13px ${getColorForIndex(gameData.homeTeamScaledIndex ? gameData.homeTeamScaledIndex : 0)}`, borderRadius: '.5rem' }}>
@@ -229,7 +229,7 @@ const MatchupCardExtendStats = ({ gameData }) => {
 
                 </Col>
                 <Col>
-                    {gameData.homeTeamStats != 'no stat data' && gameData.awayTeamStats != 'no stat data' && highestStat(gameData.homeTeamStats, gameData.awayTeamStats, gameData.home_team, 'home')}
+                    {gameData.homeTeamStats !== 'no stat data' && gameData.awayTeamStats !== 'no stat data' && highestStat(gameData.homeTeamStats, gameData.awayTeamStats, gameData.home_team, 'home')}
                 </Col>
 
             </Row>

@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Container, Row, Col, Dropdown, Button, DropdownToggle, DropdownMenu, DropdownItem, Table } from 'react-bootstrap'
+import { Container, Row, Col } from 'react-bootstrap'
 import PastGamesDisplay from '../pastGames/pastGames.js';
-import { isSameDay, formatDate, combinedCondition, valueBetConditionCheck } from '../../utils/constants.js';
+import { isSameDay, valueBetConditionCheck } from '../../utils/constants.js';
 import { setPastOdds } from '../../redux/odds/actions/oddsActions.js'
-import { setTeams } from '../../redux/teams/actions/teamActions';
 import { useDispatch, useSelector } from 'react-redux';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import MatchupCard from '../matchupCard/matchupCard.js';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 
 const Results = () => {
@@ -31,13 +29,9 @@ const Results = () => {
     sixyDaysAgo.setDate(sixyDaysAgo.getDate() - 60);
     sixyDaysAgo.setHours(0, 0, 0, 0);  // Set time to midnight
 
-    let indexRows = ["1-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50"]
-    let winrateRows = ["1-10", "10-20", "20-30", "30-40", "40-50", "50-60", "60-70", "70-80", "80-90", "90-100"]
-    let confidenceRows = ["1-10", "10-20", "20-30", "30-40", "40-50", "50-60", "60-70", "70-80", "80-90", "90-100"]
 
-    const { bankroll, betType, sportsbook } = useSelector((state) => state.user);
-    const { games, pastGames, sports } = useSelector((state) => state.games)
-    const { teams } = useSelector((state) => state.teams)
+    const { sportsbook } = useSelector((state) => state.user);
+    const { pastGames, sports } = useSelector((state) => state.games)
     const [overallChartDataFinal, setoverallChartDataFinal] = useState()
 
 
@@ -48,16 +42,16 @@ const Results = () => {
             console.log(data)
             dispatch(setPastOdds(data.pastGames))
         })
-    }, [])
+    }, [sports, sportsbook, dispatch])
 
     useEffect(() => {
         let overallChartData = []
         for (let i = 0; i < 21; i++) {
             let dataDate = new Date()
-            dataDate.setDate(dataDate.getDate() - i);
+            dataDate.setDate(dataDate.getDate() - i+1);
             dataDate.setHours(0, 0, 0, 0);  // Set time to midnight
 
-            let dataGames = pastGames.filter((game) => isSameDay(new Date(game.commence_time), dataDate))
+            let dataGames = pastGames.filter((game) => new Date(game.commence_time) <= dataDate)
 
             let valueGames = dataGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames))
 
@@ -72,13 +66,11 @@ const Results = () => {
         }
         console.log(overallChartData)
         setoverallChartDataFinal(overallChartData)
-    }, [pastGames])
+    }, [pastGames, sports, sportsbook])
 
 
 
-    let valueGames = pastGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames))
     let todayGames = pastGames.filter((game) => isSameDay(new Date(game.commence_time), new Date()))
-    todayGames.length === 0 ? todayGames = pastGames : todayGames = todayGames
     return (
         <Container fluid style={{ position: 'relative', top: 60, backgroundColor: '#121212', margin: '1em 0' }}>
             <Row style={{ border: 'solid .25em gray' }}>
@@ -304,15 +296,15 @@ const Results = () => {
                 </Row>
                 <Row>
                     {overallChartDataFinal && <ResponsiveContainer width='100%' height={250}>
-                        <BarChart data={overallChartDataFinal}>
+                        <LineChart data={overallChartDataFinal}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="date" />
                             <YAxis domain={[0, 100]} />
                             <Tooltip />
                             <Legend />
-                            <Bar dataKey="winrates[0]" fill="#8884d8" name='Winrate' />
-                            <Bar dataKey="winrates[1]" fill="#82ca9d" name='Value Winrate' />
-                        </BarChart>
+                            <Line dataKey="winrates[0]" stroke="#8884d8" name='Winrate' />
+                            <Line dataKey="winrates[1]" stroke="#82ca9d" name='Value Winrate' />
+                        </LineChart>
                     </ResponsiveContainer>}
                 </Row>
                 {pastGames && <PastGamesDisplay displayGames={pastGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames))} />}
@@ -322,7 +314,6 @@ const Results = () => {
                     let sportNameArr = sport.name.split('_')
                     let leagueName = sportNameArr[1]
                     let sportGames = pastGames.filter((game) => game.sport_key === sport.name).filter((game) => isSameDay(new Date(game.commence_time), new Date()))
-                    sportGames.length === 0 ? sportGames = pastGames.filter((game) => game.sport_key === sport.name) : sportGames = sportGames
 
                     let sportChartData = []
                     for (let x = 0; x < 21; x++) {
@@ -330,7 +321,7 @@ const Results = () => {
                         dataDate.setDate(dataDate.getDate() - x);
                         dataDate.setHours(0, 0, 0, 0);  // Set time to midnight
 
-                        let dataGames = pastGames.filter((game) => game.sport_key === sport.name).filter((game) => isSameDay(new Date(game.commence_time), dataDate))
+                        let dataGames = pastGames.filter((game) => game.sport_key === sport.name).filter((game) => new Date(game.commence_time) <= dataDate)
 
                         let valueGames = dataGames.filter((game) => valueBetConditionCheck(sports, game, sportsbook, pastGames))
 
@@ -588,15 +579,15 @@ const Results = () => {
                             </Row>
 
                             {<ResponsiveContainer width='100%' height={250}>
-                                <BarChart data={sportChartData}>
+                                <LineChart data={sportChartData}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="date" />
                                     <YAxis domain={[0, 100]} />
                                     <Tooltip />
                                     <Legend />
-                                    <Bar dataKey="winrates[0]" fill="#8884d8" name='Winrate' />
-                                    <Bar dataKey="winrates[1]" fill="#82ca9d" name='Value Winrate' />
-                                </BarChart>
+                                    <Line dataKey="winrates[0]" stroke="#8884d8" name='Winrate' />
+                                    <Line dataKey="winrates[1]" stroke="#82ca9d" name='Value Winrate' />
+                                </LineChart>
                             </ResponsiveContainer>}
                             {pastGames && <PastGamesDisplay displayGames={sportGames.length > 0 ? sportGames : pastGames.filter((game) => game.sport_key === sport.name)} />}
                         </Col>

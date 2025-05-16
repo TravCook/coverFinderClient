@@ -1,11 +1,10 @@
 import { Navbar, Container, Row, Col, Button, Modal, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, InputGroup, FormControl, NavbarBrand } from "react-bootstrap"
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { setBankroll, setBetType, setSportsbook, setStarredGames } from '../../redux/user/actions/userActions';
 import { isSameDay, combinedCondition, valueBetConditionCheck } from '../../utils/constants'
 
-const NavBar = ({allTimeProfit, allTimeValueProfit}) => {
+const NavBar = () => {
     const dispatch = useDispatch()
     const { games, valueGames, sports, pastGames } = useSelector((state) => state.games);
     const { bankroll, sportsbook, starredGames } = useSelector((state) => state.user);
@@ -13,7 +12,6 @@ const NavBar = ({allTimeProfit, allTimeValueProfit}) => {
     const [dropdownBG, setDropdownBG] = useState('#527595');
     const [dropdownFont, setDropdownFont] = useState('#eef3f3');
     const [showModal, setShowModal] = useState(false); // State to control modal visibility
-    const [valueWinPct, setValueWinPct] = useState()
 
     // Set the default sportsbook if props.sportsBook is not provided
     // const sportsbook = sportsBook || 'fanduel'; // Default to 'fanduel' if not passed
@@ -29,7 +27,6 @@ const NavBar = ({allTimeProfit, allTimeValueProfit}) => {
 
     const handleFormChange = (event) => {
         let id = event.target.id
-        let betType = event.target.id
         let betTypeSplit = id.split(" ")
         dispatch(setBetType(betTypeSplit[0]))
     }
@@ -57,20 +54,6 @@ const NavBar = ({allTimeProfit, allTimeValueProfit}) => {
         return colors[sportsbook] || { bg: '#527595', font: '#eef3f3' };
     };
 
-    const renderSportCard = (sport, filterCondition) => {
-        const filteredGames = games.filter((game) => game.sport_title === sport.league.toUpperCase()).filter(filterCondition);
-        if (filteredGames.length === 0) return null;
-
-        return (
-            <div style={{ color: '#D4D2D5' }}>
-                <Link to={`/sport/${sport.league}`}>
-                    <Button id={sport.name} variant="outline-light" style={{ fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }}>
-                        {sport.league.toUpperCase()}
-                    </Button>
-                </Link>
-            </div>
-        );
-    };
 
     const handleAutoStar = () => {
         const today = new Date();
@@ -117,7 +100,7 @@ const NavBar = ({allTimeProfit, allTimeValueProfit}) => {
                 dispatch(setStarredGames(updatedStarredGames)); // Dispatch the updated array
 
             }
-
+            return null
         })
         starredGames.map((gameData) => {
             if (!valueBetConditionCheck(sports, gameData, sportsbook, pastGames)) {
@@ -126,6 +109,7 @@ const NavBar = ({allTimeProfit, allTimeValueProfit}) => {
                 dispatch(setStarredGames(updatedStarredGames)); // Dispatch the filtered array
 
             }
+            return null
         })
 
 
@@ -133,7 +117,6 @@ const NavBar = ({allTimeProfit, allTimeValueProfit}) => {
     }
 
     useEffect(() => {
-        setValueWinPct(((valueGames.filter((game) => game.predictionCorrect === true).length / valueGames.length) * 100).toFixed(2))
         const { bg, font } = setDropdownStyles(sportsbook); // Use sportsbook instead of sportsBook
         setDropdownBG(bg);
         setDropdownFont(font);
@@ -149,12 +132,12 @@ const NavBar = ({allTimeProfit, allTimeValueProfit}) => {
                     </NavbarBrand>
                 </Col>
                 <Col xs={1}>
-                    {`${valueWinPct}%`}
+                    {/* {`${valueWinPct}%`} */}
                 </Col>
                 <Col>
                     <Row style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                        <Col>{allTimeProfit.toFixed(2)}</Col>
-                        <Col>{allTimeValueProfit.toFixed(2)}</Col>
+                        {/* <Col>{allTimeProfit.toFixed(2)}</Col>
+                        <Col>{allTimeValueProfit.toFixed(2)}</Col> */}
                     </Row>
                 </Col>
                 <Col xs={1} className="mx-3">
@@ -196,7 +179,7 @@ const NavBar = ({allTimeProfit, allTimeValueProfit}) => {
                                                 color: dropdownFont,
                                             }}
                                         >
-                                            {sportsbook}
+                                            {dropdownTitle}
                                         </DropdownToggle>
                                         <DropdownMenu>
                                             {['draftkings', 'betmgm', 'fanduel', 'williamhill_us', 'betrivers', 'unibet_us', 'betonlineag', 'lowvig', 'mybookieag', 'wynnbet', 'bovada', 'betus', 'superbook', 'pointsbetus'].map((sportsbook) => (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button, Col, Row, Collapse, Container } from 'react-bootstrap';
 import TeamOddsRow from '../teamOddsRow/teamOddsRow';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -8,49 +8,14 @@ import { Link } from 'react-router';
 import { isSameDay } from '../../utils/constants';
 import { useSelector, useDispatch } from 'react-redux';
 import { setStarredGames } from '../../redux/user/actions/userActions';
-import { allStatLabelsShort } from '../../utils/constants'
-import OddsDisplayBox from '../oddsDisplayBox/oddsDisplayBox';
 import MatchupCardExtend from '../matchupCardExtend/matchupCardExtend';
 
 const MatchupCard = ({ gameData, final, starred }) => {
   const dispatch = useDispatch()
-  const { sports } = useSelector((state) => state.games)
   const { starredGames } = useSelector((state) => state.user)
   const [isExpanded, setIsExpanded] = useState(false);
-  const [awayStatIndex, setAwayStatIndex] = useState(0)
-  const [homeStatIndex, setHomeStatIndex] = useState(0)
-  const [expandSection, setExpandSection] = useState('Stats')
+  const [expandSection, setExpandSection] = useState('Betting')
   const { sportsbook } = useSelector((state) => state.user);
-  const [bestSportsbook, setBestSportsbook] = useState()
-  const [impliedProb, setImpliedProb] = useState()
-  const [bestImpliedProb, setBestImpliedProb] = useState()
-  const [selectedOdds, setSelectedOdds] = useState()
-
-
-
-
-
-
-
-  const handleHomeStatIncrease = () => {
-    setHomeStatIndex(homeStatIndex + 1)
-  }
-
-  const handleHomeStatDecrease = () => {
-    setHomeStatIndex(homeStatIndex - 1)
-  }
-
-  const handleAwayStatIncrease = () => {
-    setAwayStatIndex(awayStatIndex + 1)
-  }
-
-  const handleAwayStatDecrease = () => {
-    setAwayStatIndex(awayStatIndex - 1)
-  }
-
-
-
-
 
   const handleStarClick = (event) => {
     // Check if the game is already starred
@@ -70,9 +35,6 @@ const MatchupCard = ({ gameData, final, starred }) => {
       dispatch(setStarredGames(updatedStarredGames)); // Dispatch the filtered array
     }
   };
-
-
-
 
   const formatGameTime = () => {
     const gameTime = new Date(gameData.commence_time);
@@ -101,9 +63,6 @@ const MatchupCard = ({ gameData, final, starred }) => {
       padding: '1em'
     }}>
       <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
-        {/* <Col xs={1} style={{padding: 0, textAlign: 'center', fontSize: '.7rem'}}>
-            {gameData.sport_title}
-        </Col> */}
         <Col style={styles.timeColumn}>
           {gameData.timeRemaining ? gameData.timeRemaining : formatGameTime()}
         </Col>
@@ -244,11 +203,6 @@ const buttonStyle = {
   width: '100%'
 };
 
-// Hover effect
-const buttonHoverStyle = {
-  ...buttonStyle,
-  backgroundColor: '#2A2A2A', // Darker shade of green for hover effect
-  cursor: 'pointer',           // Cursor change to indicate interactivity
-};
+
 
 export default MatchupCard;

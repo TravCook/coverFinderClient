@@ -16,7 +16,7 @@ export const setPastOddsEmit = (data) => {
         const { pastGames } = getState().games;
         let updatePastGames = [...pastGames];
     
-        data.map((game) => {
+        data.forEach((game) => {
             let objectFound = updatePastGames.find(obj => obj.id === game.id);
             
             if (!objectFound) {

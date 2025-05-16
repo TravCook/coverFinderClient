@@ -15,45 +15,12 @@ const MatchupDetails = () => {
     const [gameData, setGameData] = useState(null);
     const [selectedSection, setSelectedSection] = useState(generalStats); // Default section
     const [statHeaderSport, setStatSport] = useState(['General', 'Offense', 'Defense'])
-    const { pastGames, sports } = useSelector((state) => state.games)
+    const { sports } = useSelector((state) => state.games)
     const { sportsbook } = useSelector((state) => state.user);
     const [indexDiff, setIndexDiff] = useState();
     const [sportSettings, setSportSettings] = useState();
-    const [impliedProb, setImpliedProb] = useState();
-    const [selectedOdds, setSelectedOdds] = useState();
-    function sortBookmakersByOutcomePrice(bookmakers, teamName) {
-        return bookmakers.sort((a, b) => {
-            const outcomeA = a.markets[0].outcomes.find(o => o.name === teamName);
-            const outcomeB = b.markets[0].outcomes.find(o => o.name === teamName);
 
-            if (outcomeA && outcomeB) {
-                return outcomeB.price - outcomeA.price;
-            }
 
-            return outcomeA ? -1 : 1;
-        });
-    }
-
-    const fetchImpliedProbs = () => {
-        const bookmaker = gameData?.bookmakers?.find(b => b.key === sportsbook);
-        const marketData = bookmaker?.markets?.find(m => m.key === 'h2h');
-
-        marketData?.outcomes?.find(o => {
-            if (o.name === (gameData.predictedWinner === 'home' ? gameData.home_team : gameData.away_team)) {
-                setSelectedOdds(o?.price);
-                setImpliedProb(o?.impliedProb * 100);
-            }
-        });
-
-        // const bestBookmaker = gameData?.bookmakers?.find(b => b.key === bestSportsbook);
-        // const bestMarketData = bestBookmaker?.markets?.find(m => m.key === 'h2h');
-
-        // bestMarketData?.outcomes?.find(o => {
-        //     if (o.name === (gameData.predictedWinner === 'home' ? gameData.home_team : gameData.away_team)) {
-        //         setBestImpliedProb(o.impliedProb * 100);
-        //     }
-        // });
-    };
 
     useEffect(() => {
         let sport = sports.find(s => s.name === gameData?.sport_key);
@@ -61,15 +28,7 @@ const MatchupDetails = () => {
             setSportSettings(sport.valueBetSettings.find((setting) => setting.bookmaker === sportsbook));
         }
 
-        // const sortedBookmakers = sortBookmakersByOutcomePrice(gameData.bookmakers, gameData.predictedWinner === 'home' ? gameData.home_team : gameData.away_team);
-        // if (sortedBookmakers.length > 0) {
-        //     setBestSportsbook(sortedBookmakers[0].key);
-        // }
-
-        // if (bestSportsbook) {
-            fetchImpliedProbs();
-        // }
-    }, [gameData, sports]);
+    }, [gameData, sports, sportsbook]);
 
     const formatGameTime = (time) => {
         const gameTime = new Date(time);
@@ -105,7 +64,7 @@ const MatchupDetails = () => {
 
 
 
-    }, [id]);
+    }, [id, dispatch]);
 
     if (!gameData) {
         return <div>Loading...</div>;
@@ -113,7 +72,7 @@ const MatchupDetails = () => {
 
 
     // Destructure home and away team stats
-    const { home_team, away_team, homeTeamStats, homeTeamAbbr, awayTeamAbbr, awayTeamStats, commence_time, homeTeamIndex, awayTeamIndex, homeTeamlogo, awayTeamlogo } = gameData;
+    const { home_team, away_team, homeTeamStats, homeTeamAbbr, awayTeamAbbr, awayTeamStats, homeTeamIndex, awayTeamIndex, homeTeamlogo, awayTeamlogo } = gameData;
     const rows = []; // Create an array to hold the table rows
     for (let key in selectedSection) {
         if (key === 'seasonWinLoss') {
@@ -324,10 +283,10 @@ const MatchupDetails = () => {
                                         {header}
                                     </Button>
                                 )
+                            default: 
+                            return null
 
                         }
-
-
                     })}
                 </Card.Header>
                 <Table bordered variant='dark'>
@@ -387,7 +346,7 @@ const MatchupDetails = () => {
                                 <Row>
                                     <WinrateVsProbabilityBar
                                         internalWinrate={gameData.winPercent}
-                                        impliedProbability={impliedProb}
+                                        impliedProbability={gameData.bookmakers.find((bookmaker) => bookmaker.key === sportsbook)?.markets[0]?.outcomes[0]?.impliedProb}
                                     />
                                 </Row>
                             </Row>
