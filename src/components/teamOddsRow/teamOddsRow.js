@@ -1,11 +1,11 @@
 import { Row, Col, Container } from 'react-bootstrap';
 import OddsDisplayBox from '../oddsDisplayBox/oddsDisplayBox';
 
-const TeamOddsRow = ({ backgroundColor, final, gameData, total, homeAway }) => {
+const TeamOddsRow = ({ backgroundColor, gameData, total, homeAway }) => {
 
   const renderTeamInfo = () => {
     return (
-      <Col xs={7} style={{ letterSpacing: '.5px', alignContent: 'center', padding: '.5rem', fontSize: '1.1em' }}>
+      <Col xs={7} style={{ letterSpacing: '.5px', alignContent: 'center', padding: '.5rem', fontSize: '.75rem', textAlign: 'left' }}>
         {gameData && homeAway === 'home' ? `${gameData.homeTeamAbbr} ${gameData.homeTeamShort}` : `${gameData.awayTeamAbbr} ${gameData.awayTeamShort}`}
         {gameData.predictedWinner === homeAway && <sup style={{ marginLeft: '.2rem', fontSize: '.6rem', color: `hsl(${((homeAway === 'home' ? gameData.homeTeamScaledIndex : gameData.awayTeamScaledIndex) / 45) * 120}, 100%, 50%)` }}>▲</sup>}
       </Col>
@@ -16,11 +16,11 @@ const TeamOddsRow = ({ backgroundColor, final, gameData, total, homeAway }) => {
       {<Container style={{backgroundColor: `${backgroundColor && gameData.predictedWinner === homeAway ? backgroundColor : ''}`}}>
         <Row style={{ color: '#FFFFFF', alignItems: 'center', fontSize: '.7rem', paddingLeft: 0, paddingRight: 0 }}>
           <Col style={{ padding: 0, textAlign: 'center' }} xs={1}>
-            {<img src={homeAway === 'home' ? gameData.homeTeamlogo : gameData.awayTeamlogo} style={{ width: '1.5rem', maxWidth: !final ? '30px' : '17px' }} alt='Team Logo' /> }
+            {<img src={homeAway === 'home' ? gameData.homeTeamlogo : gameData.awayTeamlogo} style={{ width: '1.5rem', maxWidth: '30px' }} alt='Team Logo' /> }
 
           </Col>
           {renderTeamInfo()}
-          <Col xs={final ? 4 : 4} style={{ padding: 5 }}>
+          <Col xs={4} style={{ padding: 5 }}>
             <Row style={{ padding: 5, display: 'flex', justifyContent: 'flex-end' }}>
               {(((gameData.homeScore || gameData.homeScore === 0) && (gameData.awayScore || gameData.awayScore === 0))) &&
                 <Col style={{ textAlign: 'left', padding: 0 }}>

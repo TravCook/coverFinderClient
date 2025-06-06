@@ -55,66 +55,66 @@ const NavBar = () => {
     };
 
 
-    const handleAutoStar = () => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);  // Set time to midnight
+    // const handleAutoStar = () => {
+    //     const today = new Date();
+    //     today.setHours(0, 0, 0, 0);  // Set time to midnight
 
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 2);
-        tomorrow.setHours(0, 0, 0, 0);  // Set time to midnight
+    //     const tomorrow = new Date();
+    //     tomorrow.setDate(tomorrow.getDate() + 2);
+    //     tomorrow.setHours(0, 0, 0, 0);  // Set time to midnight
 
-        let updatedStarredGames = [...starredGames];
-        games.filter((game) => {
-            const bookmaker = game.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
-            if (bookmaker) {
-                const marketData = bookmaker?.markets?.find(m => m.key === 'h2h');
+    //     let updatedStarredGames = [...starredGames];
+    //     games.filter((game) => {
+    //         const bookmaker = game.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
+    //         if (bookmaker) {
+    //             const marketData = bookmaker?.markets?.find(m => m.key === 'h2h');
 
-                let outcome = marketData?.outcomes?.find(o => {
-                    return o.name === (game.predictedWinner === 'home' ? game.home_team : game.away_team)
-                });
+    //             let outcome = marketData?.outcomes?.find(o => {
+    //                 return o.name === (game.predictedWinner === 'home' ? game.home_team : game.away_team)
+    //             });
 
-                if (outcome) {
-                    let currentSport = sports.find(arraySport => arraySport.name === game.sport_key)
-                    let sportSettings = currentSport.valueBetSettings.find((setting) => setting.bookmaker === sportsbook)
-                    if (sportSettings !== undefined) {
-                        let valueBetCheck = combinedCondition(game, outcome, sportSettings.settings.indexDiffSmallNum, sportSettings.settings.indexDiffRangeNum, sportSettings.settings.confidenceLowNum, sportSettings.settings.confidenceRangeNum)
-                        if (valueBetCheck) {
-                            return game
-                        }
-                    }
+    //             if (outcome) {
+    //                 let currentSport = sports.find(arraySport => arraySport.name === game.sport_key)
+    //                 let sportSettings = currentSport.valueBetSettings.find((setting) => setting.bookmaker === sportsbook)
+    //                 if (sportSettings !== undefined) {
+    //                     let valueBetCheck = combinedCondition(game, outcome, sportSettings.settings.indexDiffSmallNum, sportSettings.settings.indexDiffRangeNum, sportSettings.settings.confidenceLowNum, sportSettings.settings.confidenceRangeNum)
+    //                     if (valueBetCheck) {
+    //                         return game
+    //                     }
+    //                 }
 
-                }
-
-
-            }
-            return false;
-        }).filter((game) => isSameDay(new Date(game.commence_time), today)).map((gameData) => {
-            // Check if the game is already starred
-            if (!starredGames.some((game) => game.id === gameData.id)) {
-                // If not, create a new array with the new starred game
-                updatedStarredGames.push(gameData)
-
-                // Save the updated starred games to cookies
-                localStorage.setItem('starredGames', JSON.stringify(updatedStarredGames));
-
-                dispatch(setStarredGames(updatedStarredGames)); // Dispatch the updated array
-
-            }
-            return null
-        })
-        starredGames.map((gameData) => {
-            if (!valueBetConditionCheck(sports, gameData, sportsbook, pastGames)) {
-                updatedStarredGames = starredGames.filter((filterGame) => filterGame.id !== gameData.id);
-                localStorage.setItem('starredGames', JSON.stringify(updatedStarredGames));
-                dispatch(setStarredGames(updatedStarredGames)); // Dispatch the filtered array
-
-            }
-            return null
-        })
+    //             }
 
 
+    //         }
+    //         return false;
+    //     }).filter((game) => isSameDay(new Date(game.commence_time), today)).map((gameData) => {
+    //         // Check if the game is already starred
+    //         if (!starredGames.some((game) => game.id === gameData.id)) {
+    //             // If not, create a new array with the new starred game
+    //             updatedStarredGames.push(gameData)
 
-    }
+    //             // Save the updated starred games to cookies
+    //             localStorage.setItem('starredGames', JSON.stringify(updatedStarredGames));
+
+    //             dispatch(setStarredGames(updatedStarredGames)); // Dispatch the updated array
+
+    //         }
+    //         return null
+    //     })
+    //     starredGames.map((gameData) => {
+    //         if (!valueBetConditionCheck(sports, gameData, sportsbook, pastGames)) {
+    //             updatedStarredGames = starredGames.filter((filterGame) => filterGame.id !== gameData.id);
+    //             localStorage.setItem('starredGames', JSON.stringify(updatedStarredGames));
+    //             dispatch(setStarredGames(updatedStarredGames)); // Dispatch the filtered array
+
+    //         }
+    //         return null
+    //     })
+
+
+
+    // }
 
     useEffect(() => {
         const { bg, font } = setDropdownStyles(sportsbook); // Use sportsbook instead of sportsBook
@@ -126,44 +126,41 @@ const NavBar = () => {
     return (
         <Navbar style={{ backgroundColor: '#2A2A2A', color: '#E0E0E0', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10 }}>
             <Container fluid>
-                <Col xs={1} style={{ textAlign: 'left' }}>
+                <Col style={{ textAlign: 'left' }} xs={1}>
                     <NavbarBrand style={{ color: '#E0E0E0' }} href="/" >
                         BETTOR
                     </NavbarBrand>
                 </Col>
-                <Col xs={1}>
-                    {/* {`${valueWinPct}%`} */}
-                </Col>
-                <Col>
-                    <Row style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                        {/* <Col>{allTimeProfit.toFixed(2)}</Col>
-                        <Col>{allTimeValueProfit.toFixed(2)}</Col> */}
-                    </Row>
-                </Col>
-                <Col xs={1} className="mx-3">
-                    <Row style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button
-                            variant="outline-light"
-                            style={{ fontSize: '.75rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }}
-                            onClick={handleAutoStar}>
-                            Auto Star
-                        </Button>
-                    </Row>
-                </Col>
-                <Col xs={2} style={{ textAlign: 'right' }}>
+                <Col style={{ textAlign: 'right' }}>
                     <Button
                         variant="outline-light"
-                        style={{ fontSize: '.75rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212', margin: 5 }}
+                        style={{
+                            fontSize: '.75rem',
+                            backgroundColor: 'rgb(198 159 66)',
+                            borderColor: 'rgb(198 159 66)',
+                            color: '#121212',
+                            width: '6em',
+                            margin: '0 .5em'
+                        }}
                         onClick={handleModalShow} // Open modal on button click
                     >
                         Options
                     </Button>
                     <Button
                         variant="outline-light"
-                        style={{ fontSize: '.75rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212', margin: 5 }}
+                        style={{
+                            fontSize: '.75rem',
+                            backgroundColor: 'rgb(198 159 66)',
+                            borderColor: 'rgb(198 159 66)',
+                            color: '#121212',
+                            width: '6em',
+                            margin: '0 .5em'
+                        }}
                     >
                         Log In
                     </Button>
+
+
 
                     {/* Modal for Options */}
                     <Modal show={showModal} onHide={handleModalClose}>

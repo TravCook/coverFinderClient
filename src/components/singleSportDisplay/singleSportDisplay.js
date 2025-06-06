@@ -16,7 +16,7 @@ const SingleSportDisplay = (props) => {
     // Function to navigate back to the landing page
 
     return (
-        <Container fluid style={{ position: 'relative', top: 60 }}>
+        <Container fluid style={{ position: 'relative', top: 60, backgroundColor: '#121212' }}>
             {/* Button to navigate back to the landing page */}
             <Row style={{ justifyContent: 'center', marginTop: '20px' }}>
                 <Col style={{ textAlign: 'center' }}>

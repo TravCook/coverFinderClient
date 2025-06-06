@@ -4,6 +4,7 @@ const initialState = {
     pastGames: [],
     valueGames: [],
     sports: [],
+    mlModelWeights: [],
     isLoading: false,
     error: null,
   };
@@ -18,6 +19,8 @@ const initialState = {
         return {...state, valueGames: action.payload}
       case 'SET_SPORTS':
         return {...state, sports: action.payload}
+      case 'SET_ML_MODEL_WEIGHTS':
+        return {...state, mlModelWeights: action.payload}
       default:
         return state;
     }

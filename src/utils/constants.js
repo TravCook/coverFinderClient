@@ -1,3 +1,5 @@
+const statsMinMax = require('./sampledGlobalStats.json');
+
 export const sports = [
   {
     name: "americanfootball_nfl", espnSport: 'football', league: 'NFL', startMonth: 9, endMonth: 2, multiYear: true, statYear: 2024, decayFactor: 0.95, valueBetSettings: {
@@ -62,6 +64,312 @@ export const sports = [
       confidenceRangeNum: .5
     }
   },
+]
+export const basketballStatMap = [
+  'seasonWinLoss',
+  'homeWinLoss',
+  'awayWinLoss',
+  'pointDiff',
+  'BSKBtotalPoints',
+  'BSKBpointsPerGame',
+  'BSKBassists',
+  'BSKBassistsPerGame',
+  'BSKBassistRatio',
+  'BSKBeffectiveFgPercent',
+  'BSKBfieldGoalPercent',
+  'BSKBfieldGoalsAttempted',
+  'BSKBfieldGoalsMade',
+  'BSKBfieldGoalsPerGame',
+  'BSKBfreeThrowPercent',
+  'BSKBfreeThrowsAttempted',
+  'BSKBfreeThrowsMade',
+  'BSKBfreeThrowsMadePerGame',
+  'BSKBoffensiveRebounds',
+  'BSKBoffensiveReboundsPerGame',
+  'BSKBoffensiveReboundRate',
+  'BSKBoffensiveTurnovers',
+  'BSKBturnoversPerGame',
+  'BSKBturnoverRatio',
+  'BSKBthreePointPct',
+  'BSKBthreePointsAttempted',
+  'BSKBthreePointsMade',
+  'BSKBtrueShootingPct',
+  'BSKBpace',
+  'BSKBpointsInPaint',
+  'BSKBshootingEfficiency',
+  'BSKBscoringEfficiency',
+  'BSKBblocks',
+  'BSKBblocksPerGame',
+  'BSKBdefensiveRebounds',
+  'BSKBdefensiveReboundsPerGame',
+  'BSKBsteals',
+  'BSKBstealsPerGame',
+  'BSKBreboundRate',
+  'BSKBreboundsPerGame',
+  'BSKBfoulsPerGame',
+  'BSKBteamAssistToTurnoverRatio',
+
+];
+
+export const baseballStatMap = [
+  'seasonWinLoss',
+  'homeWinLoss',
+  'pointDiff',
+  'BSBbattingStrikeouts',
+  'BSBrunsBattedIn',
+  'BSBsacrificeHits',
+  'BSBHitsTotal',
+  'BSBwalks',
+  'BSBruns',
+  'BSBhomeRuns',
+  'BSBdoubles',
+  'BSBtotalBases',
+  'BSBextraBaseHits',
+  'BSBbattingAverage',
+  'BSBsluggingPercentage',
+  'BSBonBasePercentage',
+  'BSBonBasePlusSlugging',
+  'BSBgroundToFlyRatio',
+  'BSBatBatsPerHomeRun',
+  'BSBstolenBasePercentage',
+  'BSBbatterWalkToStrikeoutRatio',
+  'BSBsaves',
+  'BSBpitcherStrikeouts',
+  'BSBhitsGivenUp',
+  'BSBearnedRuns',
+  'BSBbattersWalked',
+  'BSBrunsAllowed',
+  'BSBhomeRunsAllowed',
+  'BSBwins',
+  'BSBshutouts',
+  'BSBearnedRunAverage',
+  'BSBwalksHitsPerInningPitched',
+  'BSBwinPct',
+  'BSBpitcherCaughtStealingPct',
+  'BSBpitchesPerInning',
+  'BSBrunSupportAverage',
+  'BSBopponentBattingAverage',
+  'BSBopponentSlugAverage',
+  'BSBopponentOnBasePct',
+  'BSBopponentOnBasePlusSlugging',
+  'BSBsavePct',
+  'BSBstrikeoutsPerNine',
+  'BSBpitcherStrikeoutToWalkRatio',
+  'BSBdoublePlays',
+  'BSBerrors',
+  'BSBpassedBalls',
+  'BSBassists',
+  'BSBputouts',
+  'BSBcatcherCaughtStealing',
+  'BSBcatcherCaughtStealingPct',
+  'BSBcatcherStolenBasesAllowed',
+  'BSBfieldingPercentage',
+  'BSBrangeFactor'
+];
+
+export const hockeyStatMap = [
+  'seasonWinLoss',
+  'homeWinLoss',
+  'awayWinLoss',
+  'pointDiff',
+  'HKYgoals',
+  'HKYgoalsPerGame',
+  'HKYassists',
+  'HKYassistsPerGame',
+  'HKYshotsIn1st',
+  'HKYshotsIn1stPerGame',
+  'HKYshotsIn2nd',
+  'HKYshotsIn2ndPerGame',
+  'HKYshotsIn3rd',
+  'HKYshotsIn3rdPerGame',
+  'HKYtotalShots',
+  'HKYtotalShotsPerGame',
+  'HKYshotsMissed',
+  'HKYshotsMissedPerGame',
+  'HKYppgGoals',
+  'HKYppgGoalsPerGame',
+  'HKYppassists',
+  'HKYppassistsPerGame',
+  'HKYpowerplayPct',
+  'HKYshortHandedGoals',
+  'HKYshortHandedGoalsPerGame',
+  'HKYshootingPct',
+  'HKYfaceoffs',
+  'HKYfaceoffsPerGame',
+  'HKYfaceoffsWon',
+  'HKYfaceoffsWonPerGame',
+  'HKYfaceoffsLost',
+  'HKYfaceoffsLostPerGame',
+  'HKYfaceoffPct',
+  'HKYfaceoffPctPerGame',
+  'HKYgiveaways',
+  'HKYgoalsAgainst',
+  'HKYgoalsAgainstPerGame',
+  'HKYshotsAgainst',
+  'HKYshotsAgainstPerGame',
+  'HKYpenaltyKillPct',
+  'HKYpenaltyKillPctPerGame',
+  'HKYppGoalsAgainst',
+  'HKYppGoalsAgainstPerGame',
+  'HKYshutouts',
+  'HKYsaves',
+  'HKYsavesPerGame',
+  'HKYsavePct',
+  'HKYblockedShots',
+  'HKYblockedShotsPerGame',
+  'HKYhits',
+  'HKYhitsPerGame',
+  'HKYtakeaways',
+  'HKYtakeawaysPerGame',
+  'HKYshotDifferential',
+  'HKYshotDifferentialPerGame',
+  'HKYgoalDifferentialPerGame',
+  'HKYpimDifferential',
+  'HKYpimDifferentialPerGame',
+  'HKYtotalPenalties',
+  'HKYpenaltiesPerGame',
+  'HKYpenaltyMinutes',
+  'HKYpenaltyMinutesPerGame',
+];
+
+export const footballStatMap = [
+  'seasonWinLoss',
+  'homeWinLoss',
+  'awayWinLoss',
+  'pointDiff',
+  'USFBpointsPerGame',
+  'USFBtotalPoints',
+  'USFBtotalTouchdowns',
+  'USFBtouchdownsPerGame',
+  'USFBcompletionPercent',
+  'USFBcompletions',
+  'USFBcompletionsPerGame',
+  'USFBnetPassingYards',
+  'USFBnetPassingYardsPerGame',
+  'USFBpassingFirstDowns',
+  'USFBpassingYards',
+  'USFBpassingYardsPerGame',
+  'USFBpassingAttempts',
+  'USFBpassingAttemptsPerGame',
+  'USFByardsPerPassAttempt',
+  'USFBrushingAttempts',
+  'USFBrushingFirstDowns',
+  'USFBrushingTouchdowns',
+  'USFBrushingYards',
+  'USFBrushingYardsPerGame',
+  'USFByardsPerRushAttempt',
+  'USFBreceivingFirstDowns',
+  'USFBreceivingTouchdowns',
+  'USFBreceivingYards',
+  'USFBreceivingYardsPerGame',
+  'USFBreceivingYardsPerReception',
+  'USFBreceivingYardsAfterCatch',
+  'USFBreceivingYardsAfterCatchPerGame',
+  'USFBtacklesforLoss',
+  'USFBtacklesforLossPerGame',
+  'USFBinterceptions',
+  'USFByardsPerInterception',
+  'USFBsacksTotal',
+  'USFBsacksPerGame',
+  'USFBsackYards',
+  'USFBsackYardsPerGame',
+  'USFBstuffs',
+  'USFBstuffsPerGame',
+  'USFBstuffYards',
+  'USFBpassesDefended',
+  'USFBpassesDefendedPerGame',
+  'USFBsafties',
+  'USFBaverageKickoffYards',
+  'USFBaverageKickoffYardsPerGame',
+  'USFBextraPointAttempts',
+  'USFBextraPointAttemptsPerGame',
+  'USFBextraPointsMade',
+  'USFBextraPointsMadePerGame',
+  'USFBextraPointPercent',
+  'USFBextraPointPercentPerGame',
+  'USFBfieldGoalAttempts',
+  'USFBfieldGoalAttemptsPerGame',
+  'USFBfieldGoalsMade',
+  'USFBfieldGoalsMadePerGame',
+  'USFBfieldGoalPct',
+  'USFBfieldGoalPercentPerGame',
+  'USFBtouchbacks',
+  'USFBtouchbacksPerGame',
+  'USFBtouchBackPercentage',
+  'USFBkickReturns',
+  'USFBkickReturnsPerGame',
+  'USFBkickReturnYards',
+  'USFBkickReturnYardsPerGame',
+  'USFBpuntReturns',
+  'USFBpuntReturnsPerGame',
+  'USFBpuntReturnFairCatchPct',
+  'USFBpuntReturnYards',
+  'USFBpuntReturnYardsPerGame',
+  'USFByardsPerReturn',
+  'USFBthirdDownEfficiency',
+  'USFBtotalPenyards',
+  'USFBaveragePenYardsPerGame',
+  'USFBgiveaways',
+  'USFBtakeaways',
+  'USFBturnoverDiff',
+  'USFBtotalFirstDowns',
+];
+
+export const getDifferenceInMinutes = (date1, date2) => {
+  const diffMilliseconds = date2.getTime() - date1.getTime();
+  const diffMinutes = diffMilliseconds / (1000 * 60);
+  return diffMinutes;
+}
+
+export const normalizeStat = (statName, value) => {
+  const minMaxValues = statsMinMax[statName];
+  if (!minMaxValues) {
+      console.warn(`No min/max values found for stat: ${statName}`);
+      return value; // If no min/max values, return original value (or handle differently)
+  }
+  const { min, max } = minMaxValues;
+  // Avoid division by zero
+  if (max === min) return 0;
+  return (value - min) / (max - min); // Apply Min-Max Normalization
+}
+
+export function sigmoidNormalize(value, midpoint, sharpness) {
+  const sigmoid = 1 / (1 + Math.exp(-sharpness * (value - midpoint)));
+  return sigmoid * 45; // map to 0–45 for HSL
+}
+
+export const reverseComparisonStats =[
+  'BSKBturnoversPerGame',
+  'BSKBfoulsPerGame',
+  'BSKBturnoverRatio',
+  'BSBhitsGivenUp',
+  'BSBearnedRuns',
+  'BSBbattersWalked',
+  'BSBrunsAllowed',
+  'BSBhomeRunsAllowed',
+  'BSBbattingStrikeouts',
+  'BSBearnedRunAverage',
+  'BSBwalksHitsPerInningPitched',
+  'BSBopponentBattingAverage',
+  'BSBopponentSlugAverage',
+  'BSBopponentOnBasePct',
+  'BSBopponentOnBasePlusSlugging',
+  'BSBerrors',
+  'BSBpassedBalls',
+  'HKYshotsMissed',
+  'HKYshotsMissedPerGame',
+  'HKYfaceoffsLost',
+  'HKYfaceoffsLostPerGame',
+  'HKYgiveaways',
+  'HKYppGoalsAgainst',
+  'HKYppGoalsAgainstPerGame',
+  'HKYpimDifferential',
+  'HKYpimDifferentialPerGame',
+  'HKYtotalPenalties',
+  'HKYpenaltiesPerGame',
+  'HKYpenaltyMinutes',
+  'HKYpenaltyMinutesPerGame',
+  'USFBgiveaways',
 ]
 
 export const generalStats = {
@@ -831,7 +1139,7 @@ export const strengthCondition = (game, confidenceLow, confidenceRange) => {
 };
 
 export const probabilityCondition = (o, game, sportsbook) => {
-  return (o.impliedProb * 100) < (game.winPercent) 
+  return (o.impliedProb * 100) < (game.winPercent)
 };
 
 
@@ -842,6 +1150,11 @@ export const combinedCondition = (game, o, indexDifSmall, indexDiffRange, confid
   return probabilityCondition(o, game, sportsbook)
     && indexCondition(game, indexDifSmall, indexDiffRange)
     && strengthCondition(game, confidenceLow, confidenceRange)
+
+    // return (probabilityCondition(o, game, sportsbook) &&  indexCondition(game, indexDifSmall, indexDiffRange))
+    // || (strengthCondition(game, confidenceLow, confidenceRange) && indexCondition(game, indexDifSmall, indexDiffRange))
+    // || (probabilityCondition(o, game, sportsbook) && strengthCondition(game, confidenceLow, confidenceRange));
+
 };
 
 
@@ -865,3 +1178,47 @@ export const valueBetConditionCheck = (sports, game, sportsbook) => {
   }
 }
 
+export const calculateProfitFromImpliedProb = (impliedProb, stake) => {
+
+  const decimalOdds = (1 / impliedProb) + 1;
+  const profit = (stake * decimalOdds) - stake;
+  return profit;
+}
+
+export const calculateProfitFromUSOdds = (odds, stake) => {
+  let profit;
+  if (odds > 0) {
+    profit = (odds / 100) * stake;
+  } else {
+    profit = (100 / Math.abs(odds)) * stake;
+  }
+  return profit;
+}
+
+export const getColorForIndex = (index) => {
+  let hue = (index / 45) * 120; // Scale from 0 to 120 degrees
+  if(hue >= 0 && hue < 20){
+    return `hsl(${hue}, 80%, 20%)`; // Full saturation and lightness at 50%
+  }else if(hue > 20 && hue < 40){
+    return `hsl(${hue}, 60%, 40%)`; // Full saturation and lightness at 50%
+  }else if(hue > 40 && hue < 60){
+    return `hsl(${hue}, 60%, 40%)`; // Full saturation and lightness at 50%
+  }else if(hue > 60 && hue < 80){
+    return `hsl(${hue}, 50%, 40%)`; // Full saturation and lightness at 50%
+  }else if(hue > 80 && hue < 100){
+    return `hsl(${hue}, 60%, 35%)`; // Full saturation and lightness at 50%
+  }else if(hue > 100 && hue <= 120){
+    return `hsl(${hue}, 70%, 30%)`; // Full saturation and lightness at 50%
+  }
+  
+};
+
+export const formatMinutesToHoursAndMinutes = (totalMinutes) => {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+}

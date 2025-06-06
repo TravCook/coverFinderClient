@@ -8,9 +8,10 @@ import SingleSportDisplay from './components/singleSportDisplay/singleSportDispl
 import Results from './components/results/results';
 import MatchupDetails from './components/matchupDetails/matchupDetails';
 import { useDispatch, useSelector } from 'react-redux';
-import { setOdds, setPastOddsEmit, setSports, } from './redux/odds/actions/oddsActions'
+import { setOdds, setPastOddsEmit, setSports, setPastOdds, setMLModelWeights } from './redux/odds/actions/oddsActions'
 import { setTeams } from './redux/teams/actions/teamActions';
 import { updateStarredGames, loadStarredGamesFromLocalStorage, removeStarredGames } from './redux/user/actions/userActions';
+import LiveView from './components/live/liveView';
 
 function App() {
   const dispatch = useDispatch()
@@ -30,8 +31,11 @@ function App() {
         sportsbook: sportsbook
       })
     }).then((res) => res.json()).then((data) => {
+      console.log(data)
       dispatch(setSports(data.sports))
       dispatch(setOdds(data.odds))
+      dispatch(setPastOdds(data.pastGames))
+      dispatch(setMLModelWeights(data.mlModelWeights))
     })
     function onGameUpdate(data) {
       dispatch(updateStarredGames(data))
@@ -70,6 +74,7 @@ function App() {
             <Route path="/sport/:league" element={<SingleSportDisplay />} />
             <Route path="/results" element={pastGames && <Results />} />
             <Route path="/matchup/:id" element={<MatchupDetails />} />
+            <Route path='/live' element={<LiveView base={true}/>} />
           </Routes>
         </BrowserRouter>
 

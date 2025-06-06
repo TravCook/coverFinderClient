@@ -9,30 +9,41 @@ const PastGamesDisplay = ({ displayGames }) => {
 
 
     return (
-        <Row style={{paddingLeft: '1em'}}>
+        <Row>
             <Col xs={6}>
-                <Row style={{ display: 'flex', justifyContent: 'space-around', maxHeight: 330, overflowY: 'scroll'}}>
+                <Row>
+                    <Col>{`Wins (${displayGames.filter((game) => game.predictionCorrect === true).length})`}</Col>
+                </Row>
+                <Row style={{maxHeight: '14em',overflowY: 'scroll', scrollbarWidth: 'thin', scrollbarColor: 'white'}}>
                     {displayGames.filter((game) => game.predictionCorrect === true).map((game) => {
                         return (
-                            
-                            <MatchupCard gameData={game} final={true} />
+
+                            <Col style={{ padding: 0, margin: '.5em 0' }}>
+                                <MatchupCard
+                                    gameData={game}
+                                />
+                            </Col>
 
                         )
                     })}
                 </Row>
             </Col>
             <Col xs={6}>
-                <Row style={{ display: 'flex', justifyContent: 'space-around', maxHeight: 330, overflowY: 'scroll'}}>
+                <Row>
+                    <Col>{`Losses (${displayGames.filter((game) => game.predictionCorrect === false).length})`}</Col>
+                </Row>
+                <Row style={{maxHeight: '14em',overflowY: 'scroll', scrollbarWidth: 'thin', scrollbarColor: 'white'}}>
                     {displayGames.filter((game) => game.predictionCorrect === false).map((game) => {
                         return (
-                            <MatchupCard gameData={game} final={true} />
+                            <Col style={{ padding: 0, margin: '.5em 0' }}>
+                                <MatchupCard
+                                    gameData={game}
+                                />
+                            </Col>
                         )
                     })}
                 </Row>
             </Col>
-
-
-
         </Row>
     );
 }

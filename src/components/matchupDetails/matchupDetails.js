@@ -1,26 +1,43 @@
 import { useParams, Link } from 'react-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Row, Col, Button, Card, Table } from 'react-bootstrap';
 import { setPastOdds } from '../../redux/odds/actions/oddsActions.js'
 import { useDispatch, useSelector } from 'react-redux';
-import { isSameDay } from '../../utils/constants';
+import { isSameDay, reverseComparisonStats } from '../../utils/constants';
 import RecentGames from '../recentGames/recentGames';
 import { generalStats, offenseStats, defenseStats, passingStats, receivingStats, rushingStats, kickingStats, returningStats, penaltyStats, battingStats, pitchingStats, fieldingStats } from '../../utils/constants'
 import NumberLine from '../numberLine/numberLine';
 import WinrateVsProbabilityBar from '../winrateVsProbabilityBar/winRateVsProbabilityBar.js';
+import WaterfallChart from '../waterfallChart/waterfallChart.js';
+import useResizeObserver from '../../utils/hooks/useResizeObserver';
 
 const MatchupDetails = () => {
     const dispatch = useDispatch()
+    const chartContainerRef = useRef();
     const { id } = useParams(); // Get the matchup ID from the URL
-    const [gameData, setGameData] = useState(null);
+    const { sports, games, pastGames, mlModelWeights } = useSelector((state) => state.games)
+    const gameData = games.find((game) => game.id === id);
     const [selectedSection, setSelectedSection] = useState(generalStats); // Default section
     const [statHeaderSport, setStatSport] = useState(['General', 'Offense', 'Defense'])
-    const { sports } = useSelector((state) => state.games)
+
     const { sportsbook } = useSelector((state) => state.user);
-    const [indexDiff, setIndexDiff] = useState();
+    const [indexDiff, setIndexDiff] = useState(0);
     const [sportSettings, setSportSettings] = useState();
+    const [dimensions, setDimensions] = useState({ width: '100%', height: '100%' });
+    useEffect(() => {
+        if (chartContainerRef.current) {
+            const { width, height } = chartContainerRef.current.getBoundingClientRect();
+            setDimensions({ width, height });
+        }
+    }, [chartContainerRef.current]);
 
 
+    useEffect(() => {
+        if (games && id) {
+            const foundGame = games.find((game) => game.id === id);
+            //   setGameData(foundGame);
+        }
+    }, [games, id]);
 
     useEffect(() => {
         let sport = sports.find(s => s.name === gameData?.sport_key);
@@ -38,41 +55,35 @@ const MatchupDetails = () => {
     };
 
     useEffect(() => {
-        fetch(`http://${process.env.REACT_APP_API_URL}/api/odds/pastGameOdds`, {
-            method: "POST"
-        }).then((res) => res.json()).then((data) => {
-            dispatch(setPastOdds(data.pastGames))
-        })
-        fetch(`http://${process.env.REACT_APP_API_URL}/api/odds/${id}`) // Use the appropriate endpoint for detailed data
-            .then((res) => res.json())
-            .then((data) => {
-                setGameData(data)
-                setIndexDiff(Math.abs(data.predictedWinner === 'home' ? data.homeTeamScaledIndex - data.awayTeamScaledIndex : data.awayTeamScaledIndex - data.homeTeamScaledIndex))
-                if (data.sport === 'basketball') {
-                    setStatSport(['General', 'Offense', 'Defense'])
-                } else if (data.sport === 'football') {
-                    setStatSport(['General', 'Passing', 'Rushing', 'Receiving', 'Defense', 'Kicking', 'Returning'])
-                }
-                else if (data.sport === 'baseball') {
-                    setStatSport(['General', 'Batting', 'Pitching', 'Fielding'])
-                }
-                else if (data.sport === 'hockey') {
-                    setStatSport(['General', 'Offense', 'Defense', 'Penalty'])
-                }
+        if (gameData) {
 
-            });
+            setIndexDiff(Math.abs(gameData.predictedWinner === 'home' ? gameData.homeTeamScaledIndex - gameData.awayTeamScaledIndex : gameData.awayTeamScaledIndex - gameData.homeTeamScaledIndex))
+
+            if (gameData.sport === 'basketball') {
+                setStatSport(['General', 'Offense', 'Defense'])
+            } else if (gameData.sport === 'football') {
+                setStatSport(['General', 'Passing', 'Rushing', 'Receiving', 'Defense', 'Kicking', 'Returning'])
+            }
+            else if (gameData.sport === 'baseball') {
+                setStatSport(['General', 'Batting', 'Pitching', 'Fielding'])
+            }
+            else if (gameData.sport === 'hockey') {
+                setStatSport(['General', 'Offense', 'Defense', 'Penalty'])
+            }
+        }
+
+        // });
 
 
 
-    }, [id, dispatch]);
-
+    }, [id, dispatch, gameData, games]);
     if (!gameData) {
         return <div>Loading...</div>;
     }
-
-
+    console.log(games)
+    console.log(gameData)
     // Destructure home and away team stats
-    const { home_team, away_team, homeTeamStats, homeTeamAbbr, awayTeamAbbr, awayTeamStats, homeTeamIndex, awayTeamIndex, homeTeamlogo, awayTeamlogo } = gameData;
+    const { home_team, away_team, homeTeamStats, homeTeamAbbr, awayTeamAbbr, awayTeamStats, homeTeamIndex, awayTeamIndex, homeTeamlogo, awayTeamlogo, homeTeamScaledIndex, awayTeamScaledIndex } = gameData;
     const rows = []; // Create an array to hold the table rows
     for (let key in selectedSection) {
         if (key === 'seasonWinLoss') {
@@ -122,11 +133,7 @@ const MatchupDetails = () => {
                     </tr>
                 );
             }
-        } else if (key === 'USFBgiveaways' ||
-            key === 'USFBtotalPenyards' ||
-            key === 'USFBaveragePenYardsPerGame' ||
-            key === 'BSKBturnoversPerGame' ||
-            key === 'BSKBoffensiveTurnovers') {
+        } else if (reverseComparisonStats.includes(key)) {
             if (homeTeamStats.hasOwnProperty(key) && awayTeamStats.hasOwnProperty(key)) {
                 const label = selectedSection[key] || key;
                 rows.push(
@@ -283,8 +290,8 @@ const MatchupDetails = () => {
                                         {header}
                                     </Button>
                                 )
-                            default: 
-                            return null
+                            default:
+                                return null
 
                         }
                     })}
@@ -307,6 +314,9 @@ const MatchupDetails = () => {
         );
     };
 
+
+    let featureImportanceScores = mlModelWeights.find((sport) => sport.league === gameData.sport_key).featureImportanceScores
+    console.log(dimensions)
     return (
         <div style={{ position: 'relative', top: 60 }}>
             <Card style={{ backgroundColor: '#0A0A0B', color: 'white' }}>
@@ -322,7 +332,7 @@ const MatchupDetails = () => {
                                 </Col>
                             </Row>
                             <Row>
-                                <Col>{awayTeamIndex > homeTeamIndex ? <span>BBI: {awayTeamIndex.toFixed(2).padEnd(4, '0')}<sup style={{ color: 'rgba(0, 255, 0, .4)' }}>▲</sup></span> : <span>BBI: {awayTeamIndex.toFixed(2).padEnd(4, '0')}</span>}</Col>
+                                <Col>{awayTeamScaledIndex > homeTeamScaledIndex ? <span>BBI: {awayTeamScaledIndex.toFixed(2).padEnd(4, '0')}<sup style={{ color: 'rgba(0, 255, 0, .4)' }}>▲</sup></span> : <span>BBI: {awayTeamScaledIndex.toFixed(2).padEnd(4, '0')}</span>}</Col>
                             </Row>
                             <Row><Col style={{ fontSize: '1.5rem' }}>{`Recent Games`}</Col></Row>
                             <Row>
@@ -379,7 +389,7 @@ const MatchupDetails = () => {
                                 </Col>
                             </Row>
                             <Row>
-                                <Col>{homeTeamIndex > awayTeamIndex ? <span>BBI: {homeTeamIndex.toFixed(2).padEnd(4, '0')}<sup style={{ color: 'rgba(0, 255, 0, .4)' }}>▲</sup></span> : <span>BBI: {homeTeamIndex.toFixed(2).padEnd(4, '0')}</span>}</Col>
+                                <Col>{homeTeamScaledIndex > awayTeamScaledIndex ? <span>BBI: {gameData.homeTeamScaledIndex.toFixed(2).padEnd(4, '0')}<sup style={{ color: 'rgba(0, 255, 0, .4)' }}>▲</sup></span> : <span>BBI: {homeTeamScaledIndex.toFixed(2).padEnd(4, '0')}</span>}</Col>
                             </Row>
                             <Row><Col>{`Recent Games`}</Col></Row>
                             <Row>
@@ -391,6 +401,28 @@ const MatchupDetails = () => {
                             </Row>
                         </Col>
                     </Row>
+                    <Row>
+                        <Col>
+                            <Card style={{ backgroundColor: '#323232', color: 'white', width: '48vw', height: '30vh' }} ref={chartContainerRef}>
+                                <Card.Body style={{ padding: 0 }}>
+                                    <div >
+                                        <WaterfallChart importance={featureImportanceScores} homeStats={gameData.awayTeamStats} awayStats={gameData.homeTeamStats} dimensions={dimensions} />
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                        <Col>
+                            <Card style={{ backgroundColor: '#323232', color: 'white', width: '48vw', height: '30vh' }} ref={chartContainerRef}>
+                                <Card.Body style={{ padding: 0 }}>
+                                    <div >
+                                        <WaterfallChart importance={featureImportanceScores} homeStats={gameData.homeTeamStats} awayStats={gameData.awayTeamStats} dimensions={dimensions} />
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+
+
 
                     <Row className="my-4" style={{ display: 'flex', justifyContent: 'center' }}>
                         <Col>
@@ -414,6 +446,7 @@ const MatchupDetails = () => {
                     </Row>
                 </Card.Body>
             </Card>
+
         </div>
     );
 };

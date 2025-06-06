@@ -53,14 +53,14 @@ const MatchupCard = ({ gameData, final, starred }) => {
 
   return (
     <Container style={{
-      width: '22em',
+      width: '18rem',
       backgroundColor: '#545454',
       color: '#d1d0cd',
       fontSize: '.8rem',
       borderRadius: '.5em',
-      margin: '.5rem auto',
+      // margin: '.5rem auto',
       border: '.1em solid #858585',
-      padding: '1em'
+      padding: '.2em .7em',
     }}>
       <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
         <Col style={styles.timeColumn}>
@@ -72,7 +72,7 @@ const MatchupCard = ({ gameData, final, starred }) => {
             <Button
               id={gameData.id}
               onClick={handleStarClick}
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontSize: '.2rem', alignItems: 'center', display: 'flex', justifyContent: 'center', textAlign: 'center' }}
             >
               {starredGames.some((game) => game.id === gameData.id) ? (
                 <FontAwesomeIcon icon={faStar} style={{ color: 'gold', fontSize: '1.0rem' }} />
@@ -167,7 +167,8 @@ const styles = {
   timeColumn: {
     fontWeight: 'bold',
     textAlign: 'center',
-    fontSize: '.84rem',
+    alignItems: 'center',
+    fontSize: '.7rem',
     paddingLeft: 5,
     paddingRight: 5,
     color: '#FFFFFF'

@@ -45,3 +45,8 @@ export const setSports =(data) => ({
     type: SET_SPORTS,
     payload: data
 })
+
+export const setMLModelWeights = (data) => ({
+    type: 'SET_ML_MODEL_WEIGHTS',
+    payload: data
+})

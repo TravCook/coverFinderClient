@@ -1,7 +1,8 @@
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import MatchupCard from '../matchupCard/matchupCard.js';
+import LiveView from '../live/liveView.js';
 import { useRef } from 'react';
-import { isSameDay, valueBetConditionCheck } from '../../utils/constants.js';
+import { isSameDay, valueBetConditionCheck, getDifferenceInMinutes } from '../../utils/constants.js';
 import { Link } from 'react-router';
 import { useSelector } from 'react-redux';
 
@@ -45,27 +46,29 @@ const UpcomingGames = () => {
           return dateA - dateB
         }) // Sort by commence time
         .map((game, idx) => {
-          if ((Math.ceil(games.filter((game) => game.sport_title === league.toUpperCase()).length / 6) * 6) < 15) {
+          if ((Math.ceil(games.filter((game) => game.sport_title === league.toUpperCase()).length / 6) * 6) < 18) {
             if (idx < (Math.ceil(games.filter((game) => game.sport_title === league.toUpperCase()).length / 6) * 6)) {
               return (
-                <Col key={`${game.id}`} style={{ paddingLeft: 5, paddingRight: 5 }}>
+                <Col style={{ padding: 0, margin: '.5em 0' }}>
                   <MatchupCard
                     todaysGames={games.filter((game) => isSameDay(game.commence_time, new Date()))}
                     gameData={game}
                   />
                 </Col>
+
               )
             }
-            
+
           } else {
             if (idx < 15) {
               return (
-                <Col key={`${game.id}`} style={{ paddingLeft: 5, paddingRight: 5 }}>
+                <Col style={{ padding: 0, margin: '.5em 0' }}>
                   <MatchupCard
                     todaysGames={games.filter((game) => isSameDay(game.commence_time, new Date()))}
                     gameData={game}
                   />
                 </Col>
+
               )
             }
           }
@@ -104,32 +107,34 @@ const UpcomingGames = () => {
 
           }
 
-
-          return outcomeB.price - outcomeA.price
+          return a.commence_time - b.commence_time
+          // return outcomeB.price - outcomeA.price
         }) // Sort by commence time
         .map((game, idx) => {
           if (idx < 6) {
             return (
-              <Col key={`${game.id}`} style={{ paddingLeft: 5, paddingRight: 5 }}>
+              <Col style={{ padding: 0, margin: '.5em 0' }}>
                 <MatchupCard
                   gameData={game}
                 />
               </Col>
+
             )
           }
           return null
         });
     } else if (sortType === 'liveNow') {
-      return games.filter((game) => game.timeRemaining).sort((a, b) => {
+      return games.filter((game) => game.timeRemaining || (getDifferenceInMinutes(new Date(), new Date(game.commence_time)) < 120)).sort((a, b) => {
         return a.commence_time - b.commence_time
       }).map((game) => {
         return (
-          <Col key={`${game.id}`} style={{ paddingLeft: 5, paddingRight: 5 }}>
+          <Col style={{ padding: 0, margin: '.5em 0' }}>
             <MatchupCard
               todaysGames={games.filter((game) => isSameDay(game.commence_time, new Date()))}
               gameData={game}
             />
           </Col>
+
         )
       })
     }
@@ -183,9 +188,9 @@ const UpcomingGames = () => {
   };
 
   return (
-    <div style={{ position: 'relative', top: 60 }}>
+    <div style={{ position: 'relative', top: 50 }}>
       {starredGames.length > 0 &&
-        <Row className='sticky-top' style={{ margin: '0 0', top: 58 }}>
+        <Row className='sticky-top' style={{ margin: '0 0', top: 48 }}>
           <Col style={{ margin: '0 0', padding: 0 }}>
             <Card style={{ backgroundColor: '#2a2a2a', borderColor: '#575757' }}>
               <Card.Body>
@@ -196,7 +201,7 @@ const UpcomingGames = () => {
 
         </Row>
       }
-      <Row className='sticky-top' style={{ textAlign: 'center', top: (starredGames.length > 0 ? 227 : 58), backgroundColor: '#2A2A2A', borderColor: '#575757', width: '100%', margin: '0 auto', padding: '.5em 0' }}>
+      <Row className='sticky-top' style={{ textAlign: 'center', top: (starredGames.length > 0 ? 200 : 48), backgroundColor: '#2A2A2A', borderColor: '#575757', width: '100%', margin: '0 auto', padding: '.5em 0' }}>
         {sports.filter((sport) => {
           const currentDate = new Date();
           const currentMonth = currentDate.getMonth() + 1; // getMonth() returns 0-11, so we add 1 to make it 1-12
@@ -233,31 +238,35 @@ const UpcomingGames = () => {
           // Only render the section if there are games for this sport
           if (todayGames.length === 0) return null;
           return (
-            <Col xs={1} lg={1} style={{ padding: 0 }}>
-              <Button
-                style={{ cursor: 'pointer', fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212', padding: 3, width: '90%' }}
-                onClick={() => scrollToDiv(sport.league)}
-              >
-                {
-                  leagueName.toUpperCase()
-                }
-              </Button>
-            </Col>
+            <Button
+              style={{
+                cursor: 'pointer',
+                fontSize: '.8rem',
+                backgroundColor: 'rgb(198 159 66)',
+                borderColor: 'rgb(198 159 66)',
+                color: '#121212',
+                padding: 3,
+                width: '5em',
+                margin: '0 .5em',
+              }}
+              onClick={() => scrollToDiv(sport.league)}
+            >
+              {
+                leagueName.toUpperCase()
+              }
+            </Button>
           )
         })}
       </Row>
-      <Row style={{ width: '100%', margin: 'auto', backgroundColor: '#121212', display: 'flex', justifyContent: 'space-evenly' }}>
+      <Row style={{ width: '100%', margin: 'auto', backgroundColor: '#121212' }}>
         <Col>
           <Row>
-            {games.filter((game) => game.timeRemaining).length > 0 &&
+            {games.filter((game) => game.timeRemaining || (getDifferenceInMinutes(new Date(), new Date(game.commence_time)) < 180)).length > 0 &&
               <Col xs={12}>
-                <Card style={{ backgroundColor: '#2a2a2a', borderColor: '#575757', margin: '.25em 0' }}>
+                <Card style={{ backgroundColor: '#2a2a2a', borderColor: '#575757', margin: '.25em .5em' }}>
                   <Card.Body>
                     <Row ref={(el) => (divRefs.current['liveNow'] = el)} style={{ display: 'flex', justifyContent: 'space-evenly' }} key={'Live Now'}>
-                      <Row>
-                        <span style={{ color: 'whitesmoke', textAlign: 'center', fontSize: '1.5rem' }}>Live Now</span>
-                      </Row>
-                      {filterAndMapGames('liveNow')}
+                      <LiveView />
                     </Row>
                   </Card.Body>
                 </Card>
@@ -268,7 +277,7 @@ const UpcomingGames = () => {
               <Col xs={12}>
                 <Card style={{ backgroundColor: '#2a2a2a', borderColor: '#575757', margin: '1em 0' }}>
                   <Card.Body>
-                    <Row ref={(el) => (divRefs.current['bestValue'] = el)} className="mb-3 pb-3" style={{ display: 'flex', justifyContent: 'space-evenly' }} key={'WIN CHANCE'}>
+                    <Row ref={(el) => (divRefs.current['bestValue'] = el)} style={{ display: 'flex', justifyContent: 'space-evenly' }} key={'WIN CHANCE'}>
                       <Row>
                         <span style={{ color: 'whitesmoke' }}>BETTER BETS</span>
                       </Row>
@@ -316,34 +325,34 @@ const UpcomingGames = () => {
               if (todayGames.length === 0) return null;
 
               return (
-                <Col xs={12}>
+                <Col xs={Math.min(12, todayGames.length * 3)}>
                   <Card style={{ backgroundColor: '#2a2a2a', borderColor: '#575757', margin: '1em 0' }}>
                     <Card.Body>
-                      <Row ref={(el) => (divRefs.current[sport.league] = el)} className="mb-3 pb-3" style={{ display: 'flex', justifyContent: 'space-evenly' }} key={sport.league}>
-                        <Row>
-                          <Col xs={6}>
-                            <h4 style={{ color: 'whitesmoke' }}>{leagueName.toUpperCase()} Games</h4>
-                          </Col>
-                          <Col xs={6} style={{ textAlign: 'right' }}>
-                            <Link to={`/sport/${leagueName}`}>
-                              <Button id={sport.name} variant="outline-light" style={{ fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }}>
-                                More
-                              </Button>
-                            </Link>
-                          </Col>
-                        </Row>
-                        <Row style={{ display: 'flex', justifyContent: 'space-evenly' }}>
-                          {filterAndMapGames(
-                            (game) => isSameDay(game.commence_time, new Date()),
-                            leagueName
-                          )}
-                        </Row>
-
+                      <Row ref={(el) => (divRefs.current[sport.league] = el)} key={sport.league}>
+                        <Col>
+                          <Row>
+                            <Col xs={8}>
+                              <h4 style={{ color: 'whitesmoke' }}>{leagueName.toUpperCase()} Games</h4>
+                            </Col>
+                            <Col xs={4} style={{ textAlign: 'right' }}>
+                              <Link to={`/sport/${leagueName}`}>
+                                <Button id={sport.name} variant="outline-light" style={{ fontSize: '.8rem', backgroundColor: 'rgb(198 159 66)', borderColor: 'rgb(198 159 66)', color: '#121212' }}>
+                                  More
+                                </Button>
+                              </Link>
+                            </Col>
+                          </Row>
+                          <Row>
+                            {filterAndMapGames(
+                              (game) => isSameDay(game.commence_time, new Date()),
+                              leagueName
+                            )}
+                          </Row>
+                        </Col>
                       </Row>
                     </Card.Body>
                   </Card>
                 </Col>
-
 
               );
             })}
