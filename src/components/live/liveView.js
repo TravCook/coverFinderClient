@@ -52,19 +52,21 @@ const LiveView = ({ base }) => {
                         <Card.Body>
                             <h4 style={{ color: '#fff' }}>Starting Soon</h4>
                             {games.filter((game) => {
-                                return !game.timeRemaining && getDifferenceInMinutes(new Date(), new Date(game.commence_time)) < 180;
-                            }).sort((a, b) => { }).map((game, idx) => {
+                                return !game.timeRemaining && getDifferenceInMinutes(new Date(), new Date(game.commence_time)) < 180 && getDifferenceInMinutes(new Date(), new Date(game.commence_time)) > 0;
+                            }).sort((a, b) => {
+                                return new Date(a.commence_time) - new Date(b.commence_time)
+                             }).map((game, idx) => {
                                 return (
                                     <Row style={{ color: '#ffffff', textAlign: 'right' }}>
                                         <Col xs={2} style={{ padding: 0, letterSpacing: '.1rem', fontSize: '.85rem' }}>
                                             {game.predictedWinner === 'away' && <sup style={{ marginLeft: '.2rem', fontSize: '.6rem', color: `hsl(${((game.awayTeamScaledIndex) / 45) * 120}, 100%, 50%)` }}>▲</sup>}
-                                            {`${game.awayTeamAbbr}`}
-                                            {<img src={game.awayTeamlogo} style={{ width: '1.2rem', maxWidth: '30px' }} alt='Team Logo' />}
+                                            {`${game.awayTeamDetails.abbreviation}`}
+                                            {<img src={game.awayTeamDetails.logo} style={{ width: '1.2rem', maxWidth: '30px' }} alt='Team Logo' />}
                                         </Col>
                                         <Col xs={1} style={{ padding: 0, textAlign: 'center' }}>@</Col>
                                         <Col xs={2} style={{ padding: 0, textAlign: 'left', letterSpacing: '.1rem', fontSize: '.85rem' }}>
-                                            {<img src={game.homeTeamlogo} style={{ width: '1.2rem', maxWidth: '30px' }} alt='Team Logo' />}
-                                            {`${game.homeTeamAbbr}`}
+                                            {<img src={game.homeTeamDetails.logo} style={{ width: '1.2rem', maxWidth: '30px' }} alt='Team Logo' />}
+                                            {`${game.homeTeamDetails.abbreviation}`}
                                             {game.predictedWinner === 'home' && <sup style={{ marginLeft: '.2rem', fontSize: '.6rem', color: `hsl(${((game.homeTeamScaledIndex) / 45) * 120}, 100%, 50%)` }}>▲</sup>}
 
                                         </Col>
@@ -91,7 +93,7 @@ const LiveView = ({ base }) => {
                         <Card.Body>
                             <Row>
                                 {games.filter((game) => game.timeRemaining).sort((a, b) => {
-                                    return a.commence_time - b.commence_time
+                                    return new Date(a.commence_time) - new Date(b.commence_time)
                                 }).map((game) => {
                                     return (
                                         <Col style={{ padding: 0, margin: '.5em 0' }}>

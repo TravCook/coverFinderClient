@@ -3,13 +3,13 @@ import RecentGames from '../recentGames/recentGames';
 import { Button, Col, Row } from 'react-bootstrap';
 
 const MatchupCardExtendRecent = ({ gameData }) => {
-    const [displayTeam, setDisplayTeam] = useState(gameData.home_team);
+    const [displayTeam, setDisplayTeam] = useState(gameData.homeTeamDetails.espnDisplayName);
 
     const handleTeamClick = (e) => {
-        if(e.target.innerText === gameData.awayTeamAbbr) {
-            setDisplayTeam(gameData.away_team);
-        }else if(e.target.innerText === gameData.homeTeamAbbr) {
-            setDisplayTeam(gameData.home_team);
+        if(e.target.innerText === gameData.awayTeamDetails.abbreviation) {
+            setDisplayTeam(gameData.homeTeamDetails.espnDisplayName);
+        }else if(e.target.innerText === gameData.homeTeamDetails.abbreviation) {
+            setDisplayTeam(gameData.awayTeamDetails.espnDisplayName);
         }
     }
 
@@ -18,12 +18,12 @@ const MatchupCardExtendRecent = ({ gameData }) => {
             <Row>
                 <Col>
                     <Button onClick={handleTeamClick}>
-                        {gameData.awayTeamAbbr}
+                        {gameData.awayTeamDetails.abbreviation}
                     </Button>
                 </Col>
                 <Col>
                     <Button onClick={handleTeamClick}>
-                        {gameData.homeTeamAbbr}
+                        {gameData.homeTeamDetails.abbreviation}
                     </Button>
                 </Col>
             </Row>

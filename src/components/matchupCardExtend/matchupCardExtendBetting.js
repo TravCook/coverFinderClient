@@ -32,19 +32,17 @@ const MatchupCardExtendBetting = ({ gameData }) => {
         if (sport) {
             setSportSettings(sport.valueBetSettings.find((setting) => setting.bookmaker === sportsbook));
         }
-
-        const sortedBookmakers = sortBookmakersByOutcomePrice(gameData.bookmakers, gameData.predictedWinner === 'home' ? gameData.home_team : gameData.away_team);
+        const sortedBookmakers = sortBookmakersByOutcomePrice(gameData.bookmakers, gameData.predictedWinner === 'home' ? gameData.homeTeamDetails.espnDisplayName : gameData.awayTeamDetails.espnDisplayName);
         if (sortedBookmakers.length > 0) {
             setBestSportsbook(sortedBookmakers[0].key);
         }
 
        
     }, [gameData, bestSportsbook, sports, sportsbook]);
-
     return (
         <div>
             <Row style={{ borderBottom: '2px solid white', padding: 5 }}>
-                <Col style={{ fontSize: '1rem', textAlign: 'center' }}>{`Pick: ${gameData.predictedWinner === 'home' ? gameData.home_team : gameData.away_team}`}</Col>
+                <Col style={{ fontSize: '1rem', textAlign: 'center' }}>{`Pick: ${gameData.predictedWinner === 'home' ? gameData.homeTeamDetails.espnDisplayName : gameData.awayTeamDetails.espnDisplayName}`}</Col>
             </Row>
             <Row>
                 <Col>
@@ -57,7 +55,7 @@ const MatchupCardExtendBetting = ({ gameData }) => {
                         <Row style={{ margin: 'auto' }}>
                             <WinrateVsProbabilityBar
                                 internalWinrate={gameData.winPercent}
-                                impliedProbability={gameData.bookmakers.find(b => b.key === sportsbook)?.markets[0].outcomes.find(o => o.name === (gameData.predictedWinner === 'home' ? gameData.home_team : gameData.away_team))?.impliedProb * 100}
+                                impliedProbability={gameData.bookmakers.find(b => b.key === sportsbook)?.markets.find(m => m.key === 'h2h').outcomes.find(o => o.name === (gameData.predictedWinner === 'home' ? gameData.homeTeamDetails.espnDisplayName : gameData.awayTeamDetails.espnDisplayName))?.impliedProbability * 100}
                             />
                         </Row>
                     </Row>
@@ -69,6 +67,7 @@ const MatchupCardExtendBetting = ({ gameData }) => {
                         </Row>
                         <Row style={{ margin: 'auto' }}>
                             <NumberLine min={-50} max={50} rangeStart={sportSettings?.settings.indexDiffSmallNum} rangeEnd={sportSettings?.settings.indexDiffSmallNum + sportSettings?.settings.indexDiffRangeNum} point={indexDiff} pointLabel={indexDiff.toFixed(2)} />
+                            <NumberLine min={-50} max={50} rangeStart={sportSettings?.settings.indexDiffSmallNum} rangeEnd={sportSettings?.settings.indexDiffSmallNum + sportSettings?.settings.indexDiffRangeNum} point={indexDiff} pointLabel={indexDiff.toFixed(2)} />
                         </Row>
                     </Row>
                     <Row>
@@ -78,7 +77,7 @@ const MatchupCardExtendBetting = ({ gameData }) => {
                             </Col>
                         </Row>
                         <Row style={{ margin: 'auto' }}>
-                            <NumberLine min={50} max={100} rangeStart={sportSettings?.settings.confidenceLowNum * 100} rangeEnd={(sportSettings?.settings.confidenceLowNum * 100) + (sportSettings?.settings.confidenceRangeNum * 100)} point={gameData.predictionStrength * 100} pointLabel={`${(gameData.predictionStrength * 100).toFixed(2)}%`} />
+                            <NumberLine min={50} max={100} rangeStart={sportSettings?.settings.confidenceLowNum * 100} rangeEnd={(sportSettings?.settings.confidenceLowNum * 100) + (sportSettings?.settings.confidenceRangeNum * 100)} point={gameData.predictionConfidence * 100} pointLabel={`${(gameData.predictionConfidence * 100).toFixed(2)}%`} />
                         </Row>
                     </Row>
                 </Col>

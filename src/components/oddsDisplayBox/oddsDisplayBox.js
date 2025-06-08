@@ -40,9 +40,9 @@ const OddsDisplayBox = ({ gameData, market, total, bestSportsbook, homeAway }) =
 
     const outcome = marketData?.outcomes?.find(out => {
       if (homeAway) {
-        return out.name === (homeAway === 'home' ? gameData.home_team : gameData.away_team) || out.name === total;
+        return out.name === (homeAway === 'home' ? gameData.homeTeamDetails.espnDisplayName : gameData.awayTeamDetails.espnDisplayName) || out.name === total;
       } else {
-        return out.name === (gameData.predictedWinner === 'home' ? gameData.home_team : gameData.away_team) || out.name === total;
+        return out.name === (gameData.predictedWinner === 'home' ? gameData.homeTeamDetails.espnDisplayName : gameData.awayTeamDetails.espnDisplayName) || out.name === total;
       }
 
     });

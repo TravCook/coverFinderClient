@@ -1135,11 +1135,11 @@ export const indexCondition = (game, indexDifSmall, indexDiffRange) => {
 };
 
 export const strengthCondition = (game, confidenceLow, confidenceRange) => {
-  return game.predictionStrength > confidenceLow && game.predictionStrength < (confidenceLow + confidenceRange);
+  return game.predictionConfidence > confidenceLow && game.predictionConfidence < (confidenceLow + confidenceRange);
 };
 
 export const probabilityCondition = (o, game, sportsbook) => {
-  return (o.impliedProb * 100) < (game.winPercent)
+  return (o.impliedProbability * 100) < (game.winPercent)
 };
 
 
@@ -1164,7 +1164,7 @@ export const valueBetConditionCheck = (sports, game, sportsbook) => {
     const marketData = bookmaker?.markets?.find(m => m.key === 'h2h');
 
     let outcome = marketData?.outcomes?.find(o => {
-      return o.name === (game.predictedWinner === 'home' ? game.home_team : game.away_team)
+      return o.name === (game.predictedWinner === 'home' ? game.homeTeamDetails.espnDisplayName : game.awayTeamDetails.espnDisplayName)
     });
 
     if (outcome) {

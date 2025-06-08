@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 const Results = () => {
     const dispatch = useDispatch()
-    document.title = 'Results'
+    document.title = 'Results SQL TEST'
 
     const { sportsbook } = useSelector((state) => state.user);
     const { pastGames, sports } = useSelector((state) => state.games)

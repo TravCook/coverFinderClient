@@ -11,24 +11,23 @@ const MatchupCardExtendStats = ({ gameData }) => {
     const [datasets, setDatasets] = useState([])
     const { mlModelWeights, sports } = useSelector((state) => state.games)
     const sport = sports.find((sport) => sport.name === gameData.sport_key)
-
     useEffect(() => {
-        if (gameData.sport === 'basketball') {
+        if (sport.espnSport === 'basketball') {
             setStatSport(['General', 'Offense', 'Defense'])
-        } else if (gameData.sport === 'football') {
+        } else if (sport.espnSport === 'football') {
             setStatSport(['General', 'Passing', 'Rushing', 'Receiving', 'Defense', 'Kicking', 'Returning'])
         }
-        else if (gameData.sport === 'baseball') {
+        else if (sport.espnSport === 'baseball') {
             setStatSport(['General', 'Batting', 'Pitching', 'Fielding'])
         }
-        else if (gameData.sport === 'hockey') {
+        else if (sport.espnSport === 'hockey') {
             setStatSport(['General', 'Offense', 'Defense', 'Penalty'])
         }
     }, [gameData]);
     useEffect(() => {
         let statMap
 
-        switch (gameData.sport) {
+        switch (sport.espnSport) {
             case 'basketball':
                 statMap = basketballStatMap
                 break;
@@ -55,13 +54,13 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 case 'General':
                     statIndex = 0
                     Object.keys(generalStats).forEach((generalStat) => {
-                        if (gameData.homeTeamStats.hasOwnProperty(generalStat) && gameData.awayTeamStats.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
+                        if (gameData.homeStats.data.hasOwnProperty(generalStat) && gameData.awayStats.data.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
 
 
                             if (generalStat === 'seasonWinLoss' || generalStat === 'homeWinLoss') {
                                 if (generalStat === 'homeWinLoss') {
-                                    let homeWinsSplit = gameData.homeTeamStats[generalStat].split('-')
-                                    let awayWinsSplit = gameData.awayTeamStats['awayWinLoss'].split('-')
+                                    let homeWinsSplit = gameData.homeStats.data[generalStat].split('-')
+                                    let awayWinsSplit = gameData.awayStats.data['awayWinLoss'].split('-')
                                     let homeWins = parseInt(homeWinsSplit[0])
                                     let awayWins = parseInt(awayWinsSplit[0])
                                     if (homeWins >= awayWins) {
@@ -72,8 +71,8 @@ const MatchupCardExtendStats = ({ gameData }) => {
 
                                 }
                                 else {
-                                    let homeWinsSplit = gameData.homeTeamStats[generalStat].split('-')
-                                    let awayWinsSplit = gameData.awayTeamStats[generalStat].split('-')
+                                    let homeWinsSplit = gameData.homeStats.data[generalStat].split('-')
+                                    let awayWinsSplit = gameData.awayStats.data[generalStat].split('-')
                                     let homeWins = parseInt(homeWinsSplit[0])
                                     let awayWins = parseInt(awayWinsSplit[0])
                                     if (homeWins >= awayWins) {
@@ -87,14 +86,14 @@ const MatchupCardExtendStats = ({ gameData }) => {
 
                             } else if (generalStat !== 'awayWinLoss') {
                                 if (reverseComparisonStats.includes(generalStat)) {
-                                    if (gameData.homeTeamStats[generalStat] < gameData.awayTeamStats[generalStat]) {
+                                    if (gameData.homeStats.data[generalStat] < gameData.awayStats.data[generalStat]) {
                                         homeDiff++
                                     }
                                     else {
                                         awayDiff++
                                     }
                                 } else {
-                                    if (gameData.homeTeamStats[generalStat] > gameData.awayTeamStats[generalStat]) {
+                                    if (gameData.homeStats.data[generalStat] > gameData.awayStats.data[generalStat]) {
                                         homeDiff++
                                     }
                                     else {
@@ -114,16 +113,16 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 case 'Offense':
                     statIndex = 0
                     Object.keys(offenseStats).forEach((generalStat) => {
-                        if (gameData.homeTeamStats.hasOwnProperty(generalStat) && gameData.awayTeamStats.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
+                        if (gameData.homeStats.data.hasOwnProperty(generalStat) && gameData.awayStats.data.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
                             if (reverseComparisonStats.includes(generalStat)) {
-                                if (gameData.homeTeamStats[generalStat] < gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] < gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
                                     awayDiff++
                                 }
                             } else {
-                                if (gameData.homeTeamStats[generalStat] > gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] > gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
@@ -132,7 +131,6 @@ const MatchupCardExtendStats = ({ gameData }) => {
                             }
                             statIndex++
                         } else {
-                            console.log(generalStat)
                         }
                         
 
@@ -144,16 +142,16 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 case 'Defense':
                     statIndex = 0
                     Object.keys(defenseStats).forEach((generalStat) => {
-                        if (gameData.homeTeamStats.hasOwnProperty(generalStat) && gameData.awayTeamStats.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
+                        if (gameData.homeStats.data.hasOwnProperty(generalStat) && gameData.awayStats.data.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
                             if (reverseComparisonStats.includes(generalStat)) {
-                                if (gameData.homeTeamStats[generalStat] < gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] < gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
                                     awayDiff++
                                 }
                             } else {
-                                if (gameData.homeTeamStats[generalStat] > gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] > gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
@@ -170,16 +168,16 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 case 'Passing':
                     statIndex = 0
                     Object.keys(passingStats).forEach((generalStat) => {
-                        if (gameData.homeTeamStats.hasOwnProperty(generalStat) && gameData.awayTeamStats.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
+                        if (gameData.homeStats.data.hasOwnProperty(generalStat) && gameData.awayStats.data.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
                             if (reverseComparisonStats.includes(generalStat)) {
-                                if (gameData.homeTeamStats[generalStat] < gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] < gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
                                     awayDiff++
                                 }
                             } else {
-                                if (gameData.homeTeamStats[generalStat] > gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] > gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
@@ -195,16 +193,16 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 case 'Rushing':
                     statIndex = 0
                     Object.keys(rushingStats).forEach((generalStat) => {
-                        if (gameData.homeTeamStats.hasOwnProperty(generalStat) && gameData.awayTeamStats.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
+                        if (gameData.homeStats.data.hasOwnProperty(generalStat) && gameData.awayStats.data.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
                             if (reverseComparisonStats.includes(generalStat)) {
-                                if (gameData.homeTeamStats[generalStat] < gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] < gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
                                     awayDiff++
                                 }
                             } else {
-                                if (gameData.homeTeamStats[generalStat] > gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] > gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
@@ -220,16 +218,16 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 case 'Receiving':
                     statIndex = 0
                     Object.keys(receivingStats).forEach((generalStat) => {
-                        if (gameData.homeTeamStats.hasOwnProperty(generalStat) && gameData.awayTeamStats.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
+                        if (gameData.homeStats.data.hasOwnProperty(generalStat) && gameData.awayStats.data.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
                             if (reverseComparisonStats.includes(generalStat)) {
-                                if (gameData.homeTeamStats[generalStat] < gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] < gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
                                     awayDiff++
                                 }
                             } else {
-                                if (gameData.homeTeamStats[generalStat] > gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] > gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
@@ -245,16 +243,16 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 case 'Kicking':
                     statIndex = 0
                     Object.keys(kickingStats).forEach((generalStat) => {
-                        if (gameData.homeTeamStats.hasOwnProperty(generalStat) && gameData.awayTeamStats.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
+                        if (gameData.homeStats.data.hasOwnProperty(generalStat) && gameData.awayStats.data.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
                             if (reverseComparisonStats.includes(generalStat)) {
-                                if (gameData.homeTeamStats[generalStat] < gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] < gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
                                     awayDiff++
                                 }
                             } else {
-                                if (gameData.homeTeamStats[generalStat] > gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] > gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
@@ -270,16 +268,16 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 case 'Returning':
                     statIndex = 0
                     Object.keys(returningStats).forEach((generalStat) => {
-                        if (gameData.homeTeamStats.hasOwnProperty(generalStat) && gameData.awayTeamStats.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
+                        if (gameData.homeStats.data.hasOwnProperty(generalStat) && gameData.awayStats.data.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
                             if (reverseComparisonStats.includes(generalStat)) {
-                                if (gameData.homeTeamStats[generalStat] < gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] < gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
                                     awayDiff++
                                 }
                             } else {
-                                if (gameData.homeTeamStats[generalStat] > gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] > gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
@@ -295,16 +293,16 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 case 'Batting':
                     statIndex = 0
                     Object.keys(battingStats).forEach((generalStat) => {
-                        if (gameData.homeTeamStats.hasOwnProperty(generalStat) && gameData.awayTeamStats.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
+                        if (gameData.homeStats.data.hasOwnProperty(generalStat) && gameData.awayStats.data.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
                             if (reverseComparisonStats.includes(generalStat)) {
-                                if (gameData.homeTeamStats[generalStat] < gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] < gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
                                     awayDiff++
                                 }
                             } else {
-                                if (gameData.homeTeamStats[generalStat] > gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] > gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
@@ -321,16 +319,16 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 case 'Pitching':
                     statIndex = 0
                     Object.keys(pitchingStats).forEach((generalStat) => {
-                        if (gameData.homeTeamStats.hasOwnProperty(generalStat) && gameData.awayTeamStats.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
+                        if (gameData.homeStats.data.hasOwnProperty(generalStat) && gameData.awayStats.data.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
                             if (reverseComparisonStats.includes(generalStat)) {
-                                if (gameData.homeTeamStats[generalStat] < gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] < gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
                                     awayDiff++
                                 }
                             } else {
-                                if (gameData.homeTeamStats[generalStat] > gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] > gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
@@ -347,16 +345,16 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 case 'Fielding':
                     statIndex = 0
                     Object.keys(fieldingStats).forEach((generalStat) => {
-                        if (gameData.homeTeamStats.hasOwnProperty(generalStat) && gameData.awayTeamStats.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
+                        if (gameData.homeStats.data.hasOwnProperty(generalStat) && gameData.awayStats.data.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
                             if (reverseComparisonStats.includes(generalStat)) {
-                                if (gameData.homeTeamStats[generalStat] < gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] < gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
                                     awayDiff++
                                 }
                             } else {
-                                if (gameData.homeTeamStats[generalStat] > gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] > gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
@@ -373,16 +371,16 @@ const MatchupCardExtendStats = ({ gameData }) => {
                 case 'Penalty':
                     statIndex = 0
                     Object.keys(penaltyStats).forEach((generalStat) => {
-                        if (gameData.homeTeamStats.hasOwnProperty(generalStat) && gameData.awayTeamStats.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
+                        if (gameData.homeStats.data.hasOwnProperty(generalStat) && gameData.awayStats.data.hasOwnProperty(generalStat) && statMap.includes(generalStat)) {
                             if (reverseComparisonStats.includes(generalStat)) {
-                                if (gameData.homeTeamStats[generalStat] < gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] < gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {
                                     awayDiff++
                                 }
                             } else {
-                                if (gameData.homeTeamStats[generalStat] > gameData.awayTeamStats[generalStat]) {
+                                if (gameData.homeStats.data[generalStat] > gameData.awayStats.data[generalStat]) {
                                     homeDiff++
                                 }
                                 else {

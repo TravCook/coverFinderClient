@@ -7,11 +7,10 @@ import { Link } from 'react-router';
 import { useSelector } from 'react-redux';
 
 const UpcomingGames = () => {
-  document.title = 'Upcoming Games'
+  document.title = 'Upcoming Games SQL TEST'
   const { games, sports } = useSelector((state) => state.games);
   const { starredGames, sportsbook } = useSelector((state) => state.user);
   const divRefs = useRef([]);
-
   // Function to handle scrolling to a specific div
   const scrollToDiv = (index) => {
     if (divRefs.current[index]) {
@@ -30,7 +29,9 @@ const UpcomingGames = () => {
   const filterAndMapGames = (sortType, league) => {
     if (league) {
       return games
-        ?.filter((game) => game.sport_title === league.toUpperCase()) // Filter by sport league
+        ?.filter((game) => {
+          return game.sport_title.toUpperCase() === league.toUpperCase()
+        }) // Filter by sport league
         // .filter(condition) // Apply condition (e.g., today's games)
         .filter((game) => {
           if (game?.bookmakers?.find(b => b.key === sportsbook)) {
@@ -46,8 +47,8 @@ const UpcomingGames = () => {
           return dateA - dateB
         }) // Sort by commence time
         .map((game, idx) => {
-          if ((Math.ceil(games.filter((game) => game.sport_title === league.toUpperCase()).length / 6) * 6) < 18) {
-            if (idx < (Math.ceil(games.filter((game) => game.sport_title === league.toUpperCase()).length / 6) * 6)) {
+          if ((Math.ceil(games.filter((game) => game.sport_title.toUpperCase() === league.toUpperCase()).length / 6) * 6) < 18) {
+            if (idx < (Math.ceil(games.filter((game) => game.sport_title.toUpperCase() === league.toUpperCase()).length / 6) * 6)) {
               return (
                 <Col style={{ padding: 0, margin: '.5em 0' }}>
                   <MatchupCard
@@ -91,7 +92,7 @@ const UpcomingGames = () => {
             const marketData = bookmakerA?.markets?.find(m => m.key === 'h2h');
 
             outcomeA = marketData?.outcomes?.find(o => {
-              return o.name === (a.predictedWinner === 'home' ? a.home_team : a.away_team)
+              return o.name === (a.predictedWinner === 'home' ? a.homeTeamDetails.espnDisplayName : a.awayTeamDetails.espnDisplayName)
             });
 
 
@@ -101,7 +102,7 @@ const UpcomingGames = () => {
             const marketData = bookmakerB?.markets?.find(m => m.key === 'h2h');
 
             outcomeB = marketData?.outcomes?.find(o => {
-              return o.name === (b.predictedWinner === 'home' ? b.home_team : b.away_team)
+              return o.name === (b.predictedWinner === 'home' ? a.homeTeamDetails.espnDisplayName : a.awayTeamDetails.espnDisplayName)
             });
 
 
@@ -310,17 +311,20 @@ const UpcomingGames = () => {
             }).map((sport) => {
               let sportNameArr = sport.name.split('_')
               let leagueName = sportNameArr[1]
+
               // Filter games that match today's date and the current sport league
               const todayGames = games?.filter((game) => {
+
                 if (game?.bookmakers?.find(b => b.key === sportsbook)) {
                   return true
                 }
                 return null
-              }).filter((game) =>
+              }).filter((game) => {
                 // isSameDay(game.commence_time, new Date()) &&
-                game.sport_title.toLowerCase() === leagueName
+                return game.sport_title.toLowerCase() === leagueName
+              }
               );
-
+              console.log(todayGames)
               // Only render the section if there are games for this sport
               if (todayGames.length === 0) return null;
 

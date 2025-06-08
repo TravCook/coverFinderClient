@@ -10,6 +10,7 @@ const NumberLine = ({
     tickCount = 10,
     pointLabel,
   }) => {
+    console.log(min, max)
     const clamp = (val) => Math.min(Math.max(val, min), max);
     const totalRange = max - min;
   

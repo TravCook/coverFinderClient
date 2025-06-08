@@ -6,7 +6,7 @@ const TeamOddsRow = ({ backgroundColor, gameData, total, homeAway }) => {
   const renderTeamInfo = () => {
     return (
       <Col xs={7} style={{ letterSpacing: '.5px', alignContent: 'center', padding: '.5rem', fontSize: '.75rem', textAlign: 'left' }}>
-        {gameData && homeAway === 'home' ? `${gameData.homeTeamAbbr} ${gameData.homeTeamShort}` : `${gameData.awayTeamAbbr} ${gameData.awayTeamShort}`}
+        {gameData && homeAway === 'home' ? `${gameData.homeTeamDetails.abbreviation} ${gameData.homeTeamDetails.teamName}` : `${gameData.awayTeamDetails.abbreviation} ${gameData.awayTeamDetails.teamName}`}
         {gameData.predictedWinner === homeAway && <sup style={{ marginLeft: '.2rem', fontSize: '.6rem', color: `hsl(${((homeAway === 'home' ? gameData.homeTeamScaledIndex : gameData.awayTeamScaledIndex) / 45) * 120}, 100%, 50%)` }}>▲</sup>}
       </Col>
     )
@@ -16,7 +16,7 @@ const TeamOddsRow = ({ backgroundColor, gameData, total, homeAway }) => {
       {<Container style={{backgroundColor: `${backgroundColor && gameData.predictedWinner === homeAway ? backgroundColor : ''}`}}>
         <Row style={{ color: '#FFFFFF', alignItems: 'center', fontSize: '.7rem', paddingLeft: 0, paddingRight: 0 }}>
           <Col style={{ padding: 0, textAlign: 'center' }} xs={1}>
-            {<img src={homeAway === 'home' ? gameData.homeTeamlogo : gameData.awayTeamlogo} style={{ width: '1.5rem', maxWidth: '30px' }} alt='Team Logo' /> }
+            {<img src={homeAway === 'home' ? gameData.homeTeamDetails.logo : gameData.awayTeamDetails.logo} style={{ width: '1.5rem', maxWidth: '30px' }} alt='Team Logo' /> }
 
           </Col>
           {renderTeamInfo()}
