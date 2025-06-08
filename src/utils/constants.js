@@ -1129,8 +1129,8 @@ export const formatDate = (date) => {
 export const indexCondition = (game, indexDifSmall, indexDiffRange) => {
 
   const indexDiff = game.predictedWinner === 'home'
-    ? Math.abs(game.homeTeamScaledIndex - game.awayTeamScaledIndex)
-    : Math.abs(game.awayTeamScaledIndex - game.homeTeamScaledIndex);
+    ? game.homeTeamScaledIndex - game.awayTeamScaledIndex
+    : game.awayTeamScaledIndex - game.homeTeamScaledIndex;
   return indexDiff >= indexDifSmall && (indexDiff <= (indexDifSmall + indexDiffRange));
 };
 

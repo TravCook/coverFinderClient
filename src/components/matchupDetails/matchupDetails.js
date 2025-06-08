@@ -57,7 +57,7 @@ const MatchupDetails = () => {
     useEffect(() => {
         if (gameData) {
 
-            setIndexDiff(Math.abs(gameData.predictedWinner === 'home' ? gameData.homeTeamScaledIndex - gameData.awayTeamScaledIndex : gameData.awayTeamScaledIndex - gameData.homeTeamScaledIndex))
+            setIndexDiff(gameData.predictedWinner === 'home' ? gameData.homeTeamScaledIndex - gameData.awayTeamScaledIndex : gameData.awayTeamScaledIndex - gameData.homeTeamScaledIndex)
 
             if (gameData.sport === 'basketball') {
                 setStatSport(['General', 'Offense', 'Defense'])
@@ -367,7 +367,7 @@ const MatchupDetails = () => {
                                     </Col>
                                 </Row>
                                 <Row>
-                                    <NumberLine min={0} max={45} rangeStart={sportSettings?.settings.indexDiffSmallNum} rangeEnd={sportSettings?.settings.indexDiffSmallNum + sportSettings?.settings.indexDiffRangeNum} point={indexDiff} pointLabel={indexDiff.toFixed(2)} />
+                                    <NumberLine min={-50} max={50} rangeStart={sportSettings?.settings.indexDiffSmallNum} rangeEnd={sportSettings?.settings.indexDiffSmallNum + sportSettings?.settings.indexDiffRangeNum} point={indexDiff} pointLabel={indexDiff.toFixed(2)} />
                                 </Row>
                             </Row>
                             <Row>

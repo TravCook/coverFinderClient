@@ -10,7 +10,7 @@ const MatchupCardExtendBetting = ({ gameData }) => {
     const [bestSportsbook, setBestSportsbook] = useState();
     const { sports } = useSelector((state) => state.games);
     const [sportSettings, setSportSettings] = useState();
-    const indexDiff = Math.abs(gameData.predictedWinner === 'home' ? gameData.homeTeamScaledIndex - gameData.awayTeamScaledIndex : gameData.awayTeamScaledIndex - gameData.homeTeamScaledIndex)
+    const indexDiff = gameData.predictedWinner === 'home' ? gameData.homeTeamScaledIndex - gameData.awayTeamScaledIndex : gameData.awayTeamScaledIndex - gameData.homeTeamScaledIndex
 
     function sortBookmakersByOutcomePrice(bookmakers, teamName) {
         return bookmakers.sort((a, b) => {
@@ -68,7 +68,7 @@ const MatchupCardExtendBetting = ({ gameData }) => {
                             </Col>
                         </Row>
                         <Row style={{ margin: 'auto' }}>
-                            <NumberLine min={0} max={45} rangeStart={sportSettings?.settings.indexDiffSmallNum} rangeEnd={sportSettings?.settings.indexDiffSmallNum + sportSettings?.settings.indexDiffRangeNum} point={indexDiff} pointLabel={indexDiff.toFixed(2)} />
+                            <NumberLine min={-50} max={50} rangeStart={sportSettings?.settings.indexDiffSmallNum} rangeEnd={sportSettings?.settings.indexDiffSmallNum + sportSettings?.settings.indexDiffRangeNum} point={indexDiff} pointLabel={indexDiff.toFixed(2)} />
                         </Row>
                     </Row>
                     <Row>

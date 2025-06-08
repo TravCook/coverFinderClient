@@ -7,7 +7,7 @@ const NumberLine = ({
     rangeStart,
     rangeEnd,
     point,
-    tickCount = 5,
+    tickCount = 10,
     pointLabel,
   }) => {
     const clamp = (val) => Math.min(Math.max(val, min), max);
