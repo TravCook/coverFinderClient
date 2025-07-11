@@ -1,14 +1,14 @@
-// src/redux/store/store.js
-import { configureStore } from '@reduxjs/toolkit'; // Correct import
-import {thunk} from 'redux-thunk'; // Correct import
-import rootReducer from '../rootReducer'; // Adjust if necessary
+// store.js
+import { configureStore } from '@reduxjs/toolkit';
+import gamesReducer from '../slices/oddsSlice.js'; // new file we'll create
+import userReducer from '../slices/userSlice.js'; // new file we'll create
+import teamsReducer from '../slices/teamsSlice.js'; // new file we'll create
 
-const store = configureStore({
-  reducer: rootReducer,
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      immutableCheck: false
-    }).concat(thunk), // Add thunk middleware
+export const store = configureStore({
+  reducer: {
+    games: gamesReducer,
+    user: userReducer,
+    teams: teamsReducer,
+    // add other slices here
+  }
 });
-
-export default store;

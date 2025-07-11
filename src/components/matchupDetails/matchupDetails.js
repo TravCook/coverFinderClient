@@ -3,31 +3,41 @@ import { useState, useEffect, useRef } from 'react';
 import { Row, Col, Button, Card, Table } from 'react-bootstrap';
 import { setPastOdds } from '../../redux/odds/actions/oddsActions.js'
 import { useDispatch, useSelector } from 'react-redux';
-import { isSameDay, reverseComparisonStats } from '../../utils/constants';
+import { isSameDay, reverseComparisonStats } from '../../utils/constants.js';
 import RecentGames from '../recentGames/recentGames';
 import { generalStats, offenseStats, defenseStats, passingStats, receivingStats, rushingStats, kickingStats, returningStats, penaltyStats, battingStats, pitchingStats, fieldingStats } from '../../utils/constants'
-import NumberLine from '../numberLine/numberLine';
-import WinrateVsProbabilityBar from '../winrateVsProbabilityBar/winRateVsProbabilityBar.js';
-import WaterfallChart from '../waterfallChart/waterfallChart.js';
+import { baseballStatCategoryMap } from '../../utils/statMaps.js'
+import NumberLine from '../dataVisComponents/numberLine/numberLine.js';
+import WinrateVsProbabilityBar from '../dataVisComponents/winrateVsProbabilityBar/winRateVsProbabilityBar.js';
+import WaterfallChart from '../dataVisComponents/waterfallChart/waterfallChart.js';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
+import StatBarChart from '../dataVisComponents/statBarChart/statBarChart.js';
 
 const MatchupDetails = () => {
     const dispatch = useDispatch()
     const chartContainerRef = useRef();
+    const barChartContainerRef = useRef()
     const { id } = useParams(); // Get the matchup ID from the URL
     const { sports, games, pastGames, mlModelWeights } = useSelector((state) => state.games)
-    const gameData = games.find((game) => game.id === id);
+    
+    const gameData = games.find((game) => game.id === parseInt(id));
+    console.log(gameData)
     const [selectedSection, setSelectedSection] = useState(generalStats); // Default section
     const [statHeaderSport, setStatSport] = useState(['General', 'Offense', 'Defense'])
-
+    const [activeStatMap, setActiveStatMap] = useState()
     const { sportsbook } = useSelector((state) => state.user);
     const [indexDiff, setIndexDiff] = useState(0);
     const [sportSettings, setSportSettings] = useState();
     const [dimensions, setDimensions] = useState({ width: '100%', height: '100%' });
+    const [barChartDimensions, setBarChartDimensions] = useState({ width: '100%', height: '100%' });
     useEffect(() => {
         if (chartContainerRef.current) {
             const { width, height } = chartContainerRef.current.getBoundingClientRect();
             setDimensions({ width, height });
+        }
+        if(barChartContainerRef.current) {
+            const {width, height} = barChartContainerRef.current.getBoundingClientRect();
+            setBarChartDimensions({width, height})
         }
     }, [chartContainerRef.current]);
 
@@ -42,7 +52,12 @@ const MatchupDetails = () => {
     useEffect(() => {
         let sport = sports.find(s => s.name === gameData?.sport_key);
         if (sport) {
+            console.log(sport.valueBetSettings.find((setting) => setting.bookmaker === sportsbook))
             setSportSettings(sport.valueBetSettings.find((setting) => setting.bookmaker === sportsbook));
+            switch(sport.name){
+                case 'baseball_mlb':
+                    setActiveStatMap(baseballStatCategoryMap)
+            }
         }
 
     }, [gameData, sports, sportsbook]);
@@ -80,10 +95,17 @@ const MatchupDetails = () => {
     if (!gameData) {
         return <div>Loading...</div>;
     }
-    console.log(games)
     console.log(gameData)
     // Destructure home and away team stats
-    const { home_team, away_team, homeTeamStats, homeTeamAbbr, awayTeamAbbr, awayTeamStats, homeTeamIndex, awayTeamIndex, homeTeamlogo, awayTeamlogo, homeTeamScaledIndex, awayTeamScaledIndex } = gameData;
+    let homeTeamStats = gameData.homeStats.data
+    let awayTeamStats = gameData.awayStats.data
+    let homeTeamlogo = gameData.homeTeamDetails.logo;
+    let awayTeamlogo = gameData.awayTeamDetails.logo;
+    let home_team = gameData.homeTeamDetails.espnDisplayName
+    let away_team = gameData.awayTeamDetails.espnDisplayName
+    let homeTeamAbbr = gameData.homeTeamDetails.abbreviation;
+    let awayTeamAbbr = gameData.awayTeamDetails.abbreviation;
+
     const rows = []; // Create an array to hold the table rows
     for (let key in selectedSection) {
         if (key === 'seasonWinLoss') {
@@ -314,9 +336,9 @@ const MatchupDetails = () => {
         );
     };
 
+    console.log(mlModelWeights)
 
-    let featureImportanceScores = mlModelWeights.find((sport) => sport.league === gameData.sport_key).featureImportanceScores
-    console.log(dimensions)
+    let featureImportanceScores = mlModelWeights.find((weight) => weight.sport === gameData.sport).featureImportanceScores
     return (
         <div style={{ position: 'relative', top: 60 }}>
             <Card style={{ backgroundColor: '#0A0A0B', color: 'white' }}>
@@ -332,7 +354,7 @@ const MatchupDetails = () => {
                                 </Col>
                             </Row>
                             <Row>
-                                <Col>{awayTeamScaledIndex > homeTeamScaledIndex ? <span>BBI: {awayTeamScaledIndex.toFixed(2).padEnd(4, '0')}<sup style={{ color: 'rgba(0, 255, 0, .4)' }}>▲</sup></span> : <span>BBI: {awayTeamScaledIndex.toFixed(2).padEnd(4, '0')}</span>}</Col>
+                                <Col>{gameData.awayTeamScaledIndex > gameData.homeTeamScaledIndex ? <span>BBI: {gameData.awayTeamScaledIndex.toFixed(2).padEnd(4, '0')}<sup style={{ color: 'rgba(0, 255, 0, .4)' }}>▲</sup></span> : <span>BBI: {gameData.awayTeamScaledIndex.toFixed(2).padEnd(4, '0')}</span>}</Col>
                             </Row>
                             <Row><Col style={{ fontSize: '1.5rem' }}>{`Recent Games`}</Col></Row>
                             <Row>
@@ -356,7 +378,7 @@ const MatchupDetails = () => {
                                 <Row>
                                     <WinrateVsProbabilityBar
                                         internalWinrate={gameData.winPercent}
-                                        impliedProbability={gameData.bookmakers.find((bookmaker) => bookmaker.key === sportsbook)?.markets[0]?.outcomes[0]?.impliedProb}
+                                        impliedProbability={gameData.bookmakers.find((bookmaker) => bookmaker.key === sportsbook).markets.find((market) => market.key === 'h2h').outcomes.find((outcome) => outcome.name === (gameData.predictedWinner === 'home' ? gameData.homeTeamDetails.espnDisplayName : gameData.awayTeamDetails.espnDisplayName)).impliedProbability * 100}
                                     />
                                 </Row>
                             </Row>
@@ -367,7 +389,7 @@ const MatchupDetails = () => {
                                     </Col>
                                 </Row>
                                 <Row>
-                                    <NumberLine min={-50} max={50} rangeStart={sportSettings?.settings.indexDiffSmallNum} rangeEnd={sportSettings?.settings.indexDiffSmallNum + sportSettings?.settings.indexDiffRangeNum} point={indexDiff} pointLabel={indexDiff.toFixed(2)} />
+                                    <NumberLine min={-50} max={50} rangeStart={sportSettings?.indexDiffSmall} rangeEnd={sportSettings?.indexDiffSmall + sportSettings?.indexDiffRange} point={indexDiff} pointLabel={indexDiff.toFixed(2)} />
                                 </Row>
                             </Row>
                             <Row>
@@ -377,7 +399,7 @@ const MatchupDetails = () => {
                                     </Col>
                                 </Row>
                                 <Row>
-                                    <NumberLine min={50} max={100} rangeStart={sportSettings?.settings.confidenceLowNum * 100} rangeEnd={(sportSettings?.settings.confidenceLowNum * 100) + (sportSettings?.settings.confidenceRangeNum * 100)} point={gameData.predictionStrength * 100} pointLabel={`${(gameData.predictionStrength * 100).toFixed(2)}%`} />
+                                    <NumberLine min={50} max={100} rangeStart={sportSettings?.confidenceSmall * 100} rangeEnd={(sportSettings?.confidenceSmall * 100) + (sportSettings?.confidenceRange * 100)} point={gameData.predictionConfidence * 100} pointLabel={`${(gameData.predictionConfidence * 100).toFixed(2)}%`} />
                                 </Row>
                             </Row>
                         </Col>
@@ -389,7 +411,7 @@ const MatchupDetails = () => {
                                 </Col>
                             </Row>
                             <Row>
-                                <Col>{homeTeamScaledIndex > awayTeamScaledIndex ? <span>BBI: {gameData.homeTeamScaledIndex.toFixed(2).padEnd(4, '0')}<sup style={{ color: 'rgba(0, 255, 0, .4)' }}>▲</sup></span> : <span>BBI: {homeTeamScaledIndex.toFixed(2).padEnd(4, '0')}</span>}</Col>
+                                <Col>{gameData.homeTeamScaledIndex > gameData.awayTeamScaledIndex ? <span>BBI: {gameData.homeTeamScaledIndex.toFixed(2).padEnd(4, '0')}<sup style={{ color: 'rgba(0, 255, 0, .4)' }}>▲</sup></span> : <span>BBI: {gameData.homeTeamScaledIndex.toFixed(2).padEnd(4, '0')}</span>}</Col>
                             </Row>
                             <Row><Col>{`Recent Games`}</Col></Row>
                             <Row>
@@ -403,10 +425,22 @@ const MatchupDetails = () => {
                     </Row>
                     <Row>
                         <Col>
+                            <Card style={{ backgroundColor: '#323232', color: 'white', width: '90vw', height: '30vh' }} ref={barChartContainerRef}>
+                                <Card.Body style={{ padding: 0 }}>
+                                    <div >
+                                        {activeStatMap && <StatBarChart homeStats={gameData.homeTeamDetails.statCategoryIndexes} awayStats={gameData.awayTeamDetails.statCategoryIndexes} dimensions={barChartDimensions} statMap={activeStatMap} />}
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
                             <Card style={{ backgroundColor: '#323232', color: 'white', width: '48vw', height: '30vh' }} ref={chartContainerRef}>
                                 <Card.Body style={{ padding: 0 }}>
                                     <div >
-                                        <WaterfallChart importance={featureImportanceScores} homeStats={gameData.awayTeamStats} awayStats={gameData.homeTeamStats} dimensions={dimensions} />
+                                        <WaterfallChart importance={featureImportanceScores} teamStats={gameData.awayStats.data}  dimensions={dimensions} />
+                                        {/* <StatBarChart data={gameData.awayTeamDetails.statCategoryIndexes} dimensions={dimensions} /> */}
                                     </div>
                                 </Card.Body>
                             </Card>
@@ -415,7 +449,8 @@ const MatchupDetails = () => {
                             <Card style={{ backgroundColor: '#323232', color: 'white', width: '48vw', height: '30vh' }} ref={chartContainerRef}>
                                 <Card.Body style={{ padding: 0 }}>
                                     <div >
-                                        <WaterfallChart importance={featureImportanceScores} homeStats={gameData.homeTeamStats} awayStats={gameData.awayTeamStats} dimensions={dimensions} />
+                                        <WaterfallChart importance={featureImportanceScores} teamStats={gameData.homeStats.data}  dimensions={dimensions} />
+                                        {/* <StatBarChart homeStats={gameData.homeTeamDetails.statCategoryIndexes} awayStats={gameData.awayTeamDetails.statCategoryIndexes} dimensions={dimensions} /> */}
                                     </div>
                                 </Card.Body>
                             </Card>

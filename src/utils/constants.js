@@ -1,4 +1,6 @@
-const statsMinMax = require('./sampledGlobalStats.json');
+import { useSelector } from 'react-redux';
+import statsMinMax from './sampledGlobalStats.json';
+
 
 export const sports = [
   {
@@ -321,7 +323,7 @@ export const getDifferenceInMinutes = (date1, date2) => {
   return diffMinutes;
 }
 
-export const normalizeStat = (statName, value) => {
+export const normalizeStat = (statName, value, sportKey) => {
   const minMaxValues = statsMinMax[statName];
   if (!minMaxValues) {
       console.warn(`No min/max values found for stat: ${statName}`);
@@ -356,6 +358,8 @@ export const reverseComparisonStats =[
   'BSBopponentOnBasePlusSlugging',
   'BSBerrors',
   'BSBpassedBalls',
+  'BSBcatcherStolenBasesAllowed',
+  'BSBatBatsPerHomeRun',
   'HKYshotsMissed',
   'HKYshotsMissedPerGame',
   'HKYfaceoffsLost',
@@ -647,9 +651,9 @@ export const penaltyStats = {
 }
 
 export const allStatLabels = {
-  'seasonWinLoss': 'Season Win-Loss Record',
-  'homeWinLoss': 'Home Win-Loss Record',
-  'awayWinLoss': 'Away Win-Loss Record',
+  'seasonWinLoss': 'Season Win-Loss',
+  'homeWinLoss': 'Home Win-Loss',
+  'awayWinLoss': 'Away Win-Loss',
   'pointDiff': 'Point Differential',
   'BSKBtotalPoints': 'Total Points',
   'BSKBpointsPerGame': 'Points per Game',
@@ -834,7 +838,7 @@ export const allStatLabels = {
   'BSBonBasePlusSlugging': 'On-Base Plus Slugging',
   'BSBgroundToFlyRatio': 'Ground to Fly Ratio',
   'BSBatBatsPerHomeRun': 'At-Bats per Home Run',
-  'BSBstolenBasePercentage': 'Stolen Base Percentage',
+  'BSBstolenBasePercentage': 'Stolen Base %',
   'BSBbatterWalkToStrikeoutRatio': 'Batter Walk to Strikeout Ratio',
   'BSBsaves': 'Saves',
   'BSBpitcherStrikeouts': 'Pitcher Strikeouts',
@@ -877,9 +881,13 @@ export const allStatLabels = {
 }
 
 export const allStatLabelsShort = {
-  'seasonWinLoss': 'Win-Loss',
-  'homeWinLoss': 'Home W/L',
-  'awayWinLoss': 'Away W/L',
+  'batting': 'Batting',
+  'pitching': 'Pitching',
+  'fielding': 'Fielding',
+  'general': 'General',
+  'seasonWinLoss': 'Wins',
+  'homeWinLoss': 'Home Wins',
+  'awayWinLoss': 'Away Wins',
   'pointDiff': 'Point Diff',
   'BSKBtotalPoints': 'Total Points',
   'BSKBpointsPerGame': 'Pts per Game',
@@ -1048,7 +1056,7 @@ export const allStatLabelsShort = {
   'USFBpuntReturnYards': 'PR Yds',
   'USFBpuntReturnYardsPerGame': 'PR Yds/G',
   'USFByardsPerReturn': 'Yds/Return',
-  'BSBbattingStrikeouts': 'K\'s',
+  'BSBbattingStrikeouts': 'Batter K\'s',
   'BSBrunsBattedIn': 'RBIs',
   'BSBsacrificeHits': 'Sac Hits',
   'BSBHitsTotal': 'Hits',
@@ -1074,7 +1082,7 @@ export const allStatLabelsShort = {
   'BSBrunsAllowed': 'Runs Allowed',
   'BSBhomeRunsAllowed': 'HR Allowed',
   'BSBwins': 'Wins',
-  'BSBshutouts': 'Shutouts',
+  'BSBshutouts': 'S/Os',
   'BSBearnedRunAverage': 'ERA',
   'BSBwalksHitsPerInningPitched': 'WHIP',
   'BSBwinPct': 'Win %',
@@ -1095,7 +1103,7 @@ export const allStatLabelsShort = {
   'BSBputouts': 'Putouts',
   'BSBcatcherCaughtStealing': 'Catcher CS',
   'BSBcatcherCaughtStealingPct': 'Catcher CS %',
-  'BSBcatcherStolenBasesAllowed': 'Catcher SBA',
+  'BSBcatcherStolenBasesAllowed': 'SBA',
   'BSBfieldingPercentage': 'Fld %',
   'BSBrangeFactor': 'Range Factor',
   'HKYpimDifferential': 'PIM Diff',
@@ -1151,9 +1159,17 @@ export const combinedCondition = (game, o, indexDifSmall, indexDiffRange, confid
     && indexCondition(game, indexDifSmall, indexDiffRange)
     && strengthCondition(game, confidenceLow, confidenceRange)
 
-    // return (probabilityCondition(o, game, sportsbook) &&  indexCondition(game, indexDifSmall, indexDiffRange))
-    // || (strengthCondition(game, confidenceLow, confidenceRange) && indexCondition(game, indexDifSmall, indexDiffRange))
-    // || (probabilityCondition(o, game, sportsbook) && strengthCondition(game, confidenceLow, confidenceRange));
+};
+
+export const combinedCloseCondition = (game, o, indexDifSmall, indexDiffRange, confidenceLow, confidenceRange, sportsbook) => {
+
+  const conditionCount = [
+    probabilityCondition(o, game, sportsbook),
+    indexCondition(game, indexDifSmall, indexDiffRange),
+    strengthCondition(game, confidenceLow, confidenceRange)
+  ].filter(Boolean).length;
+  
+  return conditionCount == 2;
 
 };
 
@@ -1171,7 +1187,27 @@ export const valueBetConditionCheck = (sports, game, sportsbook) => {
       let currentSport = sports.find(arraySport => arraySport.name === game.sport_key)
       let sportSettings = currentSport?.valueBetSettings.find((setting) => setting.bookmaker === sportsbook)
       if (sportSettings !== undefined) {
-        return combinedCondition(game, outcome, sportSettings.settings.indexDiffSmallNum, sportSettings.settings.indexDiffRangeNum, sportSettings.settings.confidenceLowNum, sportSettings.settings.confidenceRangeNum, sportsbook)
+        return combinedCondition(game, outcome, sportSettings.indexDiffSmall, sportSettings.indexDiffRange, sportSettings.confidenceSmall, sportSettings.confidenceRange, sportsbook)
+      }
+
+    }
+  }
+}
+
+export const valueBetConditionCloseCheck = (sports, game, sportsbook) => {
+  const bookmaker = game.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
+  if (bookmaker) {
+    const marketData = bookmaker?.markets?.find(m => m.key === 'h2h');
+
+    let outcome = marketData?.outcomes?.find(o => {
+      return o.name === (game.predictedWinner === 'home' ? game.homeTeamDetails.espnDisplayName : game.awayTeamDetails.espnDisplayName)
+    });
+
+    if (outcome) {
+      let currentSport = sports.find(arraySport => arraySport.name === game.sport_key)
+      let sportSettings = currentSport?.valueBetSettings.find((setting) => setting.bookmaker === sportsbook)
+      if (sportSettings !== undefined) {
+        return combinedCloseCondition(game, outcome, sportSettings.indexDiffSmall, sportSettings.indexDiffRange, sportSettings.confidenceSmall, sportSettings.confidenceRange, sportsbook)
       }
 
     }
@@ -1195,23 +1231,60 @@ export const calculateProfitFromUSOdds = (odds, stake) => {
   return profit;
 }
 
-export const getColorForIndex = (index) => {
-  let hue = (index / 45) * 120; // Scale from 0 to 120 degrees
-  if(hue >= 0 && hue < 20){
-    return `hsl(${hue}, 80%, 20%)`; // Full saturation and lightness at 50%
-  }else if(hue > 20 && hue < 40){
-    return `hsl(${hue}, 60%, 40%)`; // Full saturation and lightness at 50%
-  }else if(hue > 40 && hue < 60){
-    return `hsl(${hue}, 60%, 40%)`; // Full saturation and lightness at 50%
-  }else if(hue > 60 && hue < 80){
-    return `hsl(${hue}, 50%, 40%)`; // Full saturation and lightness at 50%
-  }else if(hue > 80 && hue < 100){
-    return `hsl(${hue}, 60%, 35%)`; // Full saturation and lightness at 50%
-  }else if(hue > 100 && hue <= 120){
-    return `hsl(${hue}, 70%, 30%)`; // Full saturation and lightness at 50%
-  }
-  
+// Utility to calculate contrast ratio between two luminances
+export const getLuminance = (r, g, b) => {
+  const a = [r, g, b].map((v) => {
+    v /= 255;
+    return v <= 0.03928
+      ? v / 12.92
+      : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
 };
+
+const getContrastRatio = (bgColor, fgColor = [255, 255, 255]) => {
+  const L1 = getLuminance(...bgColor);
+  const L2 = getLuminance(...fgColor);
+  return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+};
+
+const hslToRgb = (h, s, l) => {
+  s /= 100;
+  l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n =>
+    l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
+};
+
+
+
+export const getColorForIndex = (index, total = 45) => {
+  const hue = (index / total) * 120; // Evenly distribute hues
+  let saturation = 85;
+  let lightness = 25;
+
+  // Slight variation to make colors distinct
+  saturation += (index % 4) * 3;
+  lightness += (index % 3) * 3;
+
+  // Make sure lightness isn't too bright for white text
+  let rgb = hslToRgb(hue, saturation, lightness);
+  let contrast = getContrastRatio(rgb);
+
+  // Reduce lightness until contrast is sufficient
+  while (contrast < 4.5 && lightness > 10) {
+    lightness -= 2;
+    rgb = hslToRgb(hue, saturation, lightness);
+    contrast = getContrastRatio(rgb);
+  }
+
+  return `hsl(${Math.round(hue)}, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
+};
+
+
+
 
 export const formatMinutesToHoursAndMinutes = (totalMinutes) => {
   const hours = Math.floor(totalMinutes / 60);
@@ -1221,4 +1294,133 @@ export const formatMinutesToHoursAndMinutes = (totalMinutes) => {
     return `${hours}h ${minutes}m`;
   }
   return `${minutes}m`;
+}
+
+export  const getNumericStat = (stats, statName) => {
+  if (!stats || stats[statName] === undefined) return 0;
+
+  if (statName === 'seasonWinLoss') {
+      const [wins, losses] = stats[statName].split("-").map(Number);
+      return wins;
+  }
+
+  if (statName === 'homeWinLoss' || statName === 'awayWinLoss') {
+      const [wins, losses] = stats[statName].split("-").map(Number);
+      return wins;
+  }
+
+  return stats[statName];
+};
+
+export function hexToRgb(hex) {
+  // Remove '#' if present
+  hex = hex.replace(/^#/, '');
+
+  // Support shorthand (#f00)
+  if (hex.length === 3) {
+    hex = hex.split('').map(c => c + c).join('');
+  }
+
+  if (hex.length !== 6) {
+    throw new Error('Invalid hex color');
+  }
+
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+
+  return [r, g, b];
+}
+
+
+// Step 1: RGB to XYZ
+function rgbToXyz([r, g, b]) {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  // Gamma correction
+  r = r > 0.04045 ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
+  g = g > 0.04045 ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
+  b = b > 0.04045 ? Math.pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
+
+  r *= 100;
+  g *= 100;
+  b *= 100;
+
+  // Convert to XYZ
+  const x = r * 0.4124 + g * 0.3576 + b * 0.1805;
+  const y = r * 0.2126 + g * 0.7152 + b * 0.0722;
+  const z = r * 0.0193 + g * 0.1192 + b * 0.9505;
+
+  return [x, y, z];
+}
+
+// Step 2: XYZ to LAB
+function xyzToLab([x, y, z]) {
+  const refX =  95.047;
+  const refY = 100.000;
+  const refZ = 108.883;
+
+  x /= refX;
+  y /= refY;
+  z /= refZ;
+
+  x = x > 0.008856 ? Math.cbrt(x) : (7.787 * x) + 16 / 116;
+  y = y > 0.008856 ? Math.cbrt(y) : (7.787 * y) + 16 / 116;
+  z = z > 0.008856 ? Math.cbrt(z) : (7.787 * z) + 16 / 116;
+
+  const L = (116 * y) - 16;
+  const A = 500 * (x - y);
+  const B = 200 * (y - z);
+
+  return [L, A, B];
+}
+
+// Step 3: Delta E (CIE76)
+function deltaE(lab1, lab2) {
+  const [L1, A1, B1] = lab1;
+  const [L2, A2, B2] = lab2;
+  return Math.sqrt(
+    Math.pow(L1 - L2, 2) +
+    Math.pow(A1 - A2, 2) +
+    Math.pow(B1 - B2, 2)
+  );
+}
+
+// Utility to check similarity
+export function areColorsTooSimilar(hex1, hex2, threshold = 24) {
+  const lab1 = xyzToLab(rgbToXyz(hexToRgb(`#${hex1}`)));
+  const lab2 = xyzToLab(rgbToXyz(hexToRgb(`#${hex2}`)));
+  console.log(lab1, lab2)
+  return deltaE(lab1, lab2) < threshold;
+}
+
+// Convert American odds to Decimal
+function americanToDecimal(odds) {
+  if (odds > 0) {
+    return (odds / 100) + 1;
+  } else {
+    return (100 / Math.abs(odds)) + 1;
+  }
+}
+
+// Convert Decimal odds to American
+function decimalToAmerican(decimalOdds) {
+  if (decimalOdds >= 2.0) {
+    return Math.round((decimalOdds - 1) * 100);
+  } else {
+    return Math.round(-100 / (decimalOdds - 1));
+  }
+}
+
+export function calculateParlayOdds(americanOddsArray) {
+  const decimalOdds = americanOddsArray.map(americanToDecimal);
+  const parlayDecimal = decimalOdds.reduce((acc, val) => acc * val, 1);
+  const parlayAmerican = decimalToAmerican(parlayDecimal);
+  
+  return {
+    decimal: parlayDecimal.toFixed(2),
+    american: parlayAmerican
+  };
 }
