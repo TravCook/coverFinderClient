@@ -1,322 +1,6 @@
 import { useSelector } from 'react-redux';
 import statsMinMax from './sampledGlobalStats.json';
 
-
-export const sports = [
-  {
-    name: "americanfootball_nfl", espnSport: 'football', league: 'NFL', startMonth: 9, endMonth: 2, multiYear: true, statYear: 2024, decayFactor: 0.95, valueBetSettings: {
-      winPercentIncrease: 0,
-      indexDiffSmallNum: 0,
-      indexDiffRangeNum: 0,
-      confidenceLowNum: 0,
-      confidenceRangeNum: 0
-    }
-  },
-  {
-    name: "basketball_nba", espnSport: 'basketball', league: 'NBA', startMonth: 10, endMonth: 4, multiYear: true, statYear: 2025, decayFactor: 0.85, valueBetSettings: {
-      winPercentIncrease: 30,
-      indexDiffSmallNum: 40,
-      indexDiffRangeNum: 25,
-      confidenceLowNum: .9,
-      confidenceRangeNum: .35
-    }
-  },
-  {
-    name: "icehockey_nhl", espnSport: 'hockey', league: 'NHL', startMonth: 10, endMonth: 4, multiYear: true, statYear: 2025, prevstatYear: 2024, decayFactor: 0.85, valueBetSettings: {
-      winPercentIncrease: 15,
-      indexDiffSmallNum: 30,
-      indexDiffRangeNum: 35,
-      confidenceLowNum: .55,
-      confidenceRangeNum: .2
-    }
-  },
-  {
-    name: "baseball_mlb", espnSport: 'baseball', league: 'MLB', startMonth: 3, endMonth: 10, multiYear: false, statYear: 2024, decayFactor: 0.75, valueBetSettings: {
-      winPercentIncrease: 0,
-      indexDiffSmallNum: 0,
-      indexDiffRangeNum: 0,
-      confidenceLowNum: 0,
-      confidenceRangeNum: 0
-    }
-  },
-  {
-    name: "americanfootball_ncaaf", espnSport: 'football', league: 'NCAAF', startMonth: 9, endMonth: 1, multiYear: true, statYear: 2024, decayFactor: 0.90, valueBetSettings: {
-      winPercentIncrease: 0,
-      indexDiffSmallNum: 0,
-      indexDiffRangeNum: 0,
-      confidenceLowNum: 0,
-      confidenceRangeNum: 0
-    }
-  },
-  {
-    name: "basketball_ncaab", espnSport: 'basketball', league: 'NCAAB', startMonth: 11, endMonth: 4, multiYear: true, statYear: 2025, decayFactor: 0.85, valueBetSettings: {
-      winPercentIncrease: 10,
-      indexDiffSmallNum: 25,
-      indexDiffRangeNum: 30,
-      confidenceLowNum: .8,
-      confidenceRangeNum: .1
-    }
-  },
-  {
-    name: "basketball_wncaab", espnSport: 'basketball', league: 'WNCAAB', startMonth: 11, endMonth: 4, multiYear: true, statYear: 2025, decayFactor: 0.85, valueBetSettings: {
-      winPercentIncrease: 50,
-      indexDiffSmallNum: 45,
-      indexDiffRangeNum: 30,
-      confidenceLowNum: .8,
-      confidenceRangeNum: .5
-    }
-  },
-]
-export const basketballStatMap = [
-  'seasonWinLoss',
-  'homeWinLoss',
-  'awayWinLoss',
-  'pointDiff',
-  'BSKBtotalPoints',
-  'BSKBpointsPerGame',
-  'BSKBassists',
-  'BSKBassistsPerGame',
-  'BSKBassistRatio',
-  'BSKBeffectiveFgPercent',
-  'BSKBfieldGoalPercent',
-  'BSKBfieldGoalsAttempted',
-  'BSKBfieldGoalsMade',
-  'BSKBfieldGoalsPerGame',
-  'BSKBfreeThrowPercent',
-  'BSKBfreeThrowsAttempted',
-  'BSKBfreeThrowsMade',
-  'BSKBfreeThrowsMadePerGame',
-  'BSKBoffensiveRebounds',
-  'BSKBoffensiveReboundsPerGame',
-  'BSKBoffensiveReboundRate',
-  'BSKBoffensiveTurnovers',
-  'BSKBturnoversPerGame',
-  'BSKBturnoverRatio',
-  'BSKBthreePointPct',
-  'BSKBthreePointsAttempted',
-  'BSKBthreePointsMade',
-  'BSKBtrueShootingPct',
-  'BSKBpace',
-  'BSKBpointsInPaint',
-  'BSKBshootingEfficiency',
-  'BSKBscoringEfficiency',
-  'BSKBblocks',
-  'BSKBblocksPerGame',
-  'BSKBdefensiveRebounds',
-  'BSKBdefensiveReboundsPerGame',
-  'BSKBsteals',
-  'BSKBstealsPerGame',
-  'BSKBreboundRate',
-  'BSKBreboundsPerGame',
-  'BSKBfoulsPerGame',
-  'BSKBteamAssistToTurnoverRatio',
-
-];
-
-export const baseballStatMap = [
-  'seasonWinLoss',
-  'homeWinLoss',
-  'pointDiff',
-  'BSBbattingStrikeouts',
-  'BSBrunsBattedIn',
-  'BSBsacrificeHits',
-  'BSBHitsTotal',
-  'BSBwalks',
-  'BSBruns',
-  'BSBhomeRuns',
-  'BSBdoubles',
-  'BSBtotalBases',
-  'BSBextraBaseHits',
-  'BSBbattingAverage',
-  'BSBsluggingPercentage',
-  'BSBonBasePercentage',
-  'BSBonBasePlusSlugging',
-  'BSBgroundToFlyRatio',
-  'BSBatBatsPerHomeRun',
-  'BSBstolenBasePercentage',
-  'BSBbatterWalkToStrikeoutRatio',
-  'BSBsaves',
-  'BSBpitcherStrikeouts',
-  'BSBhitsGivenUp',
-  'BSBearnedRuns',
-  'BSBbattersWalked',
-  'BSBrunsAllowed',
-  'BSBhomeRunsAllowed',
-  'BSBwins',
-  'BSBshutouts',
-  'BSBearnedRunAverage',
-  'BSBwalksHitsPerInningPitched',
-  'BSBwinPct',
-  'BSBpitcherCaughtStealingPct',
-  'BSBpitchesPerInning',
-  'BSBrunSupportAverage',
-  'BSBopponentBattingAverage',
-  'BSBopponentSlugAverage',
-  'BSBopponentOnBasePct',
-  'BSBopponentOnBasePlusSlugging',
-  'BSBsavePct',
-  'BSBstrikeoutsPerNine',
-  'BSBpitcherStrikeoutToWalkRatio',
-  'BSBdoublePlays',
-  'BSBerrors',
-  'BSBpassedBalls',
-  'BSBassists',
-  'BSBputouts',
-  'BSBcatcherCaughtStealing',
-  'BSBcatcherCaughtStealingPct',
-  'BSBcatcherStolenBasesAllowed',
-  'BSBfieldingPercentage',
-  'BSBrangeFactor'
-];
-
-export const hockeyStatMap = [
-  'seasonWinLoss',
-  'homeWinLoss',
-  'awayWinLoss',
-  'pointDiff',
-  'HKYgoals',
-  'HKYgoalsPerGame',
-  'HKYassists',
-  'HKYassistsPerGame',
-  'HKYshotsIn1st',
-  'HKYshotsIn1stPerGame',
-  'HKYshotsIn2nd',
-  'HKYshotsIn2ndPerGame',
-  'HKYshotsIn3rd',
-  'HKYshotsIn3rdPerGame',
-  'HKYtotalShots',
-  'HKYtotalShotsPerGame',
-  'HKYshotsMissed',
-  'HKYshotsMissedPerGame',
-  'HKYppgGoals',
-  'HKYppgGoalsPerGame',
-  'HKYppassists',
-  'HKYppassistsPerGame',
-  'HKYpowerplayPct',
-  'HKYshortHandedGoals',
-  'HKYshortHandedGoalsPerGame',
-  'HKYshootingPct',
-  'HKYfaceoffs',
-  'HKYfaceoffsPerGame',
-  'HKYfaceoffsWon',
-  'HKYfaceoffsWonPerGame',
-  'HKYfaceoffsLost',
-  'HKYfaceoffsLostPerGame',
-  'HKYfaceoffPct',
-  'HKYfaceoffPctPerGame',
-  'HKYgiveaways',
-  'HKYgoalsAgainst',
-  'HKYgoalsAgainstPerGame',
-  'HKYshotsAgainst',
-  'HKYshotsAgainstPerGame',
-  'HKYpenaltyKillPct',
-  'HKYpenaltyKillPctPerGame',
-  'HKYppGoalsAgainst',
-  'HKYppGoalsAgainstPerGame',
-  'HKYshutouts',
-  'HKYsaves',
-  'HKYsavesPerGame',
-  'HKYsavePct',
-  'HKYblockedShots',
-  'HKYblockedShotsPerGame',
-  'HKYhits',
-  'HKYhitsPerGame',
-  'HKYtakeaways',
-  'HKYtakeawaysPerGame',
-  'HKYshotDifferential',
-  'HKYshotDifferentialPerGame',
-  'HKYgoalDifferentialPerGame',
-  'HKYpimDifferential',
-  'HKYpimDifferentialPerGame',
-  'HKYtotalPenalties',
-  'HKYpenaltiesPerGame',
-  'HKYpenaltyMinutes',
-  'HKYpenaltyMinutesPerGame',
-];
-
-export const footballStatMap = [
-  'seasonWinLoss',
-  'homeWinLoss',
-  'awayWinLoss',
-  'pointDiff',
-  'USFBpointsPerGame',
-  'USFBtotalPoints',
-  'USFBtotalTouchdowns',
-  'USFBtouchdownsPerGame',
-  'USFBcompletionPercent',
-  'USFBcompletions',
-  'USFBcompletionsPerGame',
-  'USFBnetPassingYards',
-  'USFBnetPassingYardsPerGame',
-  'USFBpassingFirstDowns',
-  'USFBpassingYards',
-  'USFBpassingYardsPerGame',
-  'USFBpassingAttempts',
-  'USFBpassingAttemptsPerGame',
-  'USFByardsPerPassAttempt',
-  'USFBrushingAttempts',
-  'USFBrushingFirstDowns',
-  'USFBrushingTouchdowns',
-  'USFBrushingYards',
-  'USFBrushingYardsPerGame',
-  'USFByardsPerRushAttempt',
-  'USFBreceivingFirstDowns',
-  'USFBreceivingTouchdowns',
-  'USFBreceivingYards',
-  'USFBreceivingYardsPerGame',
-  'USFBreceivingYardsPerReception',
-  'USFBreceivingYardsAfterCatch',
-  'USFBreceivingYardsAfterCatchPerGame',
-  'USFBtacklesforLoss',
-  'USFBtacklesforLossPerGame',
-  'USFBinterceptions',
-  'USFByardsPerInterception',
-  'USFBsacksTotal',
-  'USFBsacksPerGame',
-  'USFBsackYards',
-  'USFBsackYardsPerGame',
-  'USFBstuffs',
-  'USFBstuffsPerGame',
-  'USFBstuffYards',
-  'USFBpassesDefended',
-  'USFBpassesDefendedPerGame',
-  'USFBsafties',
-  'USFBaverageKickoffYards',
-  'USFBaverageKickoffYardsPerGame',
-  'USFBextraPointAttempts',
-  'USFBextraPointAttemptsPerGame',
-  'USFBextraPointsMade',
-  'USFBextraPointsMadePerGame',
-  'USFBextraPointPercent',
-  'USFBextraPointPercentPerGame',
-  'USFBfieldGoalAttempts',
-  'USFBfieldGoalAttemptsPerGame',
-  'USFBfieldGoalsMade',
-  'USFBfieldGoalsMadePerGame',
-  'USFBfieldGoalPct',
-  'USFBfieldGoalPercentPerGame',
-  'USFBtouchbacks',
-  'USFBtouchbacksPerGame',
-  'USFBtouchBackPercentage',
-  'USFBkickReturns',
-  'USFBkickReturnsPerGame',
-  'USFBkickReturnYards',
-  'USFBkickReturnYardsPerGame',
-  'USFBpuntReturns',
-  'USFBpuntReturnsPerGame',
-  'USFBpuntReturnFairCatchPct',
-  'USFBpuntReturnYards',
-  'USFBpuntReturnYardsPerGame',
-  'USFByardsPerReturn',
-  'USFBthirdDownEfficiency',
-  'USFBtotalPenyards',
-  'USFBaveragePenYardsPerGame',
-  'USFBgiveaways',
-  'USFBtakeaways',
-  'USFBturnoverDiff',
-  'USFBtotalFirstDowns',
-];
-
 export const getDifferenceInMinutes = (date1, date2) => {
   const diffMilliseconds = date2.getTime() - date1.getTime();
   const diffMinutes = diffMilliseconds / (1000 * 60);
@@ -326,8 +10,8 @@ export const getDifferenceInMinutes = (date1, date2) => {
 export const normalizeStat = (statName, value, sportKey) => {
   const minMaxValues = statsMinMax[statName];
   if (!minMaxValues) {
-      console.warn(`No min/max values found for stat: ${statName}`);
-      return value; // If no min/max values, return original value (or handle differently)
+    console.warn(`No min/max values found for stat: ${statName}`);
+    return value; // If no min/max values, return original value (or handle differently)
   }
   const { min, max } = minMaxValues;
   // Avoid division by zero
@@ -340,7 +24,7 @@ export function sigmoidNormalize(value, midpoint, sharpness) {
   return sigmoid * 45; // map to 0–45 for HSL
 }
 
-export const reverseComparisonStats =[
+export const reverseComparisonStats = [
   'BSKBturnoversPerGame',
   'BSKBfoulsPerGame',
   'BSKBturnoverRatio',
@@ -881,6 +565,16 @@ export const allStatLabels = {
 }
 
 export const allStatLabelsShort = {
+  'offense': 'Offense',
+  'defense': 'Defense',
+  'penalty': 'Penalty',
+  'passing': 'Passing',
+  'rushing': 'Rushing',
+  'recieving': 'Recieving',
+  'returning': 'Returning',
+  'kicking': 'Kicking',
+  'defense': 'Defense',
+  'other': 'Other',
   'batting': 'Batting',
   'pitching': 'Pitching',
   'fielding': 'Fielding',
@@ -1155,9 +849,10 @@ export const probabilityCondition = (o, game, sportsbook) => {
 // You can also combine them into a single condition
 export const combinedCondition = (game, o, indexDifSmall, indexDiffRange, confidenceLow, confidenceRange, sportsbook) => {
 
-  return probabilityCondition(o, game, sportsbook)
-    && indexCondition(game, indexDifSmall, indexDiffRange)
+  return  indexCondition(game, indexDifSmall, indexDiffRange)
     && strengthCondition(game, confidenceLow, confidenceRange)
+    // && probabilityCondition(o, game, sportsbook)
+    
 
 };
 
@@ -1168,30 +863,68 @@ export const combinedCloseCondition = (game, o, indexDifSmall, indexDiffRange, c
     indexCondition(game, indexDifSmall, indexDiffRange),
     strengthCondition(game, confidenceLow, confidenceRange)
   ].filter(Boolean).length;
-  
+
   return conditionCount == 2;
 
 };
 
 
-export const valueBetConditionCheck = (sports, game, sportsbook) => {
+export const valueBetConditionCheck = (sports, game, sportsbook, market, homeAway) => {
   const bookmaker = game.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
+  let currentSport = sports.find(arraySport => arraySport.name === game.sport_key)
+
   if (bookmaker) {
-    const marketData = bookmaker?.markets?.find(m => m.key === 'h2h');
+    const marketData = bookmaker?.markets?.find(m => m.key === market);
+    let outcome
 
-    let outcome = marketData?.outcomes?.find(o => {
-      return o.name === (game.predictedWinner === 'home' ? game.homeTeamDetails.espnDisplayName : game.awayTeamDetails.espnDisplayName)
-    });
+    switch (market) {
+      case 'spreads':
 
-    if (outcome) {
-      let currentSport = sports.find(arraySport => arraySport.name === game.sport_key)
-      let sportSettings = currentSport?.valueBetSettings.find((setting) => setting.bookmaker === sportsbook)
-      if (sportSettings !== undefined) {
-        return combinedCondition(game, outcome, sportSettings.indexDiffSmall, sportSettings.indexDiffRange, sportSettings.confidenceSmall, sportSettings.confidenceRange, sportsbook)
-      }
+        let spreadOutcome = marketData?.outcomes?.find(o => {
+          return o.name === (homeAway === 'home' ? game.homeTeamDetails.espnDisplayName : game.awayTeamDetails.espnDisplayName);
+        });
+        if (spreadOutcome) {
+          let spread = spreadOutcome.point
+          let pickedScore = spreadOutcome.name === game.homeTeamDetails.espnDisplayName ? game.predictedHomeScore : game.predictedAwayScore;
+          let pickedOpponentScore = spreadOutcome.name === game.homeTeamDetails.espnDisplayName
+            ? game.predictedAwayScore
+            : game.predictedHomeScore;
+          const spreadMAE = currentSport?.hyperParams[0]?.spreadMAE ?? 0;
+          const winrateAgainstSpread = .54; // Example value, replace with actual
+          let impliedProb = spreadOutcome.impliedProbability;
+          return (pickedScore + spread - spreadMAE) > pickedOpponentScore
+          //  && (impliedProb) * 100 < (winrateAgainstSpread * 100)
+          //  && probabilityCondition(spreadOutcome, game, sportsbook)
+        }
+        break;
+      case 'totals':
+        let totalOutcome = marketData?.outcomes?.find(o => {
+          return o.name === (homeAway === 'away' ? 'Over' : 'Under');
+        });
+        if (totalOutcome) {
+          let total = totalOutcome.point
+          let predictedTotal = game.predictedHomeScore + game.predictedAwayScore;
+          const totalMAE = currentSport?.hyperParams[0]?.totalMAE ?? 0;
+          return homeAway === 'away' ? (predictedTotal - totalMAE) > total : (predictedTotal + totalMAE) < total
+        }
+        break;
+      default:
+        outcome = marketData?.outcomes?.find(o => {
+          return o.name === (game.predictedWinner === 'home' ? game.homeTeamDetails.espnDisplayName : game.awayTeamDetails.espnDisplayName)
+        });
+        if (outcome) {
+          let sportSettings = currentSport?.valueBetSettings.find((setting) => setting.bookmaker === sportsbook)
+          if (sportSettings !== undefined) {
+            return combinedCondition(game, outcome, sportSettings.indexDiffSmall, sportSettings.indexDiffRange, sportSettings.confidenceSmall, sportSettings.confidenceRange, sportsbook)
+          }
 
+        }
+        break
     }
+
+
   }
+
 }
 
 export const valueBetConditionCloseCheck = (sports, game, sportsbook) => {
@@ -1296,17 +1029,17 @@ export const formatMinutesToHoursAndMinutes = (totalMinutes) => {
   return `${minutes}m`;
 }
 
-export  const getNumericStat = (stats, statName) => {
+export const getNumericStat = (stats, statName) => {
   if (!stats || stats[statName] === undefined) return 0;
 
   if (statName === 'seasonWinLoss') {
-      const [wins, losses] = stats[statName].split("-").map(Number);
-      return wins;
+    const [wins, losses] = stats[statName].split("-").map(Number);
+    return wins;
   }
 
   if (statName === 'homeWinLoss' || statName === 'awayWinLoss') {
-      const [wins, losses] = stats[statName].split("-").map(Number);
-      return wins;
+    const [wins, losses] = stats[statName].split("-").map(Number);
+    return wins;
   }
 
   return stats[statName];
@@ -1358,7 +1091,7 @@ function rgbToXyz([r, g, b]) {
 
 // Step 2: XYZ to LAB
 function xyzToLab([x, y, z]) {
-  const refX =  95.047;
+  const refX = 95.047;
   const refY = 100.000;
   const refZ = 108.883;
 
@@ -1389,10 +1122,9 @@ function deltaE(lab1, lab2) {
 }
 
 // Utility to check similarity
-export function areColorsTooSimilar(hex1, hex2, threshold = 24) {
+export function areColorsTooSimilar(hex1, hex2, threshold = 50) {
   const lab1 = xyzToLab(rgbToXyz(hexToRgb(`#${hex1}`)));
   const lab2 = xyzToLab(rgbToXyz(hexToRgb(`#${hex2}`)));
-  console.log(lab1, lab2)
   return deltaE(lab1, lab2) < threshold;
 }
 
@@ -1418,7 +1150,7 @@ export function calculateParlayOdds(americanOddsArray) {
   const decimalOdds = americanOddsArray.map(americanToDecimal);
   const parlayDecimal = decimalOdds.reduce((acc, val) => acc * val, 1);
   const parlayAmerican = decimalToAmerican(parlayDecimal);
-  
+
   return {
     decimal: parlayDecimal.toFixed(2),
     american: parlayAmerican

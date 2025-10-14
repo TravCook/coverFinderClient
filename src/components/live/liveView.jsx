@@ -1,235 +1,199 @@
-import { useRef, useState, useEffect } from 'react';
-import { calculateProfitFromUSOdds, getDifferenceInMinutes, isSameDay, formatMinutesToHoursAndMinutes } from '../../utils/constants.js';
+import { getDifferenceInMinutes, formatMinutesToHoursAndMinutes, getLuminance, hexToRgb, valueBetConditionCheck } from '../../utils/constants.js';
 import MatchupCard from '../matchupCard/matchupCard.jsx';
 import { useSelector } from 'react-redux';
-import CurvedGauge from '../dataVisComponents/curvedGauge/curvedGauge.jsx';
-import OddsDisplayBox from '../matchupCard/oddsDisplayBox/oddsDisplayBox.jsx';
 import PastGamesDisplay from '../pastGames/pastGames.jsx';
+import PastGameCard from '../pastGames/pastGameCard.jsx';
+import { useEffect, useState } from 'react';
 
-const LiveView = ({ base }) => {
-    const { games, pastGames } = useSelector((state) => state.games);
-    const { sportsbook } = useSelector((state) => state.user);
-    const chartContainerRef = useRef();
-    const [dimensions, setDimensions] = useState({ width: '100%', height: '100%' });
-    const [value, setValue] = useState(0);
-    const [todayWins, setTodayWins] = useState([]);
-    const [todayLosses, setTodayLosses] = useState([]);
+const LiveView = () => {
+    const { games, pastGames, sports } = useSelector((state) => state.games);
+    const { sportsbook } = useSelector((state) => state.user)
     let today = new Date();
+    let startOfnewModel = new Date(2025, 7, 28)
+    // startOfnewModel.setDate(startOfnewModel.getDate() - 1)
+    startOfnewModel.setHours(0, 0, 0, 0)
     today.setHours(0, 0, 0, 0); // Set to the start of the day
 
+    const [spreadValueBets, setSpreadValueBets] = useState()
+    const [spreadValueHits, setSpreadValueHits] = useState()
+    const [predictedTotals, setPredictedTotals] = useState()
+    const [totalHits, setTotalHits] = useState()
 
     useEffect(() => {
-        if (chartContainerRef.current) {
-            const { width, height } = chartContainerRef.current.getBoundingClientRect();
-            setDimensions({ width, height });
-        }
-    }, [chartContainerRef.current]);
-    useEffect(() => {
-        let gamesFilter = games.filter((game) =>
-            game.timeRemaining
-            && (game.predictedWinner === 'home'
-                ? game.homeScore > game.awayScore
-                : game.awayScore > game.homeScore))
-
-        let tieFilter = games.filter((game) =>
-            game.timeRemaining
-            && (game.homeScore === game.awayScore))
-
-        let pastGamesFilter = pastGames.filter((game) =>
-            isSameDay(new Date(), new Date(game.commence_time))
-            && (game.predictionCorrect))
 
 
-        setTodayWins(pastGamesFilter);
-        setTodayLosses(pastGames.filter((game) =>
-            isSameDay(new Date(), new Date(game.commence_time))
-            && (!game.predictionCorrect)))
-        if (gamesFilter.length !== 0 || pastGamesFilter.length !== 0 || games.filter((game) => game.timeRemaining).length > 0) {
-            setValue((gamesFilter.length + pastGamesFilter.length + (tieFilter.length * .5)) / (games.filter((game) => game.timeRemaining).length + pastGames.filter((game) => isSameDay(new Date(), new Date(game.commence_time))).length))
-        } else {
-            setValue(0);
-        }
-    }, [games, pastGames]);
+        let tempValueBets = [...pastGames].filter((game) => new Date(game.commence_time) > startOfnewModel).filter((game) => {
+            return valueBetConditionCheck(sports, game, sportsbook, 'spreads', 'away') || valueBetConditionCheck(sports, game, sportsbook, 'spreads', 'home')
+        })
+        setSpreadValueBets(tempValueBets)
+
+        let tempValueHits = [...tempValueBets].filter((game) => {
+            let gameSport = sports?.find((sport) => sport.name === game.sport_key)
+            let outcomes = game.bookmakers?.find((b) => b.key === sportsbook)?.markets?.find((m) => m.key === 'spreads')?.outcomes
+
+            if (!outcomes || outcomes.length === 0) return false
+
+            return outcomes.some((outcome) => {
+                let vegasSpread = outcome.point
+
+                let outcomeScore = (outcome.name === game.homeTeamDetails.espnDisplayName ? game.homeScore : game.awayScore)
+                let opponentScore = (outcome.name === game.homeTeamDetails.espnDisplayName ? game.awayScore : game.homeScore)
+
+                let spreadCovered = (outcomeScore + vegasSpread ) > opponentScore
+                return spreadCovered
+                 && valueBetConditionCheck(sports, game, sportsbook, 'spreads', outcome.name === game.homeTeamDetails.espnDisplayName ? 'home' : 'away')
+            })
+        })
+        setSpreadValueHits(tempValueHits)
+
+        let tempOvers = [...pastGames].filter((game) => new Date(game.commence_time) > startOfnewModel).filter((game) => {
+            let gameSport = sports?.find((sport) => sport.name === game.sport_key)
+            let outcomes = game.bookmakers?.find((b) => b.key === sportsbook)?.markets?.find((m) => m.key === 'totals')?.outcomes
+
+            if (!outcomes || outcomes.length === 0) return false
+            let totalMAE = gameSport.hyperParams[0].totalMAE
+            return outcomes.some((outcome) => {
+                let vegasTotal = outcome.point
+                let predictedTotal = game.predictedAwayScore + game.predictedHomeScore
+
+                return predictedTotal - 0 > vegasTotal
+            })
+        })
+
+        let tempUnders = [...pastGames].filter((game) => new Date(game.commence_time) > startOfnewModel).filter((game) => {
+            let gameSport = sports?.find((sport) => sport.name === game.sport_key)
+            let outcomes = game.bookmakers?.find((b) => b.key === sportsbook)?.markets?.find((m) => m.key === 'totals')?.outcomes
+
+            if (!outcomes || outcomes.length === 0) return false
+            let totalMAE = gameSport.hyperParams[0].totalMAE
+            return outcomes.some((outcome) => {
+                let vegasTotal = outcome.point
+                let predictedTotal = game.predictedAwayScore + game.predictedHomeScore
+
+                return predictedTotal + 0 < vegasTotal
+            })
+        })
+
+        setPredictedTotals({
+            overs: tempOvers,
+            unders: tempUnders
+        })
+
+        let tempOverHits = tempOvers.filter((game) => {
+            let outcomes = game.bookmakers?.find((b) => b.key === sportsbook)?.markets?.find((m) => m.key === 'totals')?.outcomes
+
+            if (!outcomes || outcomes.length === 0) return false
+            return outcomes.some((outcome) => {
+                let vegasTotal = outcome.point
+                let totalScore = game.awayScore + game.homeScore
+
+                return totalScore > vegasTotal
+            })
+        })
+
+        let tempUnderHits = tempUnders.filter((game) => {
+            let outcomes = game.bookmakers?.find((b) => b.key === sportsbook)?.markets?.find((m) => m.key === 'totals')?.outcomes
+
+            if (!outcomes || outcomes.length === 0) return false
+            return outcomes.some((outcome) => {
+                let vegasTotal = outcome.point
+                let totalScore = game.awayScore + game.homeScore
+
+                return totalScore < vegasTotal
+            })
+        })
+
+        setTotalHits({
+            overs: tempOverHits,
+            unders: tempUnderHits
+        })
+    }, [games, pastGames])
 
 
     return (
-        <div style={{ width: '99.1vw' }}>
-            <div >
-                <div >
-                    <div className='flex flex-row justify-around'>
-                        <div className=' bg-secondary my-4 rounded px-4' style={{ width: '15%' }} >
-                            <div>
+        <div className='flex flex-col items-center'>
+            <title>Live Now</title>
+            <div className='w-full'>
+                <div>
+                    <div className='flex flex-row justify-center gap-2'>
+                        {games.filter((game) => {
+                            const diff = getDifferenceInMinutes(new Date(), new Date(game.commence_time));
+                            return !game.timeRemaining && diff < 180 && diff > 0;
+                        }).length > 0 &&
+                            <div className=' bg-secondary my-4 rounded px-2' style={{ width: '12%' }} >
                                 <div>
                                     <div>
                                         <div>
-                                            <h4 className="text-white mb-2">Starting Soon</h4>
-
-                                            {games
-                                                .filter((game) => {
-                                                    const diff = getDifferenceInMinutes(new Date(), new Date(game.commence_time));
-                                                    return !game.timeRemaining && diff < 180 && diff > 0;
-                                                })
-                                                .sort((a, b) => new Date(a.commence_time) - new Date(b.commence_time))
-                                                .map((game, idx) => (
-                                                    <div
-                                                        key={idx}
-                                                        className="flex flex-row items-center"
-                                                    >
-                                                        <div className='flex flex-row items-center ' style={{ width: '50%' }}>
-                                                            {/* Away Team */}
-                                                            <div className="flex flex-row items-center justify-between" style={{ width: '45%' }}>
-                                                                <div>
-                                                                    <span>{game.awayTeamDetails.abbreviation}</span>
-                                                                </div>
-                                                                <div>
-                                                                    <img
-                                                                        src={game.awayTeamDetails.lightLogo}
-                                                                        className="max-w-5"
-                                                                        alt="Away Logo"
-                                                                    />
-                                                                </div>
-
-
-                                                            </div>
-
-                                                            {/* @ Symbol */}
-                                                            <div className="text-center text-white">@</div>
-
-                                                            {/* Home Team */}
-                                                            <div className="flex flex-row items-center justify-between" style={{ width: '45%' }}>
-                                                                <img
-                                                                    src={game.homeTeamDetails.lightLogo}
-                                                                    className="max-w-5"
-                                                                    alt="Home Logo"
-                                                                />
-                                                                <span>{game.homeTeamDetails.abbreviation}</span>
-
-                                                            </div>
-                                                        </div>
-
-
-                                                        {/* Dotted Divider */}
-                                                        <div className="overflow-hidden whitespace-nowrap"  style={{ width: '30%' }}>
-                                                            <span className="inline-block w-full text-center tracking-widest text-white">
-                                                                .................................................................................................
-                                                            </span>
-                                                        </div>
-
-                                                        {/* Time */}
-                                                        <div className="text-right text-sm whitespace-nowrap text-text text-center" style={{ width: '20%' }}>
-                                                            {formatMinutesToHoursAndMinutes(
-                                                                getDifferenceInMinutes(new Date(), new Date(game.commence_time)).toFixed(0)
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                        </div>
-
-                                    </div>
-
-                                </div>
-                            </div>
-                            <div>
-                                <div>
-                                    <div className='bg-primary rounded my-4' >
-                                        <div style={{ color: '#fff', textAlign: 'center' }}>
-                                            <h3>{`Live Accuracy ${todayWins.length > 0 || todayLosses.length > 0 || games.filter((game) => game.timeRemaining).length > 0 ? `${(value * 100).toFixed(1)}%` : `N/A`}`}</h3>
-                                        </div>
-                                        <div>
                                             <div>
-                                                <div style={{ textAlign: 'center' }}>
-                                                    <h5>Today's Wins: {todayWins.length}</h5>
-                                                </div>
-                                                <div className='flex flex-row items-center justify-evenly'>
-                                                    <div style={{ textAlign: 'center' }}>
-                                                        <div>
-                                                            <div style={{ padding: 0, textAlign: 'center' }}>Best Win</div>
-                                                        </div>
-                                                        {todayWins.length > 0 ? todayWins.sort((a, b) => {
-                                                            const aBook = a.bookmakers.find(b => b.key === sportsbook);
-                                                            const aMarket = aBook?.markets.find(m => m.key === 'h2h');
-                                                            const aTeam = a.predictedWinner === 'home' ? a.homeTeamDetails.espnDisplayName : a.awayTeamDetails.espnDisplayName;
-                                                            const aPrice = aMarket?.outcomes.find(o => o.name === aTeam)?.price ?? 0;
+                                                <h4 className="text-white mb-2">Starting Soon</h4>
+                                                <div className='flex flex-row flex-wrap justify-center'>
+                                                    {games
+                                                        .filter((game) => {
+                                                            const diff = getDifferenceInMinutes(new Date(), new Date(game.commence_time));
+                                                            return !game.timeRemaining && diff < 180 && diff > 0;
+                                                        })
+                                                        .sort((a, b) => new Date(a.commence_time) - new Date(b.commence_time))
+                                                        .map((game, idx) => {
+                                                            let bgLum = getLuminance(hexToRgb('#545454')[0], hexToRgb('#545454')[1], hexToRgb('#545454')[2]);
+                                                            return (
+                                                                <div
+                                                                    key={idx}
+                                                                    className="flex flex-row items-center border m-1 justify-between rounded bg-primary w-full"
+                                                                // style={{ width: '48%' }}
+                                                                >
+                                                                    <div className='flex flex-col flex-grow'>
+                                                                        <div className='border-b flex flex-row gap-1 items-center p-1'>
+                                                                            <div style={{ width: '1.5rem' }}><img src={bgLum < 0.5 ? game.awayTeamDetails.lightLogo : game.awayTeamDetails.darkLogo} /></div>
+                                                                            <div className='flex flex-row w-full'>
+                                                                                <div>{game.awayTeamDetails.teamName}{game.predictedWinner === 'away' && (
+                                                                                    <sup style={{
+                                                                                        marginLeft: '.2rem',
+                                                                                        fontSize: '.6rem',
+                                                                                        color: `hsl(${((game.awayTeamScaledIndex) / 45) * 120}, 100%, 50%)`
+                                                                                    }}>▲</sup>
+                                                                                )}</div>
+                                                                            </div>
 
-                                                            const bBook = b.bookmakers.find(b => b.key === sportsbook);
-                                                            const bMarket = bBook?.markets.find(m => m.key === 'h2h');
-                                                            const bTeam = b.predictedWinner === 'home' ? b.homeTeamDetails.espnDisplayName : b.awayTeamDetails.espnDisplayName;
-                                                            const bPrice = bMarket?.outcomes.find(o => o.name === bTeam)?.price ?? 0;
-                                                            return bPrice - aPrice; // descending
-                                                        }).map((game, idx) => {
-                                                            if (idx < 1) {
-                                                                return (
-                                                                    <div className='flex flex-row items-center'>
-                                                                        <div>
-                                                                            <img src={game.predictedWinner === 'home' ? game.homeTeamDetails.darkLogo : game.awayTeamDetails.darkLogo} style={{ width: '1.5rem', maxWidth: '30px' }} alt='Team Logo' />
                                                                         </div>
-                                                                        <div>
-                                                                            <OddsDisplayBox key={game.id} homeAway={game.predictedWinner} gameData={game} market='h2h' total={game.total} />
+                                                                        <div className='border-t flex flex-row gap-1 items-center p-1'>
+                                                                            <div style={{ width: '1.5rem' }}><img src={bgLum < 0.5 ? game.homeTeamDetails.lightLogo : game.homeTeamDetails.darkLogo} /></div>
+                                                                            <div className='flex flex-row w-full'>
+                                                                                <div>{game.homeTeamDetails.teamName}{game.predictedWinner === 'home' && (
+                                                                                    <sup style={{
+                                                                                        marginLeft: '.2rem',
+                                                                                        fontSize: '.6rem',
+                                                                                        color: `hsl(${((game.homeTeamScaledIndex) / 45) * 120}, 100%, 50%)`
+                                                                                    }}>▲</sup>
+                                                                                )}</div>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                )
-                                                            }
-
-                                                        }) : 'N/A'}
-                                                    </div>
-                                                    <div style={{ textAlign: 'center' }}>
-                                                        <div>
-                                                            <div style={{ padding: 0, textAlign: 'center' }}>
-                                                                Profit
-                                                            </div>
-                                                        </div>
-                                                        <div>
-                                                            <div style={{ padding: 0, textAlign: 'center' }}>
-                                                                {todayWins.length > 0 ? (todayWins.reduce((total, game) => {
-                                                                    let bookmaker = game.bookmakers.find((bookmaker) => bookmaker.key === sportsbook);
-                                                                    let market = bookmaker?.markets.find((market) => market.key === 'h2h');
-                                                                    let outcome = market?.outcomes.find((outcome) => outcome.name === (game.predictedWinner === 'home' ? game.homeTeamDetails.espnDisplayName : game.awayTeamDetails.espnDisplayName));
-                                                                    return (total + calculateProfitFromUSOdds(outcome.price, 1));
-                                                                }, 0) - todayLosses.length).toFixed(2) : 'N/A'}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div style={{ textAlign: 'center' }}>
-                                                        <div>
-                                                            <div style={{ padding: 0, textAlign: 'center' }}>Worst Loss</div>
-                                                        </div>
-                                                        {todayLosses.length > 0 ? todayLosses.sort((a, b) => {
-                                                            const aBook = a.bookmakers.find(b => b.key === sportsbook);
-                                                            const aMarket = aBook?.markets.find(m => m.key === 'h2h');
-                                                            const aTeam = a.predictedWinner === 'home' ? a.homeTeamDetails.teamName : a.awayTeamDetails.teamName;
-                                                            const aPrice = aMarket?.outcomes.find(o => o.name === aTeam)?.price ?? 0;
-
-                                                            const bBook = b.bookmakers.find(b => b.key === sportsbook);
-                                                            const bMarket = bBook?.markets.find(m => m.key === 'h2h');
-                                                            const bTeam = b.predictedWinner === 'home' ? b.homeTeamDetails.teamName : b.awayTeamDetails.teamName;
-                                                            const bPrice = bMarket?.outcomes.find(o => o.name === bTeam)?.price ?? 0;
-                                                            return aPrice - bPrice; // descending
-                                                        }).map((game, idx) => {
-                                                            if (idx < 1) {
-                                                                return (
-                                                                    <div className='flex flex-row items-center'>
-                                                                        <div ><img src={game.predictedWinner === 'home' ? game.homeTeamDetails.darkLogo : game.awayTeamDetails.darkLogo} style={{ width: '1.5rem', maxWidth: '30px' }} alt='Team Logo' /></div>
-                                                                        <div > <OddsDisplayBox key={game.id} homeAway={game.predictedWinner} gameData={game} market='h2h' total={game.total} /></div>
+                                                                    <div className='flex flex-col' style={{ width: `${getDifferenceInMinutes(new Date(), new Date(game.commence_time)) >= 59 ? 30 : 20}%` }}>
+                                                                        <div></div>
+                                                                        <div style={{ textAlign: 'center' }}>{formatMinutesToHoursAndMinutes(getDifferenceInMinutes(new Date(), new Date(game.commence_time)).toFixed(0))}</div>
+                                                                        <div></div>
                                                                     </div>
-                                                                )
-                                                            }
 
-                                                        }) : 'N/A'}
-                                                    </div>
+                                                                </div>
+                                                            )
+                                                        }
+                                                        )}
                                                 </div>
                                             </div>
-
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
-
-                        </div>
-                        <div className=' bg-secondary my-4 rounded' style={{ width: '75%' }}>
-                            <div >
-                                <div >
-                                    <div className='flex flex-row flex-wrap justify-evenly p-4'>
+                        }
+                        <div className=' bg-secondary my-4 rounded' style={{
+                            width: `${games.filter((game) => {
+                                const diff = getDifferenceInMinutes(new Date(), new Date(game.commence_time));
+                                return !game.timeRemaining && diff < 180 && diff > 0;
+                            }).length > 0 ? 82 : 95}%`
+                        }}>
+                            <div>
+                                <div>
+                                    <div className='flex flex-row flex-wrap justify-center p-4 gap-2'>
                                         {games.filter((game) => game.timeRemaining).sort((a, b) => {
                                             return new Date(a.commence_time) - new Date(b.commence_time)
                                         }).map((game) => {
@@ -248,12 +212,85 @@ const LiveView = ({ base }) => {
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            {pastGames.filter((game) => new Date(game.commence_time) > today).length > 0 ?
+                <div className='w-[95%]'>
+                    <PastGamesDisplay displayGames={pastGames.filter((game) => new Date(game.commence_time) > today)} />
+                </div> :
+                <div className='w-[95%]'>
+                    <PastGamesDisplay displayGames={pastGames.filter((game) => new Date(game.commence_time) > startOfnewModel)} />
+                </div>}
+            <div className='flex flex-col bg-secondary my-2 w-[95%]'>
+                <div style={{ textAlign: 'center' }}>
+                    {`Spreads Beaten ${spreadValueHits?.length} / ${spreadValueBets?.length} ${((spreadValueHits?.length) / (spreadValueBets?.length) * 100).toFixed(2)}%`}
+                </div>
+                <div className='flex flex-row'>
+                    <div className='flex flex-row flex-wrap gap-2 w-[50%] justify-evenly border-r'>
+                        {spreadValueHits?.sort((a, b) => new Date(b.commence_time) - new Date(a.commence_time)).map((game) => {
+                            return (
+                                <div>
+                                    <PastGameCard game={game} market='spreads' />
+                                </div>
 
+                            )
+                        })}
+                    </div>
+                    <div className='flex flex-row flex-wrap gap-2 w-[50%] justify-evenly border-l'>
+                        {spreadValueBets?.filter((game) => {
+                            let outcomes = game.bookmakers?.find((b) => b.key === sportsbook)?.markets?.find((m) => m.key === 'spreads')?.outcomes
+
+                            if (!outcomes || outcomes.length === 0) return false
+                            return outcomes.some((outcome) => {
+                                let vegasSpread = outcome.point
+
+                                let outcomeScore = (outcome.name === game.homeTeamDetails.espnDisplayName ? game.homeScore : game.awayScore)
+                                let opponentScore = (outcome.name === game.homeTeamDetails.espnDisplayName ? game.awayScore : game.homeScore)
+
+                                let spreadCovered = (outcomeScore + vegasSpread) > opponentScore
+                                return !spreadCovered && valueBetConditionCheck(sports, game, sportsbook, 'spreads', outcome.name === game.homeTeamDetails.espnDisplayName ? 'home' : 'away')
+                            })
+                        }).sort((a, b) => new Date(b.commence_time) - new Date(a.commence_time)).map((game) => {
+                            return (
+                                <div>
+                                    <PastGameCard game={game} market='spreads' />
+                                </div>
+
+                            )
+                        })}
+                    </div>
+                </div>
+            </div>
+            <div className='flex flex-row bg-secondary my-2 w-[95%]'>
+                <div className='flex flex-col w-[50%] border-r'>
+                    <div style={{ textAlign: 'center' }}>
+                        {`Over ${totalHits?.overs.length}/${predictedTotals?.overs.length} ${((totalHits?.overs.length/predictedTotals?.overs.length)* 100).toFixed(2)}%`}
+                    </div>
+                    <div className='flex flex-row flex-wrap gap-2'>
+                        {totalHits?.overs.map((game) => {
+                            return (
+                                <div className='w-[20%]'>
+                                    <PastGameCard game={game} market={'totals'} />
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+                <div className='flex flex-col w-[50%] border-l'>
+                    <div style={{ textAlign: 'center' }}>
+                        {`Under ${totalHits?.unders.length}/${predictedTotals?.unders.length} ${((totalHits?.unders.length/predictedTotals?.unders.length)* 100).toFixed(2)}%`}
+                    </div>
+                    <div className='flex flex-row flex-wrap gap-2'>
+                        {totalHits?.unders.map((game) => {
+                            return (
+                                <div className='w-[20%]'>
+                                    <PastGameCard game={game} market={'totals'}  />
+                                </div>
+                            )
+                        })}
+                    </div>
                 </div>
 
-            </div>
-            <div >
-                <PastGamesDisplay displayGames={pastGames.filter((game) => new Date(game.commence_time) > today)} />
             </div>
 
         </div>

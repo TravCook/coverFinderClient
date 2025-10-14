@@ -1,7 +1,7 @@
 import React from 'react';
 import LandingPageHeroCard from './landingPageHeroCard.jsx';
 import { useSelector } from 'react-redux';
-import { calculateProfitFromUSOdds } from '../../utils/constants.js';
+import { calculateProfitFromUSOdds } from '../../../utils/constants.js';
 
 const LandingPageHero = () => {
     const sportsbooks = [
@@ -13,13 +13,13 @@ const LandingPageHero = () => {
     const { pastGames } = useSelector((state) => state.games);
 
     return (
-        <div className="flex justify-center p-6 bg-background text-white">
-            <div className="w-full  bg-secondary border border-secondary rounded-lg shadow-md p-6">
-                <div className="text-center mb-8">
+        <div className="flex bg-background text-white my-2" style={{ width: '97%' }}>
+            <div className="w-full  bg-secondary border border-secondary rounded-lg shadow-md">
+                <div className="text-center m-8">
                     <h1 className="text-2xl font-bold">BEAT THE SPORTSBOOKS</h1>
                     <p className="text-sm text-gray-300">Use our AI Powered Predictions to make a Profit</p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div className="flex flex-row flex-wrap gap-4 px-2">
                     {
                         sportsbooks
                             .sort((a, b) => {
@@ -48,12 +48,17 @@ const LandingPageHero = () => {
                                             return acc;
                                         }, 0);
                                 };
-
-                                return getProfit(b) - getProfit(a);
+                                let sbAGames = pastGames.filter((game) => game.bookmakers.some(book => book.key === a))
+                                let sbBGames = pastGames.filter((game) => game.bookmakers.some(book => book.key === b))
+                                let aWinRate = sbAGames.length > 0 ? sbAGames.filter((game) => game.predictionCorrect === true).length / sbAGames.length : 0
+                                let bWinRate = sbBGames.length > 0 ? sbBGames.filter((game) => game.predictionCorrect === true).length / sbBGames.length : 0
+                                return bWinRate - aWinRate
                             })
-                            .slice(0, 6) // Top 6
+                            .slice(0, 7) // Top 6
                             .map((sportsbookKey) => (
-                                <LandingPageHeroCard key={sportsbookKey} sportsbook={sportsbookKey} />
+                                <div key={sportsbookKey} className="flex flex-grow mb-2">
+                                    <LandingPageHeroCard sportsbook={sportsbookKey} />
+                                </div>
                             ))
                     }
                 </div>

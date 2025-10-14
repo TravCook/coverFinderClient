@@ -4,6 +4,9 @@ import { Link, useParams } from 'react-router' // Import useNavigate for navigat
 import { useSelector } from 'react-redux';
 import { isSameDay, valueBetConditionCheck, calculateProfitFromUSOdds, allStatLabelsShort, getNumericStat, reverseComparisonStats } from '../../utils/constants.js'
 import LeadingTeams from '../leadingTeams/leadingTeams.jsx';
+import TeamRankings from '../rankings/teamRanking.jsx';
+import DogRankings from '../rankings/bettingRankings/dogRankings.jsx';
+import FavRankings from '../rankings/bettingRankings/favRankings.jsx';
 
 const SingleSportDisplay = (props) => {
     const { league } = useParams(); // Get the matchup ID from the URL
@@ -18,25 +21,28 @@ const SingleSportDisplay = (props) => {
     const [averageIndex, setAverageIndex] = useState()
     const [weightsRankedByImp, setWeightsRanked] = useState()
     const [open, setOpen] = useState(false);
+    const [pwrRankSort, setPwrRankSort] = useState(); // State to hold the sorting preference for power rankings
+    const [openRankSort, setOpenRankSort] = useState(false);
     const [openSort, setOpenSort] = useState(false);
     const dropdownRef = useRef(null);
-    // Initialize accumulator object
-    const categorySums = {};
-    const categoryCounts = {};
+    const [statCategories, setStatCategories] = useState([])
+    const [categoryAverages, setCategoryAverages] = useState({});
+    const [teamFilter, setTeamFilter] = useState()
+    const [teamFilterOpen, setTeamFilterOpen] = useState()
+    const [currentSport, setCurrentSport] = useState()
 
-    // Compute averages
-    const categoryAverages = {};
-    Object.keys(categorySums).forEach(key => {
-        categoryAverages[key] = categorySums[key] / categoryCounts[key]; // or use numTeams if all teams have the same keys
-    });
 
 
     useEffect(() => {
         if (!league || !sports.length || !teams.length || !mlModelWeights.length) return;
 
         const sport = sports.find((sport) => sport.name === league);
+        document.title = sport.name
         if (!sport) return; // optional: protect from bad league name
-        setSportTeams(teams.filter((team) => team.league === league));
+        let tempTeams = [...teams]
+            .filter((team) => team.league === league)
+
+        setSportTeams(tempTeams);
         const sportWeights = mlModelWeights.find((weight) => weight.sport === sport.id);
         if (!sportWeights) return;
 
@@ -44,26 +50,32 @@ const SingleSportDisplay = (props) => {
         const weightsRankedByImp = [...sportWeights.featureImportanceScores].sort(
             (scoreA, scoreB) => scoreB.importance - scoreA.importance
         );
-
         setWeightsRanked(weightsRankedByImp);
 
         const tempAverageIndex = teams.filter((team) => team.league === league).reduce((acc, team) => acc + team.statIndex, 0) / teams.filter((team) => team.league === league).length;
         setAverageIndex(tempAverageIndex);
 
-        teams.filter((team) => team.league === league).forEach(team => {
-            const statIndexes = team.statCategoryIndexes;
-            Object.entries(statIndexes).forEach(([key, value]) => {
-                if (!categorySums[key]) {
-                    categorySums[key] = 0;
-                    categoryCounts[key] = 0;
-                }
-                categorySums[key] += value;
-                categoryCounts[key] += 1;
-            });
-        });
+        const sortedTeams = [...teams]
+            .filter(team => team.league === league)
+            .map(team => {
+                const [wins = 0, losses = 0] = team.currentStats.seasonWinLoss?.split('-').map(Number) || [0, 0];
+                return {
+                    ...team,
+                    totalGames: wins + losses,
+                };
+            })
+            // .sort((a, b) => b.totalGames - a.totalGames) // First sort: by games played
+            
+            .sort((a, b) => b.statIndex - a.statIndex) // Second sort: by statIndex
+             // Take top 35
 
-        const sortedTeams = [...teams].filter((team) => team.league === league).sort((teamA, teamB) => teamB.statIndex - teamA.statIndex);
         setSortedTeams(sortedTeams);
+        setStatCategories(Object.keys(sortedTeams[0].statCategoryIndexes));
+        const tempCategoryAverages = {};
+        Object.keys(sortedTeams[0].statCategoryIndexes).forEach((category) => {
+            tempCategoryAverages[category] = sortedTeams.reduce((acc, team) => acc + team.statCategoryIndexes[category], 0) / sortedTeams.length;
+        });
+        setCategoryAverages(tempCategoryAverages);
 
     }, [teams, sports, mlModelWeights, games]);
 
@@ -71,49 +83,77 @@ const SingleSportDisplay = (props) => {
     // Function to navigate back to the landing page
 
     return (
-        <div className='flex flex-row justify-between items-start gap-4' style={{ padding: '1rem', width: '99.1vw' }}>
-            <div style={{ width: '17%' }}  >
-                <div style={{ backgroundColor: '#545454', borderColor: '#575757', color: '#ffffff', padding: 10, borderRadius: '.5rem' }}>
+        <div className='flex flex-row justify-between items-start gap-1' style={{ padding: '1rem' }}>
+            <div className='bg-secondary rounded p-2' style={{ width: '19%' }}>
+                <div>
                     <div className="text-center">Better Bets Power Rankings</div>
                     <div>
-                        {sportTeams && sortedTeams.map((team, idx) => {
-                            const prevTeam = sortedTeams[idx - 1];
-                            const isCrossingAverage =
-                                idx > 0 &&
-                                ((prevTeam.statIndex >= averageIndex && team.statIndex < averageIndex) ||
-                                    (prevTeam.statIndex < averageIndex && team.statIndex >= averageIndex)); // Just in case
-                            return (
-                                <>
-                                    {isCrossingAverage && (
-                                        <div style={{ borderTop: '2px solid gray', margin: '8px 0' }}>
-                                        </div>
-                                    )}
-                                    <div style={{
-                                        width: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                    }} key={team.id}>
-                                        <div style={{ width: '7%', textAlign: 'center' }}>{`${idx + 1}.`}</div>
+                        <div className="relative mb-4">
+                            <button
+                                className="w-full bg-zinc-700 text-white px-3 py-2 rounded flex justify-between items-center"
+                                onClick={() => setOpenRankSort(!openRankSort)}
+                                type="button"
+                            >
+                                {pwrRankSort ? pwrRankSort.charAt(0).toUpperCase() + pwrRankSort.slice(1) : 'Sort by'}
+                                <span className="ml-2">{openRankSort ? '▲' : '▼'}</span>
+                            </button>
+                            {openRankSort && (
+                                <div className="absolute z-10 mt-1 w-full bg-zinc-800 border border-zinc-600 rounded shadow-lg">
+                                    <ul>
+                                        <li>
+                                            <button
+                                                className="w-full text-left px-4 py-2 hover:bg-zinc-700"
+                                                onClick={() => {
+                                                    setSortedTeams((sortedTeams) => [...sortedTeams].sort((teamA, teamB) => teamB.statIndex - teamA.statIndex));
+                                                    setPwrRankSort(null);
+                                                    setOpenRankSort(false);
 
-                                        <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                                            <img style={{ maxWidth: '1.3rem' }} src={team.lightLogo} />
-                                            {`${team.espnLeague.includes('college') ? team.school : `${team.abbreviation} ${team.teamName}`} (${team.currentStats.seasonWinLoss}) `}
-                                        </div>
+                                                }}
+                                            >
+                                                Reset Sort
+                                            </button>
+                                        </li>
+                                        {statCategories.map((category) => (
+                                            <li key={category}>
+                                                <button
+                                                    className="w-full text-left px-4 py-2 hover:bg-zinc-700"
+                                                    onClick={() => {
+                                                        setSortedTeams((sortedTeams) => [...sortedTeams].sort((teamA, teamB) => {
+                                                            return teamB.statCategoryIndexes[category] - teamA.statCategoryIndexes[category];
+                                                        }))
+                                                        setPwrRankSort(category);
+                                                        setOpenRankSort(false);
 
-                                        <div style={{ minWidth: '4rem', textAlign: 'right' }}>
-                                            {`${(((team.statIndex - averageIndex) / averageIndex) * 100).toFixed(2)}%`}
-                                        </div>
-
-                                    </div>
-                                </>
-                            );
-                        })}
+                                                    }}
+                                                >
+                                                    {category === 'general' ? 'Wins' : allStatLabelsShort[category] || category}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
                     </div>
+
                 </div>
+                {sortedTeams && <TeamRankings sport={league} pwrRankSort={pwrRankSort} categoryAverages={categoryAverages} sortedTeams={sortedTeams.slice(0, 35)} />}
+                {/* {league && <div className='flex flex-row' style={{ marginTop: '.5rem' }}>
+                    <div className='flex flex-col border-r' style={{ width: '50%' }}>
+                        <div className='border-b' style={{ textAlign: 'center' }}>
+                            TOP DOGS
+                        </div>
+                        <DogRankings sport={league} />
+                    </div>
+                    <div className='flex flex-col border-l' style={{ width: '50%' }}>
+                        <div className='border-b' style={{ textAlign: 'center' }}>
+                            TOP FAVORITES
+                        </div>
+                        <FavRankings sport={league} />
+                    </div>
+                </div>} */}
             </div>
-            <div style={{ width: '65%' }}>
+            <div style={{ width: '80%' }}>
                 <div style={{ backgroundColor: '#2a2a2a', borderColor: '#575757', color: '#ffffff', borderRadius: '.5rem' }}>
                     <div>
                         <div style={{ textAlign: 'right' }}>
@@ -220,17 +260,65 @@ const SingleSportDisplay = (props) => {
                                             // Add onChange here if needed
                                             />
                                         </div>
+                                        <div>
+                                            <button
+                                                className="bg-commonButton text-black px-2 py-1 rounded border border-commonButton"
+                                                onClick={() => setTeamFilterOpen(!teamFilterOpen)}
+                                            >
+                                                Filter For Team
+                                            </button>
+                                            {teamFilterOpen && (
+                                                <div className="absolute z-20 mt-2 bg-zinc-900 rounded shadow-lg border border-gray-200 p-2" style={{ width: '130%' }}>
+                                                    <ul className="space-y-1 flex flex-row flex-wrap">
+                                                        <li style={{ width: '100%' }}>
+                                                            <button
+                                                                className="w-full text-left px-2 py-1 hover:bg-commonButton hover:text-black"
+                                                                onClick={() => {
+                                                                    setTeamFilter(null);
+                                                                    setOpenTeamFilter(false);
+                                                                }}
+                                                            >
+                                                                Reset
+                                                            </button>
+                                                        </li>
+                                                        {sportTeams?.sort((teamA, teamB) => {
+                                                            if (teamA.espnDisplayName < teamB.espnDisplayName) return -1;
+                                                            if (teamA.espnDisplayName > teamB.espnDisplayName) return 1;
+                                                            return 0;
+                                                        }).map((team) => {
+                                                            return (
+                                                                <li style={{ width: '50%' }}>
+                                                                    <button
+                                                                        className="w-full text-left px-2 py-1 hover:bg-commonButton hover:text-black"
+                                                                        onClick={() => {
+                                                                            setTeamFilter(team.espnDisplayName);
+                                                                            setOpenTeamFilter(false);
+                                                                        }}
+                                                                    >
+                                                                        {team.abbreviation} {team.teamName}
+                                                                    </button>
+                                                                </li>
+                                                            )
+
+                                                        })}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', justifyContent: 'space-evenly' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', justifyContent: 'space-evenly'}}>
                         {
                             games && games.filter((game) => game.sport_key === league).length > 0 ? (
                                 games.filter((game) => game.sport_key === league).filter((game) => {
                                     if (valueFilter) {
-                                        return valueBetConditionCheck(sports, game, sportsbook, games);
+                                        return valueBetConditionCheck(sports, game, sportsbook, 'h2h');
+                                    }
+                                    if (teamFilter) {
+                                        return game.homeTeamDetails.espnDisplayName === teamFilter || game.awayTeamDetails.espnDisplayName === teamFilter
                                     }
                                     return true;
                                 }).sort((gameA, gameB) => {
@@ -268,7 +356,7 @@ const SingleSportDisplay = (props) => {
 
                 </div>
             </div>
-            <div style={{ width: '17%' }} >
+            <div style={{ width: '19%' }} >
                 <div style={{ backgroundColor: '#2a2a2a', borderColor: '#575757', color: '#ffffff', borderRadius: '.5rem', padding: 10 }}>
                     <div>
                         {sportTeams &&
@@ -295,24 +383,25 @@ const SingleSportDisplay = (props) => {
                                             let statValue
                                             if (typeof sortedStatTeams[0].currentStats[weight.feature] === 'string') {
                                                 statValue = sortedStatTeams[0].currentStats[weight.feature]
-                                            } else if (weight.feature.includes('Percentage')) {
+                                            } else if (weight.feature.includes('Percentage') || weight.feature.includes('Pct')) {
                                                 statValue = `${(sortedStatTeams[0].currentStats[weight.feature] * 100).toFixed(1)}%`
                                             } else {
+
                                                 if (sortedStatTeams[0].currentStats[weight.feature] > 1) {
                                                     statValue = (sortedStatTeams[0].currentStats[weight.feature]).toFixed(0)
                                                 } else if (sortedStatTeams[0].currentStats[weight.feature] === 0) {
                                                     statValue = (sortedStatTeams[0].currentStats[weight.feature]).toFixed(0)
-                                                } else {
+                                                } else if (sortedStatTeams[0].currentStats[weight.feature]) {
                                                     statValue = (sortedStatTeams[0].currentStats[weight.feature]).toFixed(3)
                                                 }
 
                                             }
                                             return (
                                                 <div style={{ width: '100%', display: 'flex', flexDirection: 'row', padding: '.25rem 0', borderBottom: '1px solid #575757' }} key={weight.feature}>
-                                                    <div style={{ textAlign: 'left', width: '33%' }}>
+                                                    <div style={{ textAlign: 'left', width: '40%' }}>
                                                         {allStatLabelsShort[weight.feature] === 'Point Diff' && league === 'baseball_mlb' ? 'Run Diff' : allStatLabelsShort[weight.feature]}
                                                     </div>
-                                                    <div style={{ textAlign: 'left', width: '33%' }}>
+                                                    <div style={{ textAlign: 'left', width: '45%' }}>
                                                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
                                                             <div style={{ paddingRight: 0 }}> <img src={sortedStatTeams[0].darkLogo} style={{ maxWidth: '1rem' }} /></div>
                                                             <div style={{ paddingLeft: 0 }}>
@@ -320,7 +409,7 @@ const SingleSportDisplay = (props) => {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div style={{ textAlign: 'right', width: '33%' }}>
+                                                    <div style={{ textAlign: 'right', width: '15%' }}>
                                                         {statValue}
                                                     </div>
                                                 </div>
@@ -329,11 +418,9 @@ const SingleSportDisplay = (props) => {
                                     })}
                                 </div>
                             </div>}
-                        <div style={{ marginTop: '.5rem' }}>
-                            {sportTeams && <LeadingTeams sortedTeams={sportTeams.sort((teamA, teamB) => teamB.statIndex - teamA.statIndex)} />}
-                        </div>
                     </div>
                 </div>
+                {sortedTeams && <LeadingTeams sortedTeams={sortedTeams} />}
             </div>
         </div>
     )

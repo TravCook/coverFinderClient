@@ -7,7 +7,6 @@ import LineGraph from '../dataVisComponents/lineGraph/lineGraph.jsx';
 
 const Results = () => {
     const dispatch = useDispatch()
-    document.title = 'Results SQL TEST'
 
     const { sportsbook } = useSelector((state) => state.user);
     const { pastGames, sports } = useSelector((state) => state.games)
@@ -19,13 +18,13 @@ const Results = () => {
 
     const today = new Date()
     const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(today.getDate() - 7); // 30 days ago
+    sevenDaysAgo.setDate(today.getDate() - 8); // 30 days ago
     sevenDaysAgo.setHours(0, 0, 0, 0); // Set to midnight 
     const fifteenDaysAgo = new Date(today);
-    fifteenDaysAgo.setDate(today.getDate() - 15); // 30 days ago
+    fifteenDaysAgo.setDate(today.getDate() - 16); // 30 days ago
     fifteenDaysAgo.setHours(0, 0, 0, 0); // Set to midnight 
     const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(today.getDate() - 30); // 30 days ago
+    thirtyDaysAgo.setDate(today.getDate() - 31); // 30 days ago
     thirtyDaysAgo.setHours(0, 0, 0, 0); // Set to midnight 
 
     const groupedByDay = [...pastGames].sort((a, b) => new Date(a.commence_time) - new Date(b.commence_time)).reduce((acc, game) => {
@@ -42,8 +41,8 @@ const Results = () => {
 
     let winrates = groupedByDay ? Object.keys(groupedByDay).map((day) => {
         const games = groupedByDay[day];
-        const totalGames = games.length;
-        const wins = games.filter((game) => game.predictionCorrect === true).length;
+        const totalGames = games.filter((game) => valueBetConditionCheck(sports, game, 'fanduel', 'h2h')).length;
+        const wins = games.filter((game) => valueBetConditionCheck(sports, game, 'fanduel', 'h2h')).filter((game) => game.predictionCorrect === true).length;
         return { date: day, value: totalGames > 0 ? (wins / totalGames) * 100 : 0 };
     }) : [];
     let cumulativeProfit = 0;
@@ -84,7 +83,7 @@ const Results = () => {
             .map((day) => {
                 const games = groupedByDay[day];
                 let dailyProfit = 0;
-                for (const game of games) {
+                for (const game of games.filter((game) => valueBetConditionCheck(sports, game, 'fanduel', 'h2h'))) {
                     const bookmaker = game?.bookmakers?.find(b => b.key === sportsbook);
                     const market = bookmaker?.markets?.find(m => m.key === 'h2h');
                     const outcome = market?.outcomes?.find(out =>
@@ -117,7 +116,7 @@ const Results = () => {
             .map((day) => {
                 const games = groupedByDay[day];
                 let dailyProfit = 0;
-                for (const game of games) {
+                for (const game of games.filter((game) => valueBetConditionCheck(sports, game, 'fanduel', 'h2h'))) {
                     const bookmaker = game?.bookmakers?.find(b => b.key === sportsbook);
                     const market = bookmaker?.markets?.find(m => m.key === 'h2h');
                     const outcome = market?.outcomes?.find(out =>
@@ -150,7 +149,7 @@ const Results = () => {
             .map((day) => {
                 const games = groupedByDay[day];
                 let dailyProfit = 0;
-                for (const game of games) {
+                for (const game of games.filter((game) => valueBetConditionCheck(sports, game, 'fanduel', 'h2h'))) {
                     const bookmaker = game?.bookmakers?.find(b => b.key === sportsbook);
                     const market = bookmaker?.markets?.find(m => m.key === 'h2h');
                     const outcome = market?.outcomes?.find(out =>
@@ -176,64 +175,55 @@ const Results = () => {
             })
         : [];
     return (
-        <div className='bg-secondary flex flex-col  m-4 rounded' >
+        <div className='bg-secondary flex flex-col  my-2 rounded' style={{width: '97%'}}>
             <div className='flex flex-row justify-evenly items-center flex-wrap my-4'>
-                <div className=' bg-primary rounded p-2' style={{width: '33%'}}>
+                <div className=' bg-primary rounded p-2' style={{width: '32%'}}>
                     <div className='width-full'>
-                        <h4 className='text-center text-white'>Last 7 Days Win Percentage: {(winrates.filter((game) => new Date(game.date) > sevenDaysAgo).reduce((acc, game) => acc + game.value, 0) / winrates.filter((game) => new Date(game.date) > sevenDaysAgo).length).toFixed(1)}%</h4>
+                        <h4 className='text-center text-white'>Last 7 Days Win Percentage: {(winrates.slice(winrates.length-7).reduce((acc, game) => acc + game.value, 0) / winrates.slice(winrates.length-7).length).toFixed(1)}%</h4>
                     </div>
                     <div className='width-full'>
                         <LineGraph
-                            data={winrates.filter((game) => new Date(game.date) > sevenDaysAgo).sort((a, b) => new Date(a.date) - new Date(b.date))} winrates={true}
+                            data={winrates.slice(winrates.length-7).sort((a, b) => new Date(a.date) - new Date(b.date))} winrates={true}
                         />
                     </div>
                 </div>
-                <div className=' bg-primary rounded p-2' style={{width: '33%'}}>
+                <div className=' bg-primary rounded p-2' style={{width: '32%'}}>
                     <div className='width-full'>
-                        <h4 className='text-center text-white'>Last 15 Days Win Percentage: {(winrates.filter((game) => new Date(game.date) > fifteenDaysAgo).reduce((acc, game) => acc + game.value, 0) / winrates.filter((game) => new Date(game.date) > fifteenDaysAgo).length).toFixed(1)}%</h4>
+                        <h4 className='text-center text-white'>Last 15 Days Win Percentage: {(winrates.slice(winrates.length-15).reduce((acc, game) => acc + game.value, 0) / winrates.slice(winrates.length-15).length).toFixed(1)}%</h4>
                     </div>
                     <div>
                         <LineGraph
-                            data={winrates.filter((game) => new Date(game.date) > fifteenDaysAgo).sort((a, b) => new Date(a.date) - new Date(b.date))} winrates={true}
+                            data={winrates.slice(winrates.length-15).sort((a, b) => new Date(a.date) - new Date(b.date))} winrates={true}
                         />
                     </div>
                 </div>
-                <div className=' bg-primary rounded p-2' style={{width: '33%'}}>
+                <div className=' bg-primary rounded p-2' style={{width: '32%'}}>
                     <div className='width-full'>
-                        <h4 className='text-center text-white'>Last 30 Days Win Percentage: {(winrates.filter((game) => new Date(game.date) > thirtyDaysAgo).reduce((acc, game) => acc + game.value, 0) / winrates.filter((game) => new Date(game.date) > thirtyDaysAgo).length).toFixed(1)}%</h4>
+                        <h4 className='text-center text-white'>Last 30 Days Win Percentage: {(winrates.slice(winrates.length-30).reduce((acc, game) => acc + game.value, 0) / winrates.slice(winrates.length-30).length).toFixed(1)}%</h4>
                     </div>
                     <div>
                         <LineGraph
-                            data={winrates.filter((game) => new Date(game.date) > thirtyDaysAgo).sort((a, b) => new Date(a.date) - new Date(b.date))} winrates={true}
+                            data={winrates.slice(winrates.length-30).sort((a, b) => new Date(a.date) - new Date(b.date))} winrates={true}
                         />
                     </div>
                 </div>
             </div>
             <div className='flex flex-row justify-evenly items-center flex-wrap my-4'>
-                <div className=' bg-primary rounded p-2' style={{width: '33%'}}>
-                    <div>
-                        <h4 className='text-center text-white'>Last 7 Days Avg Profit (units): {(sevenDayProfit.reduce((acc, game, idx) => acc + (idx > 0 ? (game.value - sevenDayProfit[idx - 1].value) : game.value), 0) / sevenDayProfit.length).toFixed(1)}</h4>
-                    </div>
+                <div className=' bg-primary rounded p-2' style={{width: '32%'}}>
                     <div className='width-full'>
                         <LineGraph
                             data={sevenDayProfit.sort((a, b) => new Date(a.date) - new Date(b.date))}
                         />
                     </div>
                 </div>
-                <div className=' bg-primary rounded p-2' style={{width: '33%'}}>
-                    <div>
-                        <h4 className='text-center text-white'>Last 15 Days Avg Profit (units): {(fifteenDayProfit.reduce((acc, game, idx) => acc + (idx > 0 ? (game.value - fifteenDayProfit[idx - 1].value) : game.value), 0) / fifteenDayProfit.length).toFixed(1)}</h4>
-                    </div>
+                <div className=' bg-primary rounded p-2' style={{width: '32%'}}>
                     <div>
                         <LineGraph
                             data={fifteenDayProfit.sort((a, b) => new Date(a.date) - new Date(b.date))}
                         />
                     </div>
                 </div>
-                <div className=' bg-primary rounded p-2' style={{width: '33%'}}>
-                    <div>
-                        <h4 className='text-center text-white'>Last 30 Days Avg Profit (units): {(thirtyDayProfit.reduce((acc, game, idx) => acc + (idx > 0 ? (game.value - thirtyDayProfit[idx - 1].value) : game.value), 0) / thirtyDayProfit.length).toFixed(1)}</h4>
-                    </div>
+                <div className=' bg-primary rounded p-2' style={{width: '32%'}}>
                     <div>
                         <LineGraph
                             data={thirtyDayProfit.sort((a, b) => new Date(a.date) - new Date(b.date))}

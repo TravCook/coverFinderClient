@@ -65,7 +65,7 @@ const LeadingTeams = ({ sortedTeams }) => {
   }, [teamChunks.length]);
 
   return (
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto">
       <div className="relative w-full overflow-hidden">
         <div className="transition-all duration-700 ease-in-out">
           {teamChunks.map((teamGroup, idx) => (
@@ -75,7 +75,7 @@ const LeadingTeams = ({ sortedTeams }) => {
                 idx === activeIndex ? 'opacity-100 relative' : 'opacity-0 pointer-events-none'
               }`}
             >
-              <div className="flex justify-center flex-col gap-6">
+              <div className="flex justify-center flex-col gap-2">
                 {teamGroup.map((team) => (
                   <div key={team.name} className="w-full">
                     <LeadingTeamsCard

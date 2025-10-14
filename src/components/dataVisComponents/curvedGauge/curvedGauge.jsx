@@ -5,7 +5,7 @@ const CurvedGauge = ({ value, dimensions }) => {
   const { width, height } = dimensions;
   const radius = Math.min(width, height * 2) / 2;
   const centerX = width / 2;
-  const centerY = height;
+  const centerY = radius;
 
   // Clamp the value between 0 and 1
   const clamped = Math.max(0, Math.min(1, value));
@@ -17,7 +17,7 @@ const CurvedGauge = ({ value, dimensions }) => {
 
   // Create the arc path using d3.arc() but generate the path string here
   const arcGenerator = d3.arc()
-    .innerRadius(radius - 15)
+    .innerRadius(radius - 10)
     .outerRadius(radius)
     .startAngle(-Math.PI)
     .endAngle(Math.PI);
@@ -27,11 +27,11 @@ const CurvedGauge = ({ value, dimensions }) => {
   return (
     <svg
       width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
-      preserveAspectRatio="xMidYMid meet"
-    // style={{padding: 0}}
+      height={radius}
+      viewBox={`0 0 ${width} ${radius}`}
     >
+
+
       <defs>
         <linearGradient
           id="gauge-gradient"

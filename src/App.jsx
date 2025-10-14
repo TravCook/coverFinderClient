@@ -3,9 +3,9 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router'; // Fixed import for `react-router-dom`
 import { socket } from './socket.jsx';
 import NavBar from './components/navbar/navbar.jsx';
-import UpcomingGames from './components/upcomingGames/upcomingGames.jsx';
+import UpcomingGames from './components/landingPage/upcomingGames/upcomingGames.jsx';
 import SingleSportDisplay from './components/singleSportDisplay/singleSportDisplay.jsx';
-// import MatchupDetails from './components/matchupDetails/matchupDetails';
+import MatchupDetails from './components/matchupDetails/matchupDetails.jsx';
 import { useDispatch, useSelector } from 'react-redux';
 import { setGames, setPastGames, setPastGamesEmit, setSports, setMLModelWeights } from './redux/slices/oddsSlice.js';
 import {setTeams} from './redux/slices/teamsSlice.js';
@@ -70,14 +70,14 @@ function App() {
   }, [starredGames]); // This will run whenever `starredGames` changes
 
   return (
-    <div className="App bg-background text-text min-h-screen w-full flex flex-col">
+    <div className="App bg-background text-text min-h-screen">
       {games && sports &&
         <BrowserRouter>
           <NavBar />
           <Routes>
             <Route path="/" element={<UpcomingGames />} />
             <Route path="/sport/:league" element={<SingleSportDisplay />} />
-            {/* <Route path="/matchup/:id" element={<MatchupDetails />} /> */}
+            <Route path="/matchup/:id" element={<MatchupDetails />} />
             <Route path='/live' element={<LiveView />} />
             <Route path='/rankings' element={<Rankings />} />
           </Routes>

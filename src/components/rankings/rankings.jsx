@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { hexToRgb, getLuminance } from '../../utils/constants';
+import TeamRankings from './teamRanking';
 
 const Rankings = () => {
     const { sports } = useSelector((state) => state.games);
@@ -49,7 +50,8 @@ const Rankings = () => {
 
     return (
         <div className="relative top-12 bg-[#121212] min-h-screen px-4 py-6">
-            <div className="flex flex-wrap justify-around gap-4">
+            <title>Rankings</title>
+            <div className="flex flex-wrap justify-evenly gap-2">
                 {[...sports]
                     .sort((a, b) => {
                         const teamsA = teams.filter(team => team.league === a.name).length;
@@ -57,60 +59,14 @@ const Rankings = () => {
                         return teamsA - teamsB;
                     })
                     .map((sport) => {
-                        const sportTeams = teams.filter(team => team.league === sport.name);
-                        const sortedTeams = [...sportTeams].sort((a, b) => b.statIndex - a.statIndex);
-                        const averageIndex = sortedTeams.reduce((acc, team) => acc + team.statIndex, 0) / sortedTeams.length;
-                        const league = sport.name.split('_')[1]?.toUpperCase() || sport.name;
-
+                        let sortedTeams = teams.filter((team) => team.league === sport.name).sort((teamA, teamB) => teamB.statIndex - teamA.statIndex)
                         return (
-                            <div
-                                key={sport.name}
-                                className={`bg-primary border border-primary text-white p-4 rounded-lg overflow-y-scroll scrollbar-thin max-h-[90vh] ${
-                                    sport.name.includes('college') ? 'w-[26%]' : 'w-[20%]'
-                                }`}
-                            >
-                                <div className="flex justify-between items-center mb-4">
-                                    <span className="text-lg font-semibold">{league}</span>
-                                    <button className="text-sm font-semibold bg-yellow-600 text-[#121212] px-3 py-1 rounded">
-                                        Details
-                                    </button>
-                                </div>
-
-                                <div className="space-y-.5">
-                                    {sortedTeams.map((team, idx) => {
-                                        const prev = sortedTeams[idx - 1];
-                                        const isCrossingAvg =
-                                            idx > 0 &&
-                                            ((prev.statIndex >= averageIndex && team.statIndex < averageIndex) ||
-                                            (prev.statIndex < averageIndex && team.statIndex >= averageIndex));
-
-                                        const [r, g, b] = hexToRgb('#545454');
-                                        const luminance = getLuminance(r, g, b);
-                                        const logo = luminance < 0.5 ? team.lightLogo : team.darkLogo;
-
-                                        return (
-                                            <div key={team.id}>
-                                                {isCrossingAvg && <div className="border-t-2 border-gray-400 my-2" />}
-                                                <div className="flex flex-row">
-                                                    <div style={{width: '10%'}} >{idx + 1}.</div>
-                                                    <div style={{width: '70%'}} className='flex flex-row items-center'>
-                                                        <img src={logo} alt="team logo" className="w-5 h-5" />
-                                                        <span >
-                                                            {team.school
-                                                                ? `${team.abbreviation} ${team.teamName}`
-                                                                : team.espnDisplayName}
-                                                        </span>
-                                                    </div>
-                                                    <div style={{width: '20%', textAlign: 'right'}}>
-                                                        {`${(((team.statIndex - averageIndex) / averageIndex) * 100).toFixed(1)}%`}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                            <div style={{width: `${sport.league.includes('college') ? 21: 21}%`}}>
+                                <TeamRankings sport={sport.name} sortedTeams={sortedTeams} />
                             </div>
-                        );
+
+                        )
+
                     })}
             </div>
         </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { valueBetConditionCheck, isSameDay, valueBetConditionCloseCheck, calculateParlayOdds } from '../../../utils/constants';
-import MatchupCard from '../../matchupCard/matchupCard.jsx';
+import { valueBetConditionCheck, isSameDay, valueBetConditionCloseCheck, calculateParlayOdds } from '../../../../utils/constants';
+import MatchupCard from '../../../matchupCard/matchupCard.jsx';
 
 const UpcomingBetterBets = () => {
     const { games, sports } = useSelector((state) => state.games);
@@ -15,10 +15,13 @@ const UpcomingBetterBets = () => {
                 return true
             }
             return null
-        }).filter((game) => {
-            return valueBetConditionCheck(sports, game, sportsbook)
-        }).filter((game) => isSameDay(game.commence_time, new Date()))
-            .sort((a, b) => {
+        }).filter((game) => !game.timeRemaining)
+            .filter((game) => isSameDay(new Date(game.commence_time), new Date()))
+            .filter((game) => {
+                return valueBetConditionCheck(sports, game, sportsbook, 'h2h')
+                // || valueBetConditionCheck(sports, game, sportsbook, 'spreads')
+                // || valueBetConditionCheck(sports, game, sportsbook, 'totals')
+            }).sort((a, b) => {
                 let outcomeA
                 let outcomeB
                 const bookmakerA = a.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
@@ -37,7 +40,7 @@ const UpcomingBetterBets = () => {
                         return o.name === (b.predictedWinner === 'home' ? a.homeTeamDetails.espnDisplayName : a.awayTeamDetails.espnDisplayName)
                     });
                 }
-                return a.commence_time - b.commence_time
+                return new Date(a.commence_time) - new Date(b.commence_time)
                 // return outcomeB.price - outcomeA.price
             })
         tempBetterBets.map((game) => {
@@ -55,14 +58,17 @@ const UpcomingBetterBets = () => {
         setBetterBets(tempBetterBets)
     }, [games])
     return (
-        <div>
+        <div className='my-4 flex-grow' style={{maxWidth: '90%'}}>
             {games.filter((game) => {
-                return valueBetConditionCheck(sports, game, sportsbook)
-            }).filter((game) => isSameDay(game.commence_time, new Date())).length > 0 &&
-                <div className='bg-secondary flex flex-col m-4 rounded' >
+                return valueBetConditionCheck(sports, game, sportsbook, 'h2h', game.winner)
+            }).length > 0 &&
+                <div className='bg-secondary flex flex-col rounded' >
                     <div className='flex flex-col md:flex-row justify-between' style={{ padding: '.5em', borderBottom: '1px solid #575757' }}>
                         <div>
-                            BETTER BETS
+                            {`${new Date().toLocaleDateString('us-EN', {
+                                day: '2-digit',
+                                month: '2-digit'
+                            })} BETTER BETS`}
                         </div>
                         <div>
                             {betterBetsParlay &&
@@ -71,13 +77,15 @@ const UpcomingBetterBets = () => {
                                 </div>}
                         </div>
                     </div>
-                    <div className='flex flex-col md:flex-row justify-evenly items-center' style={{ padding: '.5em 0' }}>
+                    <div className='flex flex-row flex-wrap justify-center p-4 gap-2' style={{ padding: '.5em 0' }}>
                         {betterBets && betterBets // Sort by commence time
                             .map((game) => {
                                 return (
-                                    <MatchupCard
-                                        gameData={game}
-                                    />
+                                    <div>
+                                        <MatchupCard
+                                            gameData={game}
+                                        />
+                                    </div>
                                 )
                             })}
                     </div>

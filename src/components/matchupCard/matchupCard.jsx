@@ -42,7 +42,7 @@ const MatchupCard = ({ gameData, final, starred }) => {
       ? final ? `Final` : gameTime.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
       : final ? `${gameTime.toLocaleString('en-US', { month: '2-digit', day: '2-digit' })} Final` : gameTime.toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
   };
-
+console.log(gameData)
   let backgroundColor
   if (final) {
     backgroundColor = gameData?.predictionCorrect ? 'rgba(6, 64, 43, .7)' : 'rgba(77, 0, 0, .7)';
@@ -50,9 +50,8 @@ const MatchupCard = ({ gameData, final, starred }) => {
   const handleToggle = () => {
     setIsExpanded(prevState => !prevState);
   };
-
   return (
-    <div style={{
+    <div className='p-1' style={{
       backgroundColor: '#545454',
       color: '#D4D2D5',
       fontSize: '.8rem',
@@ -60,39 +59,41 @@ const MatchupCard = ({ gameData, final, starred }) => {
       margin: '.3rem auto',
       boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
       border: '.1em solid #858585',
-      minWidth: '17rem'
+      width: '25.5rem'
     }} >
-
-      <div style={{
-        letterSpacing: '.6px',
-        textAlign: 'center',
-        alignItems: 'center',
-        fontSize: '.7rem',
-        display: 'flex',
-        margin: '.2rem .2rem',
-      }}>
-        <div style={{ width: '80%', display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+      <div className='flex flex-row'>
+        <div className='flex items-center justify-center' style={{ width: '45%', fontSize: '1rem' }}>
           {gameData.timeRemaining ? gameData.timeRemaining : formatGameTime()}
         </div>
-        <div style={{ width: '20%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-          {!final ?
-            <div >
-              <button
-                id={gameData.id}
-                onClick={handleStarClick}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontSize: '.2rem', alignItems: 'center', display: 'flex', justifyContent: 'center', textAlign: 'center' }}
-              >
-                {starredGames.some((game) => game.id === gameData.id) ? (
-                  <FontAwesomeIcon icon={faStar} style={{ color: 'gold', fontSize: '1.0rem' }} />
-                ) : (
-                  <FontAwesomeIcon icon={farStar} style={{ color: 'gold', fontSize: '1.0rem' }} />
-                )}
-              </button>
-            </div>
-            :
-            <></>}
+        <div className="flex flex-col items-stretch gap-1" style={{ width: '55%' }}>
+          <div className='ml-auto'>
+            {!final ?
+              <div >
+                <button
+                  id={gameData.id}
+                  onClick={handleStarClick}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontSize: '.2rem', alignItems: 'center', display: 'flex', justifyContent: 'center', textAlign: 'center' }}
+                >
+                  {starredGames.some((game) => game.id === gameData.id) ? (
+                    <FontAwesomeIcon icon={faStar} style={{ color: 'gold', fontSize: '1.0rem' }} />
+                  ) : (
+                    <FontAwesomeIcon icon={farStar} style={{ color: 'gold', fontSize: '1.0rem' }} />
+                  )}
+                </button>
+              </div>
+              :
+              <></>}
+          </div>
+          <div className='flex flex-row items-streth gap-1'>
+            <div style={{ width: '30%', textAlign: 'center' }}>{!gameData.timeRemaining ? 'Proj.' : 'Score'} </div> {/* Placeholder for the score column */}
+            <div style={{ width: '25%', textAlign: 'center' }}>Money</div>
+            <div style={{ width: '25%', textAlign: 'center' }}>Spread</div>
+            <div style={{ width: '25%', textAlign: 'center' }}>Total</div>
+          </div>
         </div>
       </div>
+
+
       {
         <div>
           <TeamOddsRow
@@ -125,34 +126,15 @@ const MatchupCard = ({ gameData, final, starred }) => {
       }
       {(!final && !starred) &&
         <div>
-          {(isExpanded ? <button className='expandButton' style={{
-            backgroundColor: 'rgb(104, 104, 117, .4)',  // Green-ish background, adjust as needed
-            color: '#D4D2D5',             // Light text color
-            border: 'none',               // No border
-            borderRadius: '5px',          // Slightly rounded corners
-            fontSize: '.8rem',            // Font size that is consistent with the card text
-            transition: 'all 0.2s ease',  // Smooth transition for hover effect
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',  // Subtle shadow for depth
-            width: '100%',
-            padding: '.3rem .3rem'
-
-          }} onClick={handleToggle}>Collapse</button> : <button style={{
-            backgroundColor: 'rgb(104, 104, 117, .4)',  // Green-ish background, adjust as needed
-            color: '#D4D2D5',             // Light text color
-            border: 'none',               // No border
-            borderRadius: '5px',          // Slightly rounded corners
-            fontSize: '.8rem',            // Font size that is consistent with the card text
-            transition: 'all 0.2s ease',  // Smooth transition for hover effect
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',  // Subtle shadow for depth
-            width: '100%',
-            padding: '.3rem .3rem'
-          }} onClick={handleToggle}>Details</button>)}
+            <button className='hover:bg-commonButton hover:text-black bg-secondary rounded py-1 w-full transition-all duration-200 ease-in-out' style={{ fontSize: '.8rem' }} onClick={handleToggle}>
+              {isExpanded ? 'Collapse' : 'Details'}
+            </button>
         </div>
       }
       {(
         <div
           className={`
-          transition-all duration-500 ease-in-out overflow-hidden
+          transition-all duration-600 ease-in-out overflow-hidden
           ${isExpanded ? 'max-h-[1000px] opacity-100 pointer-events-auto' : 'max-h-0 opacity-0 pointer-events-none'}
           `}
         >
@@ -164,8 +146,8 @@ const MatchupCard = ({ gameData, final, starred }) => {
 
           <MatchupCardExtend expandSection={expandSection} gameData={gameData} />
 
-          <Link to={`/matchup/${gameData.id}`}>
-            <button className="bg-yellow-600 border-yellow-600 text-white w-full text-sm py-1">
+          <Link to={`/matchup/${gameData.id}`} target='_blank' rel="noopener noreferrer">
+            <button className="bg-yellow-600 border-yellow-600 text-black w-full text-sm py-1">
               See Full Matchup
             </button>
           </Link>

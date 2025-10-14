@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { setBankroll, setBetType, setSportsbook, setStarredGames } from '../../redux/slices/userSlice.js';
 import { isSameDay, combinedCondition, valueBetConditionCheck } from '../../utils/constants'
@@ -9,7 +10,7 @@ const NavBar = () => {
     const navBarRef = useRef();
     const { games, valueGames, sports, pastGames } = useSelector((state) => state.games);
     const { bankroll, sportsbook, starredGames } = useSelector((state) => state.user);
-    const [dimensions, setDimensions] = useState({ width: '100%', height: '100%' });
+    const [dimensions, setDimensions] = useState({ width: 60, height: 60 });
     const [dropdownTitle, setDropdownTitle] = useState("Select Sportsbook");
     const [dropdownBG, setDropdownBG] = useState('#527595');
     const [dropdownFont, setDropdownFont] = useState('#eef3f3');
@@ -19,11 +20,18 @@ const NavBar = () => {
     // Set the default sportsbook if props.sportsBook is not provided
     // const sportsbook = sportsBook || 'fanduel'; // Default to 'fanduel' if not passed
     useEffect(() => {
-        if (navBarRef.current) {
-            const { width, height } = navBarRef.current.getBoundingClientRect();
-            setDimensions({ width, height });
-        }
-    }, [navBarRef.current]);
+        const updateDimensions = () => {
+            if (navBarRef.current) {
+                const { width, height } = navBarRef.current.getBoundingClientRect();
+                setDimensions({ width, height });
+            }
+        };
+        updateDimensions(); // Initial call
+        window.addEventListener('resize', updateDimensions);
+        return () => window.removeEventListener('resize', updateDimensions);
+    }, []);
+
+
 
     const handleDropDownClick = (event) => {
         dispatch(setSportsbook(event.target.id));
@@ -148,24 +156,27 @@ const NavBar = () => {
         if (gamesFilter.length !== 0 || pastGamesFilter.length !== 0 || games.filter((game) => game.timeRemaining).length > 0) {
             setValue((gamesFilter.length + pastGamesFilter.length + (tieFilter.length * .5)) / (games.filter((game) => game.timeRemaining).length + pastGames.filter((game) => isSameDay(new Date(), new Date(game.commence_time))).length))
         } else {
-            setValue(0);
+            setValue(null);
         }
     }, [sportsbook, games, bankroll, valueGames, sports, pastGames]);  // Dependencies for dynamic updates
 
     return (
         <div
-            
-            className="
-    sticky top-0 z-50 w-full h-12 bg-secondary text-white
-    border-b border-secondary flex items-center justify-between px-4 font-bold text-base
-  "
+
+            className="sticky top-0 z-50 py-1 bg-secondary text-white border-b border-secondary flex items-center px-4 justify-between font-bold text-base w-full"
+            style={{ width: '100%' }}
         >
-            <div className="flex items-center space-x-4" ref={navBarRef}>
-                <div>BETTOR</div>
+            <div className="flex flex-row items-center gap-2"  >
+                <Link to={'/'}>
+                    <div className='text-text'>BETTOR</div>
+                </Link>
+
                 {/* Optional: CurvedGauge */}
-                {value > 0 && <div className="w-16 h-8">
-                    <CurvedGauge value={value} dimensions={dimensions} />
-                </div>}
+                {value !== null &&
+                    <div ref={navBarRef}>
+                        <CurvedGauge value={value} dimensions={dimensions} />
+                    </div>
+                }
             </div>
 
             <div className="flex items-center space-x-2">

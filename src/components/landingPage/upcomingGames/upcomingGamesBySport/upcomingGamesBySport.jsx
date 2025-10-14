@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import MatchupCard from '../../matchupCard/matchupCard.jsx';
+import MatchupCard from '../../../matchupCard/matchupCard.jsx';
 import { Link } from 'react-router';
 import { useSelector } from 'react-redux';
-import { isSameDay } from '../../../utils/constants.js';
+import { isSameDay } from '../../../../utils/constants.js';
 
 const UpcomingGamesBySport = () => {
     const { games, sports } = useSelector((state) => state.games);
@@ -17,23 +17,24 @@ const UpcomingGamesBySport = () => {
                 return true
             }
             return null
-        }).filter((game) => {
+        })
+        // .filter((game) => {
 
-            return isSameDay(game.commence_time, new Date())
-        });
+        //     return isSameDay(game.commence_time, new Date())
+        // });
         setTodayGames(tempTodayGames);
     }, [games, sports, sportsbook]);
     return (
-        <div>
+        <div  style={{width: '97%'}}>
             {sports?.filter((sport) => {
                 let sportGames = todayGames.filter((game) => game.sport_key === sport.name)
                 return sportGames.length > 0
-            }).map((sport) => {
+            }).sort((a,b) => a.startMonth - b.startMonth).map((sport) => {
                 let sportNameArr = sport.name.split('_')
                 let leagueName = sportNameArr[1]
 
                 return (
-                    <div className='bg-secondary flex flex-col m-4 rounded'>
+                    <div className='bg-secondary flex flex-col my-2 rounded'>
                         <div className='flex justify-between items-center p-2'>
                             <h4 style={{ color: 'whitesmoke', textAlign: 'center' }}>{leagueName.toUpperCase()} Games</h4>
                             <Link to={`/sport/${sport.name}`}>
@@ -53,7 +54,7 @@ const UpcomingGamesBySport = () => {
                                         return b.winPercent - a.winPercent;
                                     }
                                     return dateA - dateB;
-                                })
+                                }).slice(0,8)
                                 .map((game, idx) => {
                                     if ((Math.ceil(todayGames.length / 6) * 6) < 18) {
                                         if (idx < (Math.ceil(todayGames.length / 6) * 6)) {
