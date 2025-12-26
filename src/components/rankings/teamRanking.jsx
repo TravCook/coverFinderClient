@@ -12,12 +12,14 @@ const TeamRankings = ({ sport, pwrRankSort, categoryAverages, sortedTeams }) => 
         if (sortedTeams && sport) {
             const filteredTeams = sortedTeams.filter(team => team.league === sport);
             setSportTeams(filteredTeams);
-            const totalIndex = filteredTeams.reduce((acc, team) => acc + team.statIndex, 0);
+            const totalIndex = filteredTeams.reduce((acc, team) => acc + team.scaledStatIndex, 0);
             const avgIndex = totalIndex / filteredTeams.length;
             setAverageIndex(avgIndex);
 
         }
     }, [sortedTeams, pwrRankSort])
+
+    console.log(sportTeams)
 
     return (
         <div  >
@@ -29,8 +31,8 @@ const TeamRankings = ({ sport, pwrRankSort, categoryAverages, sortedTeams }) => 
                         if (!pwrRankSort) {
                             isCrossingAverage =
                                 idx > 0 &&
-                                ((prevTeam.statIndex >= averageIndex && team.statIndex < averageIndex) ||
-                                    (prevTeam.statIndex < averageIndex && team.statIndex >= averageIndex)); // Just in case
+                                ((prevTeam.scaledStatIndex >= averageIndex && team.scaledStatIndex < averageIndex) ||
+                                    (prevTeam.scaledStatIndex < averageIndex && team.scaledStatIndex >= averageIndex)); // Just in case
                         } else {
 
                             isCrossingAverage =
@@ -60,7 +62,7 @@ const TeamRankings = ({ sport, pwrRankSort, categoryAverages, sortedTeams }) => 
                                     </div>
 
                                     <div style={{ textAlign: 'right', width: '16%' }}>
-                                        {pwrRankSort ? `${(((team.statCategoryIndexes[pwrRankSort] - categoryAverages[pwrRankSort]) / categoryAverages[pwrRankSort]) * 100).toFixed(2)}%` : `${(((team.statIndex - averageIndex) / averageIndex) * 100).toFixed(2)}%`}
+                                        {pwrRankSort ? `${(((team.statCategoryIndexes[pwrRankSort] - categoryAverages[pwrRankSort]) / categoryAverages[pwrRankSort]) * 100).toFixed(2)}%` : `${(((team.scaledStatIndex - averageIndex) / averageIndex) * 100).toFixed(2)}%`}
                                     </div>
 
                                 </div>

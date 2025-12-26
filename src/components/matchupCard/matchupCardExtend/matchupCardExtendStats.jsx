@@ -20,12 +20,13 @@ useEffect(() => {
     }
     setHomeStats(gameData.homeTeamDetails.statCategoryIndexes);
     setAwayStats(gameData.awayTeamDetails.statCategoryIndexes);
-}, [gameData]);
+}, []);
 
 
 const handleStatSectionClick = (e) => {
-    setHomeStats(gameData.homeStats.data);
-    setAwayStats(gameData.awayStats.data);
+    console.log(gameData)
+    setHomeStats(gameData.homeTeamDetails.currentStats);
+    setAwayStats(gameData.awayTeamDetails.currentStats);
 
     const config = statConfigMap[sport.espnSport];
 
@@ -47,7 +48,7 @@ const handleStatSectionClick = (e) => {
     const dimensions = useResizeObserver(chartContainerRef);
     return (
         <div style={{ width: '100%', height: '15vh', margin: '1rem 0' }} ref={chartContainerRef}>
-            {dimensions && <StatBarChart dimensions={dimensions} sport={sport} useIndividualYScales={( activeStatMap !== statConfigMap[sport.espnSport].default && activeStatMap !== statConfigMap[sport.espnSport].categories.general) ? true :false} handleStatSectionClick={handleStatSectionClick} homeStats={homeStats} awayStats={awayStats} statMap={activeStatMap} homeColor={gameData.homeTeamDetails.mainColor} awayColor={areColorsTooSimilar(gameData.homeTeamDetails.mainColor, gameData.awayTeamDetails.mainColor) ? gameData.awayTeamDetails.secondaryColor : gameData.awayTeamDetails.mainColor} />}
+            {dimensions && <StatBarChart dimensions={dimensions} sport={sport} useIndividualYScales={( activeStatMap !== statConfigMap[sport.name].default && activeStatMap !== statConfigMap[sport.name].categories.general) ? true :false} handleStatSectionClick={handleStatSectionClick} homeStats={homeStats} awayStats={awayStats} statMap={activeStatMap} homeColor={gameData.homeTeamDetails.mainColor} awayColor={areColorsTooSimilar(gameData.homeTeamDetails.mainColor, gameData.awayTeamDetails.mainColor) ? gameData.awayTeamDetails.secondaryColor : gameData.awayTeamDetails.mainColor} />}
         </div>
     );
 }

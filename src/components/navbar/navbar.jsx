@@ -72,89 +72,25 @@ const NavBar = () => {
     };
 
 
-    // const handleAutoStar = () => {
-    //     const today = new Date();
-    //     today.setHours(0, 0, 0, 0);  // Set time to midnight
-
-    //     const tomorrow = new Date();
-    //     tomorrow.setDate(tomorrow.getDate() + 2);
-    //     tomorrow.setHours(0, 0, 0, 0);  // Set time to midnight
-
-    //     let updatedStarredGames = [...starredGames];
-    //     games.filter((game) => {
-    //         const bookmaker = game.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
-    //         if (bookmaker) {
-    //             const marketData = bookmaker?.markets?.find(m => m.key === 'h2h');
-
-    //             let outcome = marketData?.outcomes?.find(o => {
-    //                 return o.name === (game.predictedWinner === 'home' ? game.home_team : game.away_team)
-    //             });
-
-    //             if (outcome) {
-    //                 let currentSport = sports.find(arraySport => arraySport.name === game.sport_key)
-    //                 let sportSettings = currentSport.valueBetSettings.find((setting) => setting.bookmaker === sportsbook)
-    //                 if (sportSettings !== undefined) {
-    //                     let valueBetCheck = combinedCondition(game, outcome, sportSettings.settings.indexDiffSmallNum, sportSettings.settings.indexDiffRangeNum, sportSettings.settings.confidenceLowNum, sportSettings.settings.confidenceRangeNum)
-    //                     if (valueBetCheck) {
-    //                         return game
-    //                     }
-    //                 }
-
-    //             }
-
-
-    //         }
-    //         return false;
-    //     }).filter((game) => isSameDay(new Date(game.commence_time), today)).map((gameData) => {
-    //         // Check if the game is already starred
-    //         if (!starredGames.some((game) => game.id === gameData.id)) {
-    //             // If not, create a new array with the new starred game
-    //             updatedStarredGames.push(gameData)
-
-    //             // Save the updated starred games to cookies
-    //             localStorage.setItem('starredGames', JSON.stringify(updatedStarredGames));
-
-    //             dispatch(setStarredGames(updatedStarredGames)); // Dispatch the updated array
-
-    //         }
-    //         return null
-    //     })
-    //     starredGames.map((gameData) => {
-    //         if (!valueBetConditionCheck(sports, gameData, sportsbook, pastGames)) {
-    //             updatedStarredGames = starredGames.filter((filterGame) => filterGame.id !== gameData.id);
-    //             localStorage.setItem('starredGames', JSON.stringify(updatedStarredGames));
-    //             dispatch(setStarredGames(updatedStarredGames)); // Dispatch the filtered array
-
-    //         }
-    //         return null
-    //     })
-
-
-
-    // }
-
     useEffect(() => {
         const { bg, font } = setDropdownStyles(sportsbook); // Use sportsbook instead of sportsBook
         setDropdownBG(bg);
         setDropdownFont(font);
         setDropdownTitle(sportsbook); // Update dropdown title with the new sportsbook name
         let gamesFilter = games.filter((game) =>
-            game.timeRemaining
+            (game.timeRemaining || game.complete === true)
             && (game.predictedWinner === 'home'
                 ? game.homeScore > game.awayScore
-                : game.awayScore > game.homeScore))
+                : game.awayScore > game.homeScore)
+            && isSameDay(new Date(), new Date(game.commence_time)))
 
         let tieFilter = games.filter((game) =>
             game.timeRemaining
             && (game.homeScore === game.awayScore))
 
-        let pastGamesFilter = pastGames.filter((game) =>
-            isSameDay(new Date(), new Date(game.commence_time))
-            && (game.predictionCorrect))
 
-
-        if (gamesFilter.length !== 0 || pastGamesFilter.length !== 0 || games.filter((game) => game.timeRemaining).length > 0) {
-            setValue((gamesFilter.length + pastGamesFilter.length + (tieFilter.length * .5)) / (games.filter((game) => game.timeRemaining).length + pastGames.filter((game) => isSameDay(new Date(), new Date(game.commence_time))).length))
+        if (gamesFilter.length !== 0 || games.filter((game) => game.timeRemaining).length > 0) {
+            setValue((gamesFilter.length + (tieFilter.length * .5)) / (games.filter((game) => game.timeRemaining || (game.complete && isSameDay(new Date(), new Date(game.commence_time)))).length))
         } else {
             setValue(null);
         }

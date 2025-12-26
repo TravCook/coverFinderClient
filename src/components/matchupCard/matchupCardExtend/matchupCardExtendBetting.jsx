@@ -13,8 +13,8 @@ const MatchupCardExtendBetting = ({ gameData }) => {
 
     function sortBookmakersByOutcomePrice(bookmakers, teamName) {
         return [...bookmakers].sort((a, b) => {
-            const outcomeA = a.markets[0].outcomes.find(o => o.name === teamName);
-            const outcomeB = b.markets[0].outcomes.find(o => o.name === teamName);
+            const outcomeA = a.markets[0]?.outcomes.find(o => o.name === teamName);
+            const outcomeB = b.markets[0]?.outcomes.find(o => o.name === teamName);
 
             if (outcomeA && outcomeB) {
                 return outcomeB.price - outcomeA.price;
@@ -36,7 +36,25 @@ const MatchupCardExtendBetting = ({ gameData }) => {
             setBestSportsbook(sortedBookmakers[0].key);
         }
 
+
+
     }, [gameData, bestSportsbook, sports, sportsbook]);
+
+    // const pModel = gameData.predictionConfidence;
+
+    // const o = gameData?.bookmakers?.find(b => b.key === sportsbook)?.markets?.find(m => m.key === 'h2h').outcomes?.find(o => o.name === (gameData.predictedWinner === 'home' ? gameData.homeTeamDetails.espnDisplayName : gameData.awayTeamDetails.espnDisplayName))
+    // let EV
+    // if (o) {
+    //     // Convert American odds to decimal odds if needed
+    //     let odds = o.price ?? o.odds;
+    //     if (odds > 0 && odds < 1000 || odds < 0 && odds > -1000) {
+    //         odds = odds > 0 ? 1 + odds / 100 : 1 - 100 / odds;
+    //     }
+    //     EV = (pModel * odds) - 1;
+    // }
+
+
+
     return (
         <div style={{ width: '90%' }}>
             <div style={{ borderBottom: '2px solid white', padding: 5 }}>
@@ -74,33 +92,29 @@ const MatchupCardExtendBetting = ({ gameData }) => {
                                 Probability
                             </div>
                         </div>
-                        { gameData?.bookmakers?.find(b => b.key === sportsbook)?.markets.find(m => m.key === 'h2h') && <div>
+                        {gameData?.bookmakers?.find(b => b.key === sportsbook)?.markets?.find(m => m.key === 'h2h') && <div>
                             <WinrateVsProbabilityBar
-                                internalWinrate={gameData.winPercent}
+                                internalWinrate={gameData.predictionConfidence * 100}
                                 impliedProbability={gameData?.bookmakers?.find(b => b.key === sportsbook)?.markets?.find(m => m.key === 'h2h').outcomes?.find(o => o.name === (gameData.predictedWinner === 'home' ? gameData.homeTeamDetails.espnDisplayName : gameData.awayTeamDetails.espnDisplayName))?.impliedProbability * 100}
                             />
                         </div>}
                     </div>
+
+                </div>
+            </div>
+            <div>
+                <div>
                     <div>
-                        <div style={{ textAlign: 'center' }}>
+                        {/* <div style={{ textAlign: 'center' }}>
                             <div>
-                                Index Delta
+                                Expected Value
                             </div>
                         </div>
-                        <div >
-                            <NumberLine min={-50} max={50} rangeStart={sportSettings?.indexDiffSmall} rangeEnd={sportSettings?.indexDiffSmall + sportSettings?.indexDiffRange} point={indexDiff} pointLabel={indexDiff.toFixed(2)} />
-                        </div>
+                        <div>
+                        {`EV: ${EV}`}
+                        </div> */}
                     </div>
-                    <div>
-                        <div style={{ textAlign: 'center' }}>
-                            <div>
-                                Confidence
-                            </div>
-                        </div>
-                        <div >
-                            <NumberLine min={50} max={100} rangeStart={sportSettings?.confidenceSmall * 100} rangeEnd={(sportSettings?.confidenceSmall * 100) + (sportSettings?.confidenceRange * 100)} point={gameData.predictionConfidence * 100} pointLabel={`${(gameData.predictionConfidence * 100).toFixed(2)}%`} />
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>

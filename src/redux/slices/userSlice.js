@@ -2,9 +2,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  bankroll: 0,
+  bankroll: 10,
   betType: 'Proportional',
   sportsbook: 'fanduel',
+  userEVThreshold: 0.08,
+  userKelleyPct: .25,
   starredGames: []
 };
 
@@ -23,6 +25,12 @@ const userSlice = createSlice({
     },
     setStarredGames: (state, action) => {
       state.starredGames = action.payload;
+    },
+    setUserEvThreshold: (state, action) => {
+      state.userEVThreshold = action.payload
+    },
+    setUserKelleyPct: (state, action) => {
+      state.userKelleyPct = action.payload
     }
   }
 });
@@ -32,7 +40,9 @@ export const {
   setBankroll,
   setBetType,
   setSportsbook,
-  setStarredGames
+  setStarredGames,
+  setUserEvThreshold,
+  setUserKelleyPct
 } = userSlice.actions;
 
 // Export reducer

@@ -1,43 +1,62 @@
 import UpcomingBetterBets from './upcomingBetterBets/upcomingBetterBets.jsx';
 import UpcomingGamesBySport from './upcomingGamesBySport/upcomingGamesBySport.jsx';
-import LandingPageHero from '../landingPageHero/landingPageHero.jsx';
-import Results from '../../results/results.jsx'
+// import LandingPageHero from '../landingPageHero/landingPageHero.jsx';
+// import Results from '../../results/results.jsx'
 import LandingPageLive from '../landingPageLive/landingPageLive.jsx';
-import { useSelector } from 'react-redux';
-import LandingPageConfidence from '../landingPageConfidence/landingPageConfidence.jsx';
+// import { useSelector } from 'react-redux';
+// import LandingPageConfidence from '../landingPageConfidence/landingPageConfidence.jsx';
+// import { getDifferenceInMinutes, isSameDay } from '../../../utils/constants.js';
+// import TodaysGames from './todaysGames/todaysGames.jsx';
+import PastGamesDisplay from '../../pastGames/pastGames.jsx';
+import BackTestingDisplay from '../../backTestingDisplay/backTestingDisplay.jsx';
+import EvTestingDisplay from '../../evTestingDisplay/evTestingDisplay.jsx';
 
 const UpcomingGames = () => {
-  const { games } = useSelector((state) => state.games);
-return (
-  <div className='bg-background'>
-    <title>BETTER BETS</title>
+  // const { games } = useSelector((state) => state.games);
+  return (
+    <div className='bg-background'>
+      <title>BETTER BETS LOCAL DB</title>
 
-    <section className='py-10 flex justify-center'>
-      <LandingPageHero />
-    </section>
-
-    <section className='py-10 flex flex-col items-center'>
-      <div className='flex flex-row gap-2' style={{width: '97%'}}>
-        <UpcomingBetterBets />
-        <LandingPageConfidence />
-      </div>
-    </section>
-
-    {games.filter(game => game.timeRemaining).length > 0 && (
       <section className='py-10 flex flex-col items-center'>
-        <LandingPageLive />
+        <div className='flex flex-row gap-2' style={{ width: '97%' }}>
+          <UpcomingBetterBets />
+        </div>
       </section>
-    )}
 
-    <section className='py-10 flex flex-col items-center'>
-      <UpcomingGamesBySport />
-    </section>
+      <section className='py-10 flex flex-col items-center'>
+        <div className='flex flex-row gap-2' style={{ width: '97%' }}>
+          <LandingPageLive />
+        </div>
+      </section>
 
-    <section className='py-10 flex flex-col items-center'>
-      <Results />
-    </section>
-  </div>
-);
+      {/* todays games */}
+      
+        {/* <section className='py-10 flex flex-col items-center'>
+          <UpcomingGamesBySport />
+        </section> */}
+
+      {/* results */}
+      <section className='py-10 flex flex-col items-center'>
+        <div className='flex flex-row gap-2' style={{ width: '97%' }}>
+          <PastGamesDisplay />
+        </div>
+      </section>
+
+      {/* <section className='py-10 flex flex-col items-center'>
+        <div className='flex flex-row gap-2' style={{ width: '97%' }}>
+          <BackTestingDisplay />
+        </div>
+      </section> */}
+
+      {/* <section>
+        <div className='flex flex-row gap-2' style={{ width: '97%' }}>
+          <EvTestingDisplay />
+        </div>
+      </section> */}
+
+
+    </div>
+  );
 
 };
 

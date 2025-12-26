@@ -59,9 +59,10 @@ const Rankings = () => {
                         return teamsA - teamsB;
                     })
                     .map((sport) => {
-                        let sortedTeams = teams.filter((team) => team.league === sport.name).sort((teamA, teamB) => teamB.statIndex - teamA.statIndex)
+                        let sortedTeams = teams.filter((team) => team.league === sport.name).sort((teamA, teamB) => teamB.scaledStatIndex - teamA.scaledStatIndex)
                         return (
                             <div style={{width: `${sport.league.includes('college') ? 21: 21}%`}}>
+                                <span>{sport.name}</span>
                                 <TeamRankings sport={sport.name} sortedTeams={sortedTeams} />
                             </div>
 

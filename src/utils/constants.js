@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux';
+import { erf } from 'mathjs'
 import statsMinMax from './sampledGlobalStats.json';
 
 export const getDifferenceInMinutes = (date1, date2) => {
@@ -849,10 +850,10 @@ export const probabilityCondition = (o, game, sportsbook) => {
 // You can also combine them into a single condition
 export const combinedCondition = (game, o, indexDifSmall, indexDiffRange, confidenceLow, confidenceRange, sportsbook) => {
 
-  return  indexCondition(game, indexDifSmall, indexDiffRange)
+  return indexCondition(game, indexDifSmall, indexDiffRange)
     && strengthCondition(game, confidenceLow, confidenceRange)
-    // && probabilityCondition(o, game, sportsbook)
-    
+    && probabilityCondition(o, game, sportsbook)
+
 
 };
 
@@ -868,64 +869,370 @@ export const combinedCloseCondition = (game, o, indexDifSmall, indexDiffRange, c
 
 };
 
+export const evCondition = (o, game, sportsbook, minEV = 0, customProb = null) => {
+  // Use custom probability if provided
+  const pModel = customProb ?? game.predictionConfidence;
 
-export const valueBetConditionCheck = (sports, game, sportsbook, market, homeAway) => {
-  const bookmaker = game.bookmakers.find(bookmaker => bookmaker.key === sportsbook);
-  let currentSport = sports.find(arraySport => arraySport.name === game.sport_key)
+  // Convert American odds to decimal odds if needed
+  let odds = o.price ?? o.odds;
+  if (odds > 0 && odds < 1000 || odds < 0 && odds > -1000) {
+    odds = odds > 0 ? 1 + odds / 100 : 1 - 100 / odds;
+  }
 
-  if (bookmaker) {
-    const marketData = bookmaker?.markets?.find(m => m.key === market);
-    let outcome
+  const EV = (pModel * odds) - 1;
+  return EV
+};
 
-    switch (market) {
-      case 'spreads':
+export const sportConfidenceBucketMap = {
+  "americanfootball_nfl": [
+    {
+      valueBucket: '0-.1',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.1-.2',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.2-.3',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.3-.4',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.4-.5',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.5-.6',
+      correspondingStrat: 'kelly-1'
+    },
+    {
+      valueBucket: '.6-.7',
+      correspondingStrat: 'kelly-1'
+    },
+    {
+      valueBucket: '.7-.8',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.8-.9',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '9-1',
+      correspondingStrat: 'kelly-.1'
+    },
+  ],
+  "americanfootball_ncaaf": [
+    {
+      valueBucket: '0-.1',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.1-.2',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.2-.3',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.3-.4',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.4-.5',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.5-.6',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.6-.7',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.7-.8',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.8-.9',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.9-1',
+      correspondingStrat: 'kelly-1'
+    },
+  ],
+  "basketball_nba": [
+    {
+      valueBucket: '0-.1',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.1-.2',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.2-.3',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.3-.4',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.4-.5',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.5-.6',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.6-.7',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.7-.8',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.8-.9',
+      correspondingStrat: 'kelly-1'
+    },
+    {
+      valueBucket: '9-1',
+      correspondingStrat: 'kelly-1'
+    },
+  ],
+  "basketball_ncaab": [
+    {
+      valueBucket: '0-.1',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.1-.2',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.2-.3',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.3-.4',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.4-.5',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.5-.6',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.6-.7',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.7-.8',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.8-.9',
+      correspondingStrat: 'kelly-1'
+    },
+    {
+      valueBucket: '9-1',
+      correspondingStrat: 'kelly-1'
+    },
+  ],
+  "basketball_wncaab": [
+    {
+      valueBucket: '0-.1',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.1-.2',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.2-.3',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.3-.4',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.4-.5',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.5-.6',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.6-.7',
+      correspondingStrat: 'kelly-.1'
+    },
+    {
+      valueBucket: '.7-.8',
+      correspondingStrat: 'kelly-1'
+    },
+    {
+      valueBucket: '.8-.9',
+      correspondingStrat: 'kelly-1'
+    },
+    {
+      valueBucket: '9-1',
+      correspondingStrat: 'kelly-1'
+    },
+  ],
+  "icehockey_nhl": [
+    {
+      valueBucket: '0-.1',
+      correspondingStrat: 'flat'
+    },
+    {
+      valueBucket: '.1-.2',
+      correspondingStrat: 'kelly-0'
+    },
+    {
+      valueBucket: '.2-.3',
+      correspondingStrat: 'kelly-0'
+    },
+    {
+      valueBucket: '.3-.4',
+      correspondingStrat: 'kelly-0'
+    },
+    {
+      valueBucket: '.4-.5',
+      correspondingStrat: 'kelly-0'
+    },
+    {
+      valueBucket: '.5-.6',
+      correspondingStrat: 'kelly-0'
+    },
+    {
+      valueBucket: '.6-.7',
+      correspondingStrat: 'kelly-0'
+    },
+    {
+      valueBucket: '.7-.8',
+      correspondingStrat: 'kelly-0'
+    },
+    {
+      valueBucket: '.8-.9',
+      correspondingStrat: 'kelly-0'
+    },
+    {
+      valueBucket: '9-1',
+      correspondingStrat: 'kelly-0'
+    },
+  ],
+  "baseball_mlb": [
+    {
+      valueBucket: '0-.1',
+      correspondingStrat: ''
+    },
+    {
+      valueBucket: '.1-.2',
+      correspondingStrat: ''
+    },
+    {
+      valueBucket: '.2-.3',
+      correspondingStrat: ''
+    },
+    {
+      valueBucket: '.3-.4',
+      correspondingStrat: ''
+    },
+    {
+      valueBucket: '.4-.5',
+      correspondingStrat: ''
+    },
+    {
+      valueBucket: '.5-.6',
+      correspondingStrat: ''
+    },
+    {
+      valueBucket: '.6-.7',
+      correspondingStrat: ''
+    },
+    {
+      valueBucket: '.7-.8',
+      correspondingStrat: ''
+    },
+    {
+      valueBucket: '.8-.9',
+      correspondingStrat: ''
+    },
+    {
+      valueBucket: '9-1',
+      correspondingStrat: ''
+    },
+  ]
+};
 
-        let spreadOutcome = marketData?.outcomes?.find(o => {
-          return o.name === (homeAway === 'home' ? game.homeTeamDetails.espnDisplayName : game.awayTeamDetails.espnDisplayName);
-        });
-        if (spreadOutcome) {
-          let spread = spreadOutcome.point
-          let pickedScore = spreadOutcome.name === game.homeTeamDetails.espnDisplayName ? game.predictedHomeScore : game.predictedAwayScore;
-          let pickedOpponentScore = spreadOutcome.name === game.homeTeamDetails.espnDisplayName
-            ? game.predictedAwayScore
-            : game.predictedHomeScore;
-          const spreadMAE = currentSport?.hyperParams[0]?.spreadMAE ?? 0;
-          const winrateAgainstSpread = .54; // Example value, replace with actual
-          let impliedProb = spreadOutcome.impliedProbability;
-          return (pickedScore + spread - spreadMAE) > pickedOpponentScore
-          //  && (impliedProb) * 100 < (winrateAgainstSpread * 100)
-          //  && probabilityCondition(spreadOutcome, game, sportsbook)
-        }
-        break;
-      case 'totals':
-        let totalOutcome = marketData?.outcomes?.find(o => {
-          return o.name === (homeAway === 'away' ? 'Over' : 'Under');
-        });
-        if (totalOutcome) {
-          let total = totalOutcome.point
-          let predictedTotal = game.predictedHomeScore + game.predictedAwayScore;
-          const totalMAE = currentSport?.hyperParams[0]?.totalMAE ?? 0;
-          return homeAway === 'away' ? (predictedTotal - totalMAE) > total : (predictedTotal + totalMAE) < total
-        }
-        break;
-      default:
-        outcome = marketData?.outcomes?.find(o => {
-          return o.name === (game.predictedWinner === 'home' ? game.homeTeamDetails.espnDisplayName : game.awayTeamDetails.espnDisplayName)
-        });
-        if (outcome) {
-          let sportSettings = currentSport?.valueBetSettings.find((setting) => setting.bookmaker === sportsbook)
-          if (sportSettings !== undefined) {
-            return combinedCondition(game, outcome, sportSettings.indexDiffSmall, sportSettings.indexDiffRange, sportSettings.confidenceSmall, sportSettings.confidenceRange, sportsbook)
-          }
+// Profitable confidence buckets per sport
+export const PROFITABLE_CONFIDENCE_BUCKETS = {
+  americanfootball_nfl: .83,
+  basketball_wncaab: .5,
+  americanfootball_ncaaf:  .5,
+  icehockey_nhl: 1,
+  basketball_nba:  .9,
+  basketball_ncaab: .9,
 
-        }
-        break
-    }
+};
 
+// Check if a game passes the gate
+export const passesGate = (game, outcome) => {
+
+};
+
+
+
+export const valueBetConditionCheck = (sports, game, sportsbook, market) => {
+  let gameSport = sports.find((sport) => sport.name === game.sport_key)
+
+  const bookmaker = game.bookmakers?.find(b => b.key === sportsbook);
+  if (!bookmaker) return false;
+
+  const marketData = bookmaker.markets?.find(m => m.key === market);
+  if (!marketData) return false;
+
+  // H2H (Moneyline)
+  if (market === 'h2h') {
+    if (!marketData) return false
+
+    const outcome = marketData.outcomes.find((o) => {
+      return o.name === (game.predictedWinner == 'home' ? game.homeTeamDetails.espnDisplayName : game.awayTeamDetails.espnDisplayName)
+    })
+
+    if (!outcome || !gameSport) return false
+    const edge = game.predictionConfidence - outcome.impliedProbability
+
+    const EV = (game.predictionConfidence * calculateProfitFromUSOdds(outcome.price, 1)) - (outcome.impliedProbability * 1)
+
+    return calculateProfitFromUSOdds(outcome.price, .09) > .01
+    // &&  edge > gameSport.threshold
+    // &&  edge >= PROFITABLE_CONFIDENCE_BUCKETS[gameSport.name]
+    //   
+    && game.value_score >= PROFITABLE_CONFIDENCE_BUCKETS[gameSport.name]
 
   }
 
-}
+  // FUTURE: add similar logic for 'totals' using over/under probability
+  return false;
+};
+
+
 
 export const valueBetConditionCloseCheck = (sports, game, sportsbook) => {
   const bookmaker = game.bookmakers.find(bookmaker => bookmaker.key === sportsbook);

@@ -9,8 +9,8 @@ const StatBarChart = ({ homeStats, awayStats, dimensions, statMap, homeColor, aw
     const minBarWidth = 60;
     const formattedData = statMap.map((key) => ({
         key,
-        homeValue: statMap.includes('seasonWinLoss') ? normalizeStat(key, getNumericStat(homeStats, key)) : normalizeStat(key, homeStats[key]),
-        awayValue: statMap.includes('seasonWinLoss') ? normalizeStat(key, getNumericStat(awayStats, key)) : normalizeStat(key, awayStats[key]),
+        homeValue: statMap.includes('seasonWinLoss') ? getNumericStat(homeStats, key) : homeStats[key],
+        awayValue: statMap.includes('seasonWinLoss') ? getNumericStat(awayStats, key) : awayStats[key],
     }));
 
     const numBars = formattedData.length;

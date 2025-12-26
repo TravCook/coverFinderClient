@@ -1,296 +1,215 @@
-import { useState, useEffect } from 'react'
-import { isSameDay, valueBetConditionCheck, calculateProfitFromImpliedProb, calculateProfitFromUSOdds } from '../../utils/constants.js';
-import { setPastGames } from '../../redux/slices/oddsSlice.js';
+import { useState } from 'react'
+import { valueBetConditionCheck, calculateProfitFromUSOdds } from '../../utils/constants.js';
+import { kelleyBetSizeCalc } from '../../utils/helpers/bettingDataHelpers/helperFunctions.js';
 import { useDispatch, useSelector } from 'react-redux';
 import LineGraph from '../dataVisComponents/lineGraph/lineGraph.jsx';
 
-
 const Results = () => {
     const dispatch = useDispatch()
-
     const { sportsbook } = useSelector((state) => state.user);
     const { pastGames, sports } = useSelector((state) => state.games)
-    const [valueProfitToday, setValueProfitToday] = useState(0)
-    const [profitToday, setProfitToday] = useState(0)
-    const [valueProfitThisWeek, setValueProfitThisWeek] = useState(0)
-    const [profitThisWeek, setProfitThisWeek] = useState(0)
     const [stake, setStake] = useState(1)
 
     const today = new Date()
     const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(today.getDate() - 8); // 30 days ago
-    sevenDaysAgo.setHours(0, 0, 0, 0); // Set to midnight 
+    sevenDaysAgo.setDate(today.getDate() - 8);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
     const fifteenDaysAgo = new Date(today);
-    fifteenDaysAgo.setDate(today.getDate() - 16); // 30 days ago
-    fifteenDaysAgo.setHours(0, 0, 0, 0); // Set to midnight 
+    fifteenDaysAgo.setDate(today.getDate() - 16);
+    fifteenDaysAgo.setHours(0, 0, 0, 0);
     const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(today.getDate() - 31); // 30 days ago
-    thirtyDaysAgo.setHours(0, 0, 0, 0); // Set to midnight 
+    thirtyDaysAgo.setDate(today.getDate() - 31);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
 
+    // Group games by day
     const groupedByDay = [...pastGames].sort((a, b) => new Date(a.commence_time) - new Date(b.commence_time)).reduce((acc, game) => {
-        // Normalize to YYYY-MM-DD (assumes UTC; adjust if needed)
         const dateKey = new Date(game.commence_time).toLocaleDateString();
-
-        if (!acc[dateKey]) {
-            acc[dateKey] = [];
-        }
-
-        acc[dateKey].unshift(game);
+        if (!acc[dateKey]) acc[dateKey] = [];
+        acc[dateKey].push(game);
         return acc;
     }, {});
 
-    let winrates = groupedByDay ? Object.keys(groupedByDay).map((day) => {
-        const games = groupedByDay[day];
-        const totalGames = games.filter((game) => valueBetConditionCheck(sports, game, 'fanduel', 'h2h')).length;
-        const wins = games.filter((game) => valueBetConditionCheck(sports, game, 'fanduel', 'h2h')).filter((game) => game.predictionCorrect === true).length;
-        return { date: day, value: totalGames > 0 ? (wins / totalGames) * 100 : 0 };
-    }) : [];
-    let cumulativeProfit = 0;
-    let profits = groupedByDay
-        ? Object.keys(groupedByDay)
-            .map((day) => {
+    // Helper to get winrate arrays
+    const getWinRateArrays = (fromDate) => {
+        const winRate = [];
+        const valueWinRate = [];
+        const cumulativeWinrate = [];
+        const cumulativeValueWinrate = [];
+        let cumulativeAllWins = 0;
+        let cumulativeAllTotal = 0;
+
+        let cumulativeValueWins = 0;
+        let cumulativeValueTotal = 0;
+        Object.keys(groupedByDay)
+            .filter(day => new Date(day) > fromDate)
+            .sort((a, b) => new Date(a) - new Date(b))
+            .forEach(day => {
                 const games = groupedByDay[day];
-                let dailyProfit = 0;
-                const filteredGames = games
-                for (const game of games) {
-                    const bookmaker = game?.bookmakers?.find(b => b.key === sportsbook);
-                    const market = bookmaker?.markets?.find(m => m.key === 'h2h');
-                    const outcome = market?.outcomes?.find(out =>
-                        out.name === (game.predictedWinner === 'home'
-                            ? game.homeTeamDetails.espnDisplayName
-                            : game.awayTeamDetails.espnDisplayName)
-                    );
-
-                    if (game.predictionCorrect === true) {
-                        dailyProfit += outcome ? calculateProfitFromUSOdds(outcome.price, stake) : 0;
-                    } else {
-                        dailyProfit -= stake; // you had `-1` before — should match your stake
-                    }
-                }
-
-                cumulativeProfit += dailyProfit;
-
-                return {
+                // All games winrate
+                const totalGames = games.length;
+                const wins = games.filter(game => game.predictionCorrect === true).length;
+                winRate.push({
                     date: day,
-                    value: cumulativeProfit // now it's the running total
-                };
-            })
-        : [];
-    let cumulativeSevenDay = 0
-    let sevenDayProfit = groupedByDay
-        ? Object.keys(groupedByDay)
-            .filter(day => new Date(day) > sevenDaysAgo)
-            .map((day) => {
+                    winrate: totalGames > 0 ? (wins / totalGames) * 100 : 0
+                });
+                // Cumulative all games winrate
+                cumulativeAllWins += wins;
+                cumulativeAllTotal += totalGames;
+                cumulativeWinrate.push({
+                    date: day,
+                    winrate: cumulativeAllTotal > 0 ? (cumulativeAllWins / cumulativeAllTotal) * 100 : 0
+                });
+                // Value bet games winrate
+                const valueGames = games.filter(game => valueBetConditionCheck(sports, game, 'fanduel', 'h2h'));
+                const valueWins = valueGames.filter(game => game.predictionCorrect === true).length;
+                valueWinRate.push({
+                    date: day,
+                    winrate: valueGames.length > 0 ? (valueWins / valueGames.length) * 100 : 0
+                });
+                // Cumulative value bet games winrate
+                cumulativeValueWins += valueWins;
+                cumulativeValueTotal += valueGames.length;
+                cumulativeValueWinrate.push({
+                    date: day,
+                    winrate: cumulativeValueTotal > 0 ? (cumulativeValueWins / cumulativeValueTotal) * 100 : 0
+                });
+            });
+        return { winRate, valueWinRate, cumulativeWinrate, cumulativeValueWinrate };
+    };
+
+    // Helper to get profit arrays
+    const getProfitArrays = (fromDate) => {
+        const profitArray = [];
+        const valueProfitArray = [];
+        const cumulativeProfitArray = [];
+        const cumulativeValueProfitArray = [];
+        let cumulativeProfit = 0;
+        let cumulativeValueProfit = 0;
+
+        Object.keys(groupedByDay)
+            .filter(day => new Date(day) > fromDate)
+            .sort((a, b) => new Date(a) - new Date(b))
+            .forEach(day => {
                 const games = groupedByDay[day];
-                let dailyProfit = 0;
-                for (const game of games.filter((game) => valueBetConditionCheck(sports, game, 'fanduel', 'h2h'))) {
-                    const bookmaker = game?.bookmakers?.find(b => b.key === sportsbook);
-                    const market = bookmaker?.markets?.find(m => m.key === 'h2h');
-                    const outcome = market?.outcomes?.find(out =>
-                        out.name === (game.predictedWinner === 'home'
-                            ? game.homeTeamDetails.espnDisplayName
-                            : game.awayTeamDetails.espnDisplayName)
-                    );
 
-                    if (game.predictionCorrect === true) {
-                        dailyProfit += outcome ? calculateProfitFromUSOdds(outcome.price, stake) : 0;
-                    } else {
-                        dailyProfit -= stake; // you had `-1` before — should match your stake
+                // All games profit
+                let dayProfit = 0;
+                games.forEach(game => {
+                    const bookmaker = game.bookmakers.find(b => b.key === sportsbook);
+                    const outcome = bookmaker?.markets.find(m => m.key === 'h2h')
+                        ?.outcomes.find(o =>
+                            o.name === (
+                                game.predictedWinner === 'home'
+                                    ? game.homeTeamDetails.espnDisplayName
+                                    : game.awayTeamDetails.espnDisplayName
+                            )
+                        );
+                    if (outcome) {
+                        if (game.predictionCorrect === true) {
+                            dayProfit += calculateProfitFromUSOdds(outcome.price, kelleyBetSizeCalc(game, outcome)); // assumes decimal odds
+                        } else {
+                            dayProfit -= kelleyBetSizeCalc(game, outcome);
+                        }
                     }
-                }
 
-                cumulativeSevenDay += dailyProfit;
-
-                return {
+                });
+                profitArray.push({
                     date: day,
-                    value: cumulativeSevenDay // now it's the running total
-                };
+                    profit: dayProfit
+                });
+                cumulativeProfit += dayProfit;
+                cumulativeProfitArray.push({
+                    date: day,
+                    profit: cumulativeProfit
+                });
 
-            })
-        : [];
-
-    let cumulativefifteenDay = 0
-    let fifteenDayProfit = groupedByDay
-        ? Object.keys(groupedByDay)
-            .filter(day => new Date(day) > fifteenDaysAgo)
-            .map((day) => {
-                const games = groupedByDay[day];
-                let dailyProfit = 0;
-                for (const game of games.filter((game) => valueBetConditionCheck(sports, game, 'fanduel', 'h2h'))) {
-                    const bookmaker = game?.bookmakers?.find(b => b.key === sportsbook);
-                    const market = bookmaker?.markets?.find(m => m.key === 'h2h');
-                    const outcome = market?.outcomes?.find(out =>
-                        out.name === (game.predictedWinner === 'home'
-                            ? game.homeTeamDetails.espnDisplayName
-                            : game.awayTeamDetails.espnDisplayName)
-                    );
-
-                    if (game.predictionCorrect === true) {
-                        dailyProfit += outcome ? calculateProfitFromUSOdds(outcome.price, stake) : 0;
-                    } else {
-                        dailyProfit -= stake; // you had `-1` before — should match your stake
+                // Value bet games profit
+                const valueGames = games.filter(game => valueBetConditionCheck(sports, game, 'fanduel', 'h2h'));
+                let dayValueProfit = 0;
+                valueGames.forEach(game => {
+                    const bookmaker = game.bookmakers.find(b => b.key === sportsbook);
+                    const outcome = bookmaker?.markets.find(m => m.key === 'h2h')
+                        ?.outcomes.find(o =>
+                            o.name === (
+                                game.predictedWinner === 'home'
+                                    ? game.homeTeamDetails.espnDisplayName
+                                    : game.awayTeamDetails.espnDisplayName
+                            )
+                        );
+                    if (outcome) {
+                        if (game.predictionCorrect === true) {
+                            dayValueProfit += calculateProfitFromUSOdds(outcome.price, kelleyBetSizeCalc(game, outcome)); // assumes decimal odds
+                        } else {
+                            dayValueProfit -= kelleyBetSizeCalc(game, outcome);
+                        }
                     }
-                }
-
-                cumulativefifteenDay += dailyProfit;
-
-                return {
+                });
+                valueProfitArray.push({
                     date: day,
-                    value: cumulativefifteenDay // now it's the running total
-                };
-
-            })
-        : [];
-
-    let cumulativethirtyDay = 0
-    let thirtyDayProfit = groupedByDay
-        ? Object.keys(groupedByDay)
-            .filter(day => new Date(day) > thirtyDaysAgo)
-            .map((day) => {
-                const games = groupedByDay[day];
-                let dailyProfit = 0;
-                for (const game of games.filter((game) => valueBetConditionCheck(sports, game, 'fanduel', 'h2h'))) {
-                    const bookmaker = game?.bookmakers?.find(b => b.key === sportsbook);
-                    const market = bookmaker?.markets?.find(m => m.key === 'h2h');
-                    const outcome = market?.outcomes?.find(out =>
-                        out.name === (game.predictedWinner === 'home'
-                            ? game.homeTeamDetails.espnDisplayName
-                            : game.awayTeamDetails.espnDisplayName)
-                    );
-
-                    if (game.predictionCorrect === true) {
-                        dailyProfit += outcome ? calculateProfitFromUSOdds(outcome.price, stake) : 0;
-                    } else {
-                        dailyProfit -= stake; // you had `-1` before — should match your stake
-                    }
-                }
-
-                cumulativethirtyDay += dailyProfit;
-
-                return {
+                    profit: dayValueProfit
+                });
+                cumulativeValueProfit += dayValueProfit;
+                cumulativeValueProfitArray.push({
                     date: day,
-                    value: cumulativethirtyDay // now it's the running total
-                };
+                    profit: cumulativeValueProfit
+                });
+            });
+        return { profitArray, valueProfitArray, cumulativeProfitArray, cumulativeValueProfitArray };
+    };
 
-            })
-        : [];
+
+    // Get datasets for each period
+    const last7Days = getWinRateArrays(sevenDaysAgo);
+    const last15Days = getWinRateArrays(fifteenDaysAgo);
+    const last30Days = getWinRateArrays(thirtyDaysAgo);
+
+    const last7DaysProfit = getProfitArrays(sevenDaysAgo);
+    const last15DaysProfit = getProfitArrays(fifteenDaysAgo);
+    const last30DaysProfit = getProfitArrays(thirtyDaysAgo);
+
     return (
-        <div className='bg-secondary flex flex-col  my-2 rounded' style={{width: '97%'}}>
-            <div className='flex flex-row justify-evenly items-center flex-wrap my-4'>
-                <div className=' bg-primary rounded p-2' style={{width: '32%'}}>
-                    <div className='width-full'>
-                        <h4 className='text-center text-white'>Last 7 Days Win Percentage: {(winrates.slice(winrates.length-7).reduce((acc, game) => acc + game.value, 0) / winrates.slice(winrates.length-7).length).toFixed(1)}%</h4>
-                    </div>
-                    <div className='width-full'>
-                        <LineGraph
-                            data={winrates.slice(winrates.length-7).sort((a, b) => new Date(a.date) - new Date(b.date))} winrates={true}
-                        />
-                    </div>
+        <div className="bg-secondary flex flex-col my-2 rounded w-[97%]">
+            <div className="flex flex-wrap justify-evenly items-stretch gap-4 my-4">
+                <div className="bg-primary rounded p-4 flex-1 min-w-[25rem] max-w-[38rem]">
+                    <h4 className="text-center text-white font-semibold mb-2">Last 7 Days Win Rate</h4>
+                    <LineGraph data={last7Days.winRate} secondData={last7Days.valueWinRate} winrates={true} />
+                    <h4 className="text-center text-white font-semibold mt-4 mb-2">Last 7 Days Cumulative Win Rates</h4>
+                    <LineGraph data={last7Days.cumulativeWinrate} secondData={last7Days.cumulativeValueWinrate} winrates={true} />
                 </div>
-                <div className=' bg-primary rounded p-2' style={{width: '32%'}}>
-                    <div className='width-full'>
-                        <h4 className='text-center text-white'>Last 15 Days Win Percentage: {(winrates.slice(winrates.length-15).reduce((acc, game) => acc + game.value, 0) / winrates.slice(winrates.length-15).length).toFixed(1)}%</h4>
-                    </div>
-                    <div>
-                        <LineGraph
-                            data={winrates.slice(winrates.length-15).sort((a, b) => new Date(a.date) - new Date(b.date))} winrates={true}
-                        />
-                    </div>
+                <div className="bg-primary rounded p-4 flex-1 min-w-[25rem] max-w-[38rem]">
+                    <h4 className="text-center text-white font-semibold mb-2">Last 15 Days Win Rate</h4>
+                    <LineGraph data={last15Days.winRate} secondData={last15Days.valueWinRate} winrates={true} />
+                    <h4 className="text-center text-white font-semibold mt-4 mb-2">Last 15 Days Cumulative Win Rates</h4>
+                    <LineGraph data={last15Days.cumulativeWinrate} secondData={last15Days.cumulativeValueWinrate} winrates={true} />
                 </div>
-                <div className=' bg-primary rounded p-2' style={{width: '32%'}}>
-                    <div className='width-full'>
-                        <h4 className='text-center text-white'>Last 30 Days Win Percentage: {(winrates.slice(winrates.length-30).reduce((acc, game) => acc + game.value, 0) / winrates.slice(winrates.length-30).length).toFixed(1)}%</h4>
-                    </div>
-                    <div>
-                        <LineGraph
-                            data={winrates.slice(winrates.length-30).sort((a, b) => new Date(a.date) - new Date(b.date))} winrates={true}
-                        />
-                    </div>
+                <div className="bg-primary rounded p-4 flex-1 min-w-[25rem] max-w-[38rem]">
+                    <h4 className="text-center text-white font-semibold mb-2">Last 30 Days Win Rate</h4>
+                    <LineGraph data={last30Days.winRate} secondData={last30Days.valueWinRate} winrates={true} />
+                    <h4 className="text-center text-white font-semibold mt-4 mb-2">Last 30 Days Cumulative Win Rates</h4>
+                    <LineGraph data={last30Days.cumulativeWinrate} secondData={last30Days.cumulativeValueWinrate} winrates={true} />
                 </div>
             </div>
-            <div className='flex flex-row justify-evenly items-center flex-wrap my-4'>
-                <div className=' bg-primary rounded p-2' style={{width: '32%'}}>
-                    <div className='width-full'>
-                        <LineGraph
-                            data={sevenDayProfit.sort((a, b) => new Date(a.date) - new Date(b.date))}
-                        />
-                    </div>
+            <div className="flex flex-wrap justify-evenly items-stretch gap-4 my-4">
+                <div className="bg-primary rounded p-4 flex-1 min-w-[25rem] max-w-[38rem]">
+                    <h4 className="text-center text-white font-semibold mb-2">Last 7 Days Profit</h4>
+                    <LineGraph data={last7DaysProfit.profitArray} secondData={last7DaysProfit.valueProfitArray} winrates={false} />
+                    <h4 className="text-center text-white font-semibold mt-4 mb-2">Last 7 Days Cumulative Profits</h4>
+                    <LineGraph data={last7DaysProfit.cumulativeProfitArray} secondData={last7DaysProfit.cumulativeValueProfitArray} winrates={false} />
                 </div>
-                <div className=' bg-primary rounded p-2' style={{width: '32%'}}>
-                    <div>
-                        <LineGraph
-                            data={fifteenDayProfit.sort((a, b) => new Date(a.date) - new Date(b.date))}
-                        />
-                    </div>
+                <div className="bg-primary rounded p-4 flex-1 min-w-[25rem] max-w-[38rem]">
+                    <h4 className="text-center text-white font-semibold mb-2">Last 15 Days Profit</h4>
+                    <LineGraph data={last15DaysProfit.profitArray} secondData={last15DaysProfit.valueProfitArray} winrates={false} />
+                    <h4 className="text-center text-white font-semibold mt-4 mb-2">Last 15 Days Cumulative Profits</h4>
+                    <LineGraph data={last15DaysProfit.cumulativeProfitArray} secondData={last15DaysProfit.cumulativeValueProfitArray} winrates={false} />
                 </div>
-                <div className=' bg-primary rounded p-2' style={{width: '32%'}}>
-                    <div>
-                        <LineGraph
-                            data={thirtyDayProfit.sort((a, b) => new Date(a.date) - new Date(b.date))}
-                        />
-                    </div>
+                <div className="bg-primary rounded p-4 flex-1 min-w-[25rem] max-w-[38rem]">
+                    <h4 className="text-center text-white font-semibold mb-2">Last 30 Days Profit</h4>
+                    <LineGraph data={last30DaysProfit.profitArray} secondData={last30DaysProfit.valueProfitArray} winrates={false} />
+                    <h4 className="text-center text-white font-semibold mt-4 mb-2">Last 30 Days Cumulative Profits</h4>
+                    <LineGraph data={last30DaysProfit.cumulativeProfitArray} secondData={last30DaysProfit.cumulativeValueProfitArray} winrates={false} />
                 </div>
             </div>
-
         </div>
-
-        // <Container fluid style={{ backgroundColor: '#121212', margin: '1em 0', display: 'flex', alignContent: 'center', justifyContent: 'center' }}>
-        //     <Card style={{width: '75%', backgroundColor: '#2a2a2a', color: 'white'}}>
-        //         <Row>
-        //             <Col>
-        //                 <Row style={{margin: '1rem 0'}}>
-        //                     <Col>
-        //                         <Card style={{ backgroundColor: '#545454', borderColor: '#575757', color: '#ffffff' }}>
-        //                             <Card.Title style={{textAlign: 'center'}}>{`Last 7 days Win Percentage ${(winrates.filter((game) => new Date(game.date) > sevenDaysAgo).reduce((acc, game) => acc + game.value, 0) / winrates.filter((game) => new Date(game.date) > sevenDaysAgo).length).toFixed(1) || 0}%`}</Card.Title>
-        //                             
-        //                         </Card>
-        //                     </Col>
-        //                     <Col>
-        //                         <Card style={{ backgroundColor: '#545454', borderColor: '#575757', color: '#ffffff' }}>
-        //                             <Card.Title style={{textAlign: 'center'}}>{`Last 15 days Win Percentage ${(winrates.filter((game) => new Date(game.date) > fifteenDaysAgo).reduce((acc, game) => acc + game.value, 0) / winrates.filter((game) => new Date(game.date) > fifteenDaysAgo).length).toFixed(1) || 0}%`}</Card.Title>
-        //                             
-        //                         </Card>
-        //                     </Col>
-        //                     <Col>
-        //                         <Card style={{ backgroundColor: '#545454', borderColor: '#575757', color: '#ffffff' }}>
-        //                             <Card.Title style={{textAlign: 'center'}}>{`Last 30 days Win Percentage ${(winrates.filter((game) => new Date(game.date) > thirtyDaysAgo).reduce((acc, game) => acc + game.value, 0) / winrates.filter((game) => new Date(game.date) > thirtyDaysAgo).length).toFixed(1) || 0}%`}</Card.Title>
-        //                             
-        //                         </Card>
-        //                     </Col>
-        //                 </Row>
-        //                 <Row  style={{margin: '1rem 0'}}>
-        //                     <Col>
-        //                         <Card style={{ backgroundColor: '#545454', borderColor: '#575757', color: '#ffffff' }}>
-        //                             <Card.Title style={{textAlign: 'center'}}>{`Last 7 days Avg Profit (units) ${(sevenDayProfit.reduce((acc, game, idx) => acc + (idx > 0 ? (game.value - sevenDayProfit[idx-1].value) : game.value), 0) / sevenDayProfit.length).toFixed(1) || 0}`}</Card.Title>
-        //                             <div style={{ width: '100%', maxWidth: '450px', margin: 'auto' }}>
-        //                                 <LineGraph
-        //                                     data={sevenDayProfit.sort((a, b) => new Date(a.date) - new Date(b.date))}
-        //                                 />
-        //                             </div>
-        //                         </Card>
-        //                     </Col>
-        //                     <Col>
-        //                         <Card style={{ backgroundColor: '#545454', borderColor: '#575757', color: '#ffffff' }}>
-        //                             <Card.Title style={{textAlign: 'center'}}>{`Last 7 days Avg Profit (units) ${(fifteenDayProfit.reduce((acc, game, idx) => acc + (idx > 0 ? (game.value - fifteenDayProfit[idx-1].value) : game.value), 0) / fifteenDayProfit.length).toFixed(1) || 0}`}</Card.Title>
-        //                             <div style={{ width: '100%', maxWidth: '450px', margin: 'auto' }}>
-        //                                 
-        //                             </div>
-        //                         </Card>
-        //                     </Col>
-        //                     <Col>
-        //                         <Card style={{ backgroundColor: '#545454', borderColor: '#575757', color: '#ffffff' }}>
-        //                             <Card.Title style={{textAlign: 'center'}}>{`Last 7 days Avg Profit (units) ${(thirtyDayProfit.reduce((acc, game, idx) => acc + (idx > 0 ? (game.value - thirtyDayProfit[idx-1].value) : game.value), 0) / thirtyDayProfit.length).toFixed(1) || 0}`}</Card.Title>
-        //                             <div style={{ width: '100%', maxWidth: '450px', margin: 'auto' }}>
-        //                                 
-        //                             </div>
-        //                         </Card>
-        //                     </Col>
-        //                 </Row>
-        //             </Col>
-        //         </Row>
-        //     </Card>
-
-        // </Container>
     )
 }
 

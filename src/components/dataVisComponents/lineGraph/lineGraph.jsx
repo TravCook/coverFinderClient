@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-const LineGraph = ({ data, winrates }) => {
+const LineGraph = ({ data, winrates, secondData, secondLabel }) => {
   const containerRef = useRef();
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, content: '' });
 
-  // Resize observer to track container size
   useEffect(() => {
     const resizeObserver = new ResizeObserver(entries => {
       if (!entries || entries.length === 0) return;
@@ -23,7 +22,6 @@ const LineGraph = ({ data, winrates }) => {
     return <div ref={containerRef} style={{ width: '100%', height: '300px' }} />;
   }
 
-  // Margins and inner chart dimensions
   const margin = { top: 20, right: 30, bottom: 40, left: 50 };
   const width = dimensions.width - margin.left - margin.right;
   const height = dimensions.height - margin.top - margin.bottom;
@@ -31,24 +29,42 @@ const LineGraph = ({ data, winrates }) => {
   // Format and parse data
   const formattedData = data.map(d => ({
     date: new Date(d.date),
-    value: d.value,
+    value: winrates ? d.winrate : d.profit,
   }));
+
+  const formattedSecondData = secondData
+    ? secondData.map(d => ({
+      date: new Date(d.date),
+      value: winrates ? d.winrate : d.profit,
+    }))
+    : [];
+
+  // Merge dates for x domain
+  const allDates = [
+    ...formattedData.map(d => d.date),
+    ...formattedSecondData.map(d => d.date),
+  ];
+  const xDomain = d3.extent(allDates);
 
   // Scales
   const xScale = d3
     .scaleUtc()
-    .domain(d3.extent(formattedData, d => d.date))
+    .domain(xDomain)
     .range([0, width]);
 
-  const yScale = winrates
-    ? d3.scaleLinear().domain([0, 100]).range([height, 0])
-    : d3
-        .scaleLinear()
-        .domain([
-          d3.min(formattedData, d => d.value) * 0.95,
-          d3.max(formattedData, d => d.value) * 1.05,
-        ])
-        .range([height, 0]);
+  // Y domain: combine both datasets
+  const allValues = [
+    ...formattedData.map(d => d.value),
+    ...formattedSecondData.map(d => d.value),
+  ];
+  const yDomain = winrates
+    ? [0, 100]
+    : [
+      d3.min(allValues) * 0.95,
+      d3.max(allValues) * 1.05,
+    ];
+
+  const yScale = d3.scaleLinear().domain(yDomain).range([height, 0]);
 
   // Line generator
   const lineGenerator = d3
@@ -56,24 +72,30 @@ const LineGraph = ({ data, winrates }) => {
     .x(d => xScale(d.date))
     .y(d => yScale(d.value));
 
-  // Build line segments with colors based on rise/fall
+  // Segments for first line
   const segments = [];
   for (let i = 1; i < formattedData.length; i++) {
     const segment = [formattedData[i - 1], formattedData[i]];
-    const isAbove = (winrates ? 50 : segment[0].value) <= segment[1].value;
-    segments.push({ points: segment, color: isAbove ? '#00c853' : '#d50000' });
+    const isAbove = 10 <= segment[1].value;
+    segments.push({ points: segment, color: isAbove ? 'green' : 'red' });
+  }
+
+  // Segments for second line (single color)
+  const secondSegments = [];
+  for (let i = 1; i < formattedSecondData.length; i++) {
+    const segment = [formattedSecondData[i - 1], formattedSecondData[i]];
+    const isAbove = (10 || segment[0].value) <= segment[1].value;
+    secondSegments.push({ points: segment, color: 'gold' });
   }
 
   // Tooltip handlers
-  const handleMouseOver = (event, d) => {
+  const handleMouseOver = (event, d, label) => {
     const svgRect = event.currentTarget.ownerSVGElement.getBoundingClientRect();
     setTooltip({
       visible: true,
       x: event.clientX - svgRect.left + 10,
       y: event.clientY - svgRect.top - 30,
-      content: winrates
-        ? `<strong>${d.date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })}</strong><br/>Winrate: ${d.value.toFixed(2)}%`
-        : `<strong>${d.date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })}</strong><br/>Profit (units): ${d.value.toFixed(2)}`,
+      content: `<strong>${d.date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })}</strong><br/>${label}: ${d.value.toFixed(2)}${winrates ? '%' : ''}`,
     });
   };
 
@@ -90,9 +112,9 @@ const LineGraph = ({ data, winrates }) => {
         <g transform={`translate(${margin.left},${margin.top})`}>
           {/* X Axis */}
           <g transform={`translate(0,${height})`}>
-            {xScale.ticks().map((tickValue, idx) => 
-            {
-              if(idx%2 !==0)return (
+            {xScale.ticks().map((tickValue, idx) => {
+              if (idx % 2 !== 0)
+                return (
                   <g key={tickValue.toString()} transform={`translate(${xScale(tickValue)},0)`}>
                     <line y2={6} stroke="white" />
                     <text
@@ -104,7 +126,7 @@ const LineGraph = ({ data, winrates }) => {
                       {d3.timeFormat('%m/%d')(tickValue)}
                     </text>
                   </g>
-                )
+                );
             })}
             <line x1={0} x2={width} y1={0} y2={0} stroke="white" />
           </g>
@@ -128,10 +150,10 @@ const LineGraph = ({ data, winrates }) => {
             <line x1={0} x2={0} y1={0} y2={height} stroke="white" />
           </g>
 
-          {/* Line Segments */}
+          {/* Line Segments for first line */}
           {segments.map(({ points, color }, i) => (
             <path
-              key={i}
+              key={`main-${i}`}
               d={lineGenerator(points)}
               fill="none"
               stroke={color}
@@ -139,19 +161,52 @@ const LineGraph = ({ data, winrates }) => {
             />
           ))}
 
-          {/* Data points */}
-          {formattedData.map((d, i) => (
-            <circle
-              key={i}
-              cx={xScale(d.date)}
-              cy={yScale(d.value)}
-              r={4}
-              fill="#007aff"
-              style={{ cursor: 'pointer' }}
-              onMouseOver={(e) => handleMouseOver(e, d)}
-              onMouseOut={handleMouseOut}
+          {/* Line Segments for second line */}
+          {secondSegments.map(({ points, color }, i) => (
+            <path
+              key={`second-${i}`}
+              d={lineGenerator(points)}
+              fill="none"
+              stroke={color}
+              strokeWidth={2}
             />
           ))}
+
+          {/* Data points for first line */}
+          {formattedData.map((d, i) => {
+            const segment = [formattedData[i - 1], formattedData[i]];
+            const isAbove = 10 <= segment[1].value;
+            return (
+              <circle
+                key={`main-point-${i}`}
+                cx={xScale(d.date)}
+                cy={yScale(d.value)}
+                r={4}
+                fill={isAbove ? 'green' : 'red'}
+                style={{ cursor: 'pointer' }}
+                onMouseOver={(e) => handleMouseOver(e, d, winrates ? 'Winrate' : 'Profit')}
+                onMouseOut={handleMouseOut}
+              />
+            )
+          })}
+
+          {/* Data points for second line */}
+          {formattedSecondData.map((d, i) => {
+            const segment = [formattedData[i - 1], formattedData[i]];
+            const isAbove = (segment[0] ? segment[0].value : 0) <= segment[1].value;
+            return (
+              <circle
+                key={`second-point-${i}`}
+                cx={xScale(d.date)}
+                cy={yScale(d.value)}
+                r={4}
+                fill={'gold'}
+                style={{ cursor: 'pointer' }}
+                onMouseOver={(e) => handleMouseOver(e, d, secondLabel || 'Second')}
+                onMouseOut={handleMouseOut}
+              />
+            )
+          })}
         </g>
       </svg>
 
@@ -175,7 +230,6 @@ const LineGraph = ({ data, winrates }) => {
           }}
           dangerouslySetInnerHTML={{ __html: tooltip.content }}
         />
-        
       )}
     </div>
   );

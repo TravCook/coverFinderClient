@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useSelector } from 'react-redux';
+import { getDifferenceInMinutes, formatMinutesToHoursAndMinutes, hexToRgb, getLuminance } from '../../../utils/constants';
 import MatchupCard from '../../matchupCard/matchupCard';
+import UpcomingGameMini from '../upcomingGames/upcomingGameMini/upcomingGameMini';
+import LiveGameCard from '../../live/liveGameCard/liveGameCard';
+import LiveView from '../../live/liveView';
 
 const LandingPageLive = () => {
     // Example redux state variables
@@ -13,7 +17,7 @@ const LandingPageLive = () => {
     // }, []);
 
     return (
-        <div style={{ width: '97%' }} className='flex flex-col bg-secondary rounded'>
+        <div className='w-full flex flex-col bg-secondary rounded'>
             <div className='flex flex-col md:flex-row justify-between' style={{ padding: '.5em', borderBottom: '1px solid #575757' }}>
                 <div>{`LIVE NOW`}</div>
                 <div className='flex'>
@@ -24,15 +28,8 @@ const LandingPageLive = () => {
                     </Link>
                 </div>
             </div>
-            <div className='flex flex-row flex-wrap justify-center gap-2'>
-                {games.filter((game) => game.timeRemaining).map((game) => {
-                    return (
-                        <div>
-                            <MatchupCard gameData={game} />
-                        </div>
-                    )
-                })}
-            </div>
+            <LiveView />
+
         </div>
     );
 };

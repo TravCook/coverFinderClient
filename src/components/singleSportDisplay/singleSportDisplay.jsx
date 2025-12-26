@@ -1,84 +1,98 @@
-import { useEffect, useState, useRef } from 'react'
-import MatchupCard from '../matchupCard/matchupCard.jsx'
-import { Link, useParams } from 'react-router' // Import useNavigate for navigation
+import { useMemo, useState, useRef } from 'react';
+import MatchupCard from '../matchupCard/matchupCard.jsx';
+import { Link, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
-import { isSameDay, valueBetConditionCheck, calculateProfitFromUSOdds, allStatLabelsShort, getNumericStat, reverseComparisonStats } from '../../utils/constants.js'
+import { 
+    isSameDay, 
+    valueBetConditionCheck, 
+    calculateProfitFromUSOdds, 
+    getNumericStat, 
+    reverseComparisonStats 
+} from '../../utils/constants.js';
+import { allStatLabels, allStatNamesShort } from '../../utils/statMaps.js';
 import LeadingTeams from '../leadingTeams/leadingTeams.jsx';
 import TeamRankings from '../rankings/teamRanking.jsx';
 import DogRankings from '../rankings/bettingRankings/dogRankings.jsx';
 import FavRankings from '../rankings/bettingRankings/favRankings.jsx';
 
 const SingleSportDisplay = (props) => {
-    const { league } = useParams(); // Get the matchup ID from the URL
-    const { games, sports, pastGames, mlModelWeights } = useSelector((state) => state.games)
+    const { league } = useParams();
+    const { games, sports, pastGames, mlModelWeights } = useSelector((state) => state.games);
     const { teams } = useSelector((state) => state.teams);
     const { sportsbook } = useSelector((state) => state.user);
+
     const [valueFilter, setValueFilter] = useState(false);
-    const [sortBy, setSortBy] = useState('date'); // State to hold the sorting preference
-    const [sortAscending, setSortAscending] = useState('↑'); // State to hold the sorting order preference
-    const [sportTeams, setSportTeams] = useState()
-    const [sortedTeams, setSortedTeams] = useState()
-    const [averageIndex, setAverageIndex] = useState()
-    const [weightsRankedByImp, setWeightsRanked] = useState()
+    const [sortBy, setSortBy] = useState('date');
+    const [sortAscending, setSortAscending] = useState('↑');
     const [open, setOpen] = useState(false);
-    const [pwrRankSort, setPwrRankSort] = useState(); // State to hold the sorting preference for power rankings
+    const [pwrRankSort, setPwrRankSort] = useState();
     const [openRankSort, setOpenRankSort] = useState(false);
     const [openSort, setOpenSort] = useState(false);
+    const [teamFilter, setTeamFilter] = useState();
+    const [teamFilterOpen, setTeamFilterOpen] = useState();
+    const [currentSport, setCurrentSport] = useState();
     const dropdownRef = useRef(null);
-    const [statCategories, setStatCategories] = useState([])
-    const [categoryAverages, setCategoryAverages] = useState({});
-    const [teamFilter, setTeamFilter] = useState()
-    const [teamFilterOpen, setTeamFilterOpen] = useState()
-    const [currentSport, setCurrentSport] = useState()
 
+    // -------------------------------
+    // ✅ Memoized derived values
+    // -------------------------------
+    const memoizedSportData = useMemo(() => {
+        if (!league || !sports.length || !teams.length || !mlModelWeights.length) return {};
 
+        const sport = sports.find((s) => s.name === league);
+        if (!sport) return {};
 
-    useEffect(() => {
-        if (!league || !sports.length || !teams.length || !mlModelWeights.length) return;
+        document.title = sport.name;
 
-        const sport = sports.find((sport) => sport.name === league);
-        document.title = sport.name
-        if (!sport) return; // optional: protect from bad league name
-        let tempTeams = [...teams]
-            .filter((team) => team.league === league)
+        // Filter teams for this league
+        const sportTeams = teams.filter((team) => team.league === league);
 
-        setSportTeams(tempTeams);
+        // Get weights ranked by importance
         const sportWeights = mlModelWeights.find((weight) => weight.sport === sport.id);
-        if (!sportWeights) return;
+        const weightsRankedByImp = sportWeights
+            ? [...sportWeights.featureImportanceScoresTeam].sort((a, b) => b.importance - a.importance)
+            : [];
 
-        // ✅ Shallow copy featureImportanceScores before sorting
-        const weightsRankedByImp = [...sportWeights.featureImportanceScores].sort(
-            (scoreA, scoreB) => scoreB.importance - scoreA.importance
-        );
-        setWeightsRanked(weightsRankedByImp);
+        // Calculate average index
+        const tempAverageIndex =
+            sportTeams.reduce((acc, team) => acc + team.statIndex, 0) / (sportTeams.length || 1);
 
-        const tempAverageIndex = teams.filter((team) => team.league === league).reduce((acc, team) => acc + team.statIndex, 0) / teams.filter((team) => team.league === league).length;
-        setAverageIndex(tempAverageIndex);
-
-        const sortedTeams = [...teams]
-            .filter(team => team.league === league)
-            .map(team => {
+        // Sort teams by statIndex and calculate total games
+        const sortedTeams = [...sportTeams]
+            .map((team) => {
                 const [wins = 0, losses = 0] = team.currentStats.seasonWinLoss?.split('-').map(Number) || [0, 0];
-                return {
-                    ...team,
-                    totalGames: wins + losses,
-                };
+                return { ...team, totalGames: wins + losses };
             })
-            // .sort((a, b) => b.totalGames - a.totalGames) // First sort: by games played
-            
-            .sort((a, b) => b.statIndex - a.statIndex) // Second sort: by statIndex
-             // Take top 35
+            .sort((a, b) => b.statIndex - a.statIndex);
 
-        setSortedTeams(sortedTeams);
-        setStatCategories(Object.keys(sortedTeams[0].statCategoryIndexes));
-        const tempCategoryAverages = {};
-        Object.keys(sortedTeams[0].statCategoryIndexes).forEach((category) => {
-            tempCategoryAverages[category] = sortedTeams.reduce((acc, team) => acc + team.statCategoryIndexes[category], 0) / sortedTeams.length;
+        // Compute stat categories & averages
+        const statCategories = sortedTeams[0] ? Object.keys(sortedTeams[0].statCategoryIndexes) : [];
+        const categoryAverages = {};
+        statCategories.forEach((category) => {
+            categoryAverages[category] =
+                sortedTeams.reduce((acc, team) => acc + team.statCategoryIndexes[category], 0) /
+                (sortedTeams.length || 1);
         });
-        setCategoryAverages(tempCategoryAverages);
 
-    }, [teams, sports, mlModelWeights, games]);
+        return {
+            sportTeams,
+            weightsRankedByImp,
+            averageIndex: tempAverageIndex,
+            sortedTeams,
+            statCategories,
+            categoryAverages,
+        };
+    }, [teams, sports, mlModelWeights, league]); // dependencies
 
+    // Destructure memoized values
+    const {
+        sportTeams,
+        weightsRankedByImp,
+        averageIndex,
+        sortedTeams,
+        statCategories,
+        categoryAverages,
+    } = memoizedSportData;
 
     // Function to navigate back to the landing page
 
@@ -126,7 +140,7 @@ const SingleSportDisplay = (props) => {
 
                                                     }}
                                                 >
-                                                    {category === 'general' ? 'Wins' : allStatLabelsShort[category] || category}
+                                                    {category === 'general' ? 'Wins' : allStatLabels[category] || category}
                                                 </button>
                                             </li>
                                         ))}
@@ -137,7 +151,7 @@ const SingleSportDisplay = (props) => {
                     </div>
 
                 </div>
-                {sortedTeams && <TeamRankings sport={league} pwrRankSort={pwrRankSort} categoryAverages={categoryAverages} sortedTeams={sortedTeams.slice(0, 35)} />}
+                {sortedTeams && <TeamRankings sport={league} pwrRankSort={pwrRankSort} categoryAverages={categoryAverages} sortedTeams={sortedTeams.slice(0, 50)} />}
                 {/* {league && <div className='flex flex-row' style={{ marginTop: '.5rem' }}>
                     <div className='flex flex-col border-r' style={{ width: '50%' }}>
                         <div className='border-b' style={{ textAlign: 'center' }}>
@@ -384,7 +398,7 @@ const SingleSportDisplay = (props) => {
                                             if (typeof sortedStatTeams[0].currentStats[weight.feature] === 'string') {
                                                 statValue = sortedStatTeams[0].currentStats[weight.feature]
                                             } else if (weight.feature.includes('Percentage') || weight.feature.includes('Pct')) {
-                                                statValue = `${(sortedStatTeams[0].currentStats[weight.feature] * 100).toFixed(1)}%`
+                                                statValue = `${(sortedStatTeams[0].currentStats[weight.feature]).toFixed(1)}%`
                                             } else {
 
                                                 if (sortedStatTeams[0].currentStats[weight.feature] > 1) {
@@ -399,7 +413,7 @@ const SingleSportDisplay = (props) => {
                                             return (
                                                 <div style={{ width: '100%', display: 'flex', flexDirection: 'row', padding: '.25rem 0', borderBottom: '1px solid #575757' }} key={weight.feature}>
                                                     <div style={{ textAlign: 'left', width: '40%' }}>
-                                                        {allStatLabelsShort[weight.feature] === 'Point Diff' && league === 'baseball_mlb' ? 'Run Diff' : allStatLabelsShort[weight.feature]}
+                                                        {allStatNamesShort[weight.feature] === 'Point Diff' && league === 'baseball_mlb' ? 'Run Diff' : allStatNamesShort[weight.feature]}
                                                     </div>
                                                     <div style={{ textAlign: 'left', width: '45%' }}>
                                                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>

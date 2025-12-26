@@ -13,7 +13,7 @@ const UpcomingGamesBySport = () => {
         // Filter games that match today's date and the current sport league
         const tempTodayGames = games?.filter((game) => {
 
-            if (game?.bookmakers?.find(b => b.key === sportsbook)) {
+            if (game?.bookmakers?.find(b => b.key === sportsbook) && !game.complete) {
                 return true
             }
             return null
@@ -25,11 +25,11 @@ const UpcomingGamesBySport = () => {
         setTodayGames(tempTodayGames);
     }, [games, sports, sportsbook]);
     return (
-        <div  style={{width: '97%'}}>
+        <div style={{ width: '97%' }}>
             {sports?.filter((sport) => {
                 let sportGames = todayGames.filter((game) => game.sport_key === sport.name)
                 return sportGames.length > 0
-            }).sort((a,b) => a.startMonth - b.startMonth).map((sport) => {
+            }).sort((a, b) => a.startMonth - b.startMonth).map((sport) => {
                 let sportNameArr = sport.name.split('_')
                 let leagueName = sportNameArr[1]
 
@@ -45,7 +45,7 @@ const UpcomingGamesBySport = () => {
 
                         </div>
 
-                        <div className='flex flex-wrap flex-row justify-evenly'>
+                        <div className='flex flex-wrap flex-row justify-around'>
                             {todayGames.filter((game) => game.sport_key === sport.name)
                                 .sort((a, b) => {
                                     const dateA = new Date(a.commence_time).getTime();
@@ -54,35 +54,18 @@ const UpcomingGamesBySport = () => {
                                         return b.winPercent - a.winPercent;
                                     }
                                     return dateA - dateB;
-                                }).slice(0,8)
+                                }).slice(0, 10)
                                 .map((game, idx) => {
-                                    if ((Math.ceil(todayGames.length / 6) * 6) < 18) {
-                                        if (idx < (Math.ceil(todayGames.length / 6) * 6)) {
-                                            return (
-                                                <div>
-                                                    <MatchupCard
-                                                        key={game.id}
-                                                        todaysGames={todayGames}
-                                                        gameData={game}
-                                                    />
-                                                </div>
+                                    return (
+                                        <div className='mx-2'>
+                                            <MatchupCard
+                                                key={game.id}
+                                                todaysGames={todayGames}
+                                                gameData={game}
+                                            />
+                                        </div>
 
-                                            );
-                                        }
-                                    } else {
-                                        if (idx < 15) {
-                                            return (
-                                                <div>
-                                                    <MatchupCard
-                                                        key={game.id}
-                                                        todaysGames={todayGames}
-                                                        gameData={game}
-                                                    />
-                                                </div>
-                                            );
-                                        }
-                                    }
-                                    return null;
+                                    );
                                 })}
                         </div>
                     </div>

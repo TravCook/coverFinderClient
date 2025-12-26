@@ -1,12 +1,12 @@
-// slices/gamesSlice.js
 import { createSlice } from '@reduxjs/toolkit';
+import { splitGamesByDay } from '../../utils/helpers/timeHelpers/gameDateHelpers';
 
 const initialState = {
   games: [],
-  pastGames: [],
+  gamesByDay: {},
   sports: [],
   teams: [],
-  mlModelWeights: []
+  mlModelWeights: [],
 };
 
 const gamesSlice = createSlice({
@@ -14,47 +14,25 @@ const gamesSlice = createSlice({
   initialState,
   reducers: {
     setGames: (state, action) => {
-      state.games = action.payload; // safe mutation with Immer
+      state.games = action.payload;
+      state.gamesByDay = splitGamesByDay(action.payload);
     },
-    setPastGames: (state, action) => {
-      state.pastGames = action.payload;
-    },
-    setPastGamesEmit: (state, action) => {
-      const updates = action.payload;
+    setGamesEmit: (state, action) => {
+      // Merge existing games with new/emitted games
+      const updatedGamesMap = new Map(state.games.map(g => [g.id, g]));
+      for (const g of action.payload) {
+        updatedGamesMap.set(g.id, g); // overwrite if exists, add if new
+      }
+      const updatedGames = Array.from(updatedGamesMap.values());
 
-      // Create a map of updated games by ID
-      const updateMap = new Map(updates.map(game => [game.id, game]));
-
-      // Merge: keep updated versions where IDs match
-      state.pastGames = state.pastGames.map(game =>
-        updateMap.has(game.id) ? updateMap.get(game.id) : game
-      );
-
-      // Add any new games from updates that aren't in pastGames yet
-      const existingIds = new Set(state.pastGames.map(game => game.id));
-      const newGames = updates.filter(game => !existingIds.has(game.id));
-
-      state.pastGames = [...state.pastGames, ...newGames];
+      state.games = updatedGames;
+      state.gamesByDay = splitGamesByDay(updatedGames); // re-split by day
     },
-    setSports: (state, action) => {
-      state.sports = action.payload;
-    },
-    setTeams: (state, action) => {
-      state.teams = action.payload;
-    },
-    setMLModelWeights: (state, action) => {
-      state.mlModelWeights = action.payload;
-    }
-  }
+    setSports: (state, action) => { state.sports = action.payload; },
+    setTeams: (state, action) => { state.teams = action.payload; },
+    setMLModelWeights: (state, action) => { state.mlModelWeights = action.payload; },
+  },
 });
 
-export const {
-  setGames,
-  setPastGames,
-  setPastGamesEmit,
-  setSports,
-  setTeams,
-  setMLModelWeights
-} = gamesSlice.actions;
-
+export const { setGames, setGamesEmit, setSports, setTeams, setMLModelWeights } = gamesSlice.actions;
 export default gamesSlice.reducer;

@@ -21,20 +21,20 @@ const LandingPageConfidence = () => {
         })
 
     return (
-        <div className='my-4 flex-grow' style={{ maxWidth: '90%' }}>
+        <div className='my-4 flex-grow'>
             {games.filter((game) => {
                 return game.predictionConfidence > .90 && isSameDay(new Date(game.commence_time), new Date())
             }).slice(0, betterBets.length / 2).length > 0 &&
                 <div className='bg-secondary flex flex-col rounded' >
                     <div style={{ padding: '.5em', borderBottom: '1px solid #575757' }}>
                         <div>
-                            {`LOCKS`}
+                            {`LOCKS (${games.filter((game) => {return game.predictionConfidence > .90 && isSameDay(new Date(game.commence_time), new Date())}).slice(0, betterBets.length / 2).length})`}
                         </div>
 
                     </div>
-                    <div className='flex flex-row flex-wrap justify-evenly p-4 gap-2' style={{ padding: '.5em 0' }}>
+                    <div className='flex flex-row flex-wrap justify-evenly p-4 gap-2 overflow-y-scroll' style={{ padding: '.5em 0'}}>
                         {games.filter((game) => game.predictionConfidence > .90 && isSameDay(new Date(game.commence_time), new Date())) && games.filter((game) => game.predictionConfidence > .90 && isSameDay(new Date(game.commence_time), new Date())) // Sort by commence time
-                            .slice(0, betterBets.length / 3).sort((a, b) => b.predictionConfidence - a.predictionConfidence).map((game) => {
+                            .sort((a, b) => b.predictionConfidence - a.predictionConfidence).map((game) => {
                                 return (
                                     <div>
                                         <MatchupCard
